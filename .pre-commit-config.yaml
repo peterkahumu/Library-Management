@@ -1,0 +1,27 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+        exclude: >
+          (^\.git/|^__pycache__/|^\.env/|^\.venv/|^migrations/|^static/|^templates/|^media/)
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        exclude: >
+          (^\.git/|^__pycache__/|^\.env/|^\.venv/|^migrations/|^static/|^templates/|^media/)
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: >
+          (^\.git/|^__pycache__/|^\.env/|^\.venv/|^migrations/|^static/|^templates/|^media/)
+      - id: end-of-file-fixer
+        exclude: >
+          (^\.git/|^__pycache__/|^\.env/|^\.venv/|^migrations/|^static/|^templates/|^media/)
+      - id: check-added-large-files
+        exclude: >
+          (^\.git/|^__pycache__/|^\.env/|^\.venv/|^migrations/|^static/|^templates/|^media/)
