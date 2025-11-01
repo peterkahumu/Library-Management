@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<div class="text-center py-5 mb-4">
+    <h1 class="display-3 fw-bold text-primary mb-3">
+        Welcome {% if user.is_authenticated %} {{user.get_full_name}} {% else %} to the Library Portal{% endif %}</h1>
+    <p class="lead fs-5 text-muted mb-4">Discover, learn, and grow — one page at a time.</p>
+    <a href="#" class="btn btn-primary btn-lg px-5 py-2 rounded-pill shadow">Start Exploring</a>
+</div>
+
+<!-- Feature Highlights -->
+<div class="row text-center g-4 mb-5">
+    <div class="col-md-4">
+        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3"
+            style="width: 100px; height: 100px;">
+            <i class="fas fa-book fa-3x text-primary"></i>
+        </div>
+        <h5 class="fw-bold">Vast Collection</h5>
+        <p class="text-muted">Access thousands of books, journals, and digital resources across every discipline.</p>
+    </div>
+    <div class="col-md-4">
+        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3"
+            style="width: 100px; height: 100px;">
+            <i class="fas fa-user-graduate fa-3x text-primary"></i>
+        </div>
+        <h5 class="fw-bold">Student Friendly</h5>
+        <p class="text-muted">Tailored tools and recommendations to support your academic journey and personal growth.
+        </p>
+    </div>
+    <div class="col-md-4">
+        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3"
+            style="width: 100px; height: 100px;">
+            <i class="fas fa-globe fa-3x text-primary"></i>
+        </div>
+        <h5 class="fw-bold">Global Access</h5>
+        <p class="text-muted">Connect with resources and communities around the world, anytime, anywhere.</p>
+    </div>
+</div>
+
+<!-- Counters Section -->
+<div class="row text-center bg-light-orange rounded-4 py-4 mb-4">
+    <div class="col-md-3 col-6 mb-3 mb-md-0">
+        <h2 class="display-5 fw-bold text-primary mb-0" data-count="12000">0</h2>
+        <p class="text-muted fw-semibold mb-0">Books Available</p>
+    </div>
+    <div class="col-md-3 col-6 mb-3 mb-md-0">
+        <h2 class="display-5 fw-bold text-primary mb-0" data-count="850">0</h2>
+        <p class="text-muted fw-semibold mb-0">Active Members</p>
+    </div>
+    <div class="col-md-3 col-6">
+        <h2 class="display-5 fw-bold text-primary mb-0" data-count="320">0</h2>
+        <p class="text-muted fw-semibold mb-0">Daily Visitors</p>
+    </div>
+    <div class="col-md-3 col-6">
+        <h2 class="display-5 fw-bold text-primary mb-0" data-count="75">0</h2>
+        <p class="text-muted fw-semibold mb-0">Events Hosted</p>
+    </div>
+</div>
+
+<!-- Quote Section -->
+<div class="text-center py-4 mb-4">
+    <div class="border-start border-5 border-orange ps-3 d-inline-block text-start">
+        <p class="fs-4 text-dark fst-italic mb-1">"Libraries store the energy that fuels the imagination."</p>
+        <p class="text-muted mb-0">— Sidney Sheldon</p>
+    </div>
+</div>
+
+<!-- Featured Books -->
+<div class="mb-4">
+    <h2 class="text-dark mb-4 fw-bold">🌟 Featured Books</h2>
+    <div class="row g-3">
+        <div class="col-md-3 col-sm-6">
+            <div class="text-center">
+                <img src="https://www.amazon.com/Baldacci-Published-Central-Publishing-Hardcover/dp/B00HMVPORO"
+                    class="img-fluid rounded-3 shadow-sm mb-2" alt="The Infinite Library"
+                    style="max-height: 320px; object-fit: cover;">
+                <h6 class="fw-bold mb-1">The Infinite Library</h6>
+                <p class="text-muted small mb-2">A journey through time, memory, and imagination.</p>
+                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="text-center">
+                <img src="https://www.amazon.com/Baldacci-Published-Central-Publishing-Hardcover/dp/B00HMVPORO"
+                    class="img-fluid rounded-3 shadow-sm mb-2" alt="Code & Curiosity"
+                    style="max-height: 320px; object-fit: cover;">
+                <h6 class="fw-bold mb-1">Code & Curiosity</h6>
+                <p class="text-muted small mb-2">Unlock the secrets of technology and innovation.</p>
+                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="text-center">
+                <img src="https://www.amazon.com/Baldacci-Published-Central-Publishing-Hardcover/dp/B00HMVPORO"
+                    class="img-fluid rounded-3 shadow-sm mb-2" alt="Health Matters"
+                    style="max-height: 320px; object-fit: cover;">
+                <h6 class="fw-bold mb-1">Health Matters</h6>
+                <p class="text-muted small mb-2">Your guide to wellness, medicine, and self-care.</p>
+                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="text-center">
+                <img src="https://www.amazon.com/Baldacci-Published-Central-Publishing-Hardcover/dp/B00HMVPORO"
+                    class="img-fluid rounded-3 shadow-sm mb-2" alt="Art of Africa"
+                    style="max-height: 320px; object-fit: cover;">
+                <h6 class="fw-bold mb-1">Art of Africa</h6>
+                <p class="text-muted small mb-2">Celebrating culture, creativity, and heritage.</p>
+                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Categories -->
+<div class="mb-4">
+    <h2 class="text-dark mb-4 fw-bold">📚 Explore Our Categories</h2>
+    <div class="row g-3 text-center">
+        <div class="col-md-4">
+            <div class="py-4">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                    style="width: 80px; height: 80px;">
+                    <i class="fas fa-laptop-code fa-2x text-orange"></i>
+                </div>
+                <h6 class="fw-bold mb-1">Technology & Computing</h6>
+                <p class="text-muted small mb-2">Programming, AI, cybersecurity, and more.</p>
+                <a href="#" class="text-primary text-decoration-none fw-semibold small">Explore →</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="py-4">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                    style="width: 80px; height: 80px;">
+                    <i class="fas fa-heartbeat fa-2x text-orange"></i>
+                </div>
+                <h6 class="fw-bold mb-1">Health & Medicine</h6>
+                <p class="text-muted small mb-2">Medical journals, anatomy guides, wellness.</p>
+                <a href="#" class="text-primary text-decoration-none fw-semibold small">Explore →</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="py-4">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                    style="width: 80px; height: 80px;">
+                    <i class="fas fa-landmark fa-2x text-orange"></i>
+                </div>
+                <h6 class="fw-bold mb-1">History & Culture</h6>
+                <p class="text-muted small mb-2">Stories that shaped our world.</p>
+                <a href="#" class="text-primary text-decoration-none fw-semibold small">Explore →</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Browse Categories -->
+<div class="mb-4">
+    <h2 class="text-dark mb-3 fw-bold">🗂️ Browse by Subject</h2>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <i class="fa-solid fa-microscope me-1"></i>Science
+        </a>
+        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <i class="fa-solid fa-landmark-dome me-1"></i>History
+        </a>
+        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <i class="fa-solid fa-laptop-code me-1"></i>Technology
+        </a>
+        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <i class="fa-solid fa-palette me-1"></i>Art
+        </a>
+        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <i class="fa-solid fa-heart-pulse me-1"></i>Health
+        </a>
+        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <i class="fa-solid fa-book-open me-1"></i>Literature
+        </a>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="bg-primary text-white text-center rounded-4 py-5 mt-4 shadow">
+    <h3 class="fw-bold mb-2">Ready to begin your next chapter?</h3>
+    <p class="mb-3">Join our community of readers, thinkers, and dreamers.</p>
+    <a href="#" class="btn btn-light btn-lg px-4 py-2 rounded-pill">Join Now</a>
+</div>
+
+<!-- Counter Animation Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll("[data-count]");
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute("data-count");
+                const count = +counter.innerText;
+                const increment = target / 100;
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + increment);
+                    setTimeout(updateCount, 30);
+                } else {
+                    counter.innerText = target.toLocaleString();
+                }
+            };
+            updateCount();
+        });
+    });
+</script>
+
+{% endblock content %}

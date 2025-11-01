@@ -1,0 +1,121 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <!-- Brand -->
+        <a class="navbar-brand" href="#">
+            <i class="fa-solid fa-book me-2"></i>Library
+        </a>
+
+        <!-- Mobile Toggler -->
+        <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Floating Categories (Desktop only) -->
+        <div class="d-none d-lg-block me-3 position-relative">
+            <button class="btn btn-outline-light d-flex align-items-center" type="button" data-bs-toggle="collapse"
+                data-bs-target="#categoryMenu">
+                <i class="fa fa-bars me-2"></i><span>All Categories</span>
+            </button>
+            <div class="collapse position-absolute bg-white shadow rounded p-3 mt-2" id="categoryMenu"
+                style="z-index: 1050; width: 250px;">
+                <ul class="list-unstyled mb-0">
+                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">Accessories
+                            <span>(3)</span></a></li>
+                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">Electronics &
+                            Computer <span>(5)</span></a></li>
+                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">Laptops &
+                            Desktops <span>(2)</span></a></li>
+                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">Mobiles &
+                            Tablets <span>(8)</span></a></li>
+                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">SmartPhone &
+                            Smart TV <span>(5)</span></a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Desktop Menu -->
+        <div class="collapse navbar-collapse d-none d-lg-flex" id="desktopNav">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Catalog</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Borrow</a></li>
+
+                {% if user.is_authenticated %}
+                <!-- User Profile Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+                        <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32"
+                            height="32">
+                        <span>{{ user.get_full_name|default:user.username }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger">Log out</button>
+                        </form>
+                    </ul>
+                </li>
+                {% else %}
+                <!-- Login / Sign Up -->
+                <li class="nav-item"><a class="btn bg-light-orange mx-3" href="{% url 'login' %}">Login</a></li>
+                <li class="nav-item"><a class="btn bg-orange" href="{% url 'register' %}">Sign Up</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile Overlay Menu -->
+<div class="collapse d-lg-none position-fixed top-0 end-0 bg-primary text-white p-4 shadow" id="mobileMenu"
+    style="width: 280px; height: 100vh; z-index: 1050;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Menu</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-toggle="collapse"
+            data-bs-target="#mobileMenu"></button>
+    </div>
+    <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link text-white" href="{% url 'home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="#">Catalog</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="#">Borrow</a></li>
+
+        {% if user.is_authenticated %}
+        <!-- User Profile Dropdown -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+                <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32" height="32">
+                <span>{{ user.get_full_name|default:user.username }}</span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{url 'password_change' %}">Change Password</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item text-danger">Log out</button>
+                </form>
+            </ul>
+        </li>
+        {% else %}
+        <!-- Login / Sign Up -->
+        <li class="nav-item"><a class="nav-link text-white" href="{% url 'login' %}">Login</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="{% url 'register' %}">Sign Up</a></li>
+        {% endif %}
+
+        <!-- Categories -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">All Categories</a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Accessories (3)</a></li>
+                <li><a class="dropdown-item" href="#">Electronics & Computer (5)</a></li>
+                <li><a class="dropdown-item" href="#">Laptops & Desktops (2)</a></li>
+                <li><a class="dropdown-item" href="#">Mobiles & Tablets (8)</a></li>
+                <li><a class="dropdown-item" href="#">SmartPhone & Smart TV (5)</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
