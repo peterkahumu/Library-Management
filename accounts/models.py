@@ -27,7 +27,7 @@ class LibraryUserManager(BaseUserManager):
 
         Args:
             username (str): The username for the user.
-            email (str, optional): The user's email address.
+            email (str): The user's email address.
             password (str, optional): The user's password.
             **extra_fields: Additional fields for the user model.
 
@@ -46,7 +46,7 @@ class LibraryUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, email=None, password=None, **extra_fields):
+    def create_superuser(self, username, email, password=None, **extra_fields):
         """
         Create and return a superuser with admin role and full permissions.
 

@@ -13,8 +13,7 @@ class CustomUserCreationForm(UserCreationForm):
         super().__init__(*args, **kwargs)
 
         # Remove default values and add placeholders
-        self.fields["date_of_birth"].widget.attrs.update({"placeholder": "DD/MM/YYYY"})
-        self.fields["date_of_birth"].widget.attrs.update({"value": ""})
+        self.fields["date_of_birth"].widget.attrs.update({"placeholder": "MM/DD/YYYY"})
 
 
 class CustomUserChangeForm(UserChangeForm):

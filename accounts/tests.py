@@ -2,6 +2,7 @@ import uuid
 from datetime import date
 from django.utils import timezone
 from django.test import TestCase
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 # Create your tests here.
@@ -123,7 +124,7 @@ class UserManagerTests(TestCase):
         )
         self.assertEqual(self.user.role, "student")
         self.assertEqual(self.super_user.role, "admin")
-        self.assertTrue(control.role, "admin")
+        self.assertEqual(control.role, "admin")
         self.assertTrue(control.is_staff)
         self.assertTrue(control.is_superuser)
 
@@ -164,4 +165,89 @@ class UserManagerTests(TestCase):
 class RegisterUserTests(TestCase):
     """Test the Register User endpoint."""
 
-    pass
+    def setUp(self):
+        self.url = self.client.get(reverse("register"))
+        self.url_hardcoded = self.client.get("/accounts/register/")
+        self.user_register = self.client.post(
+            reverse("register"),
+            {
+                "username": "testuser",
+                "email": "testuser@test.com",
+                "password1": "@Test12345",
+                "password2": "@Test12345",
+            },
+        )
+
+    def test_urls_status_code(self):
+        """Ensure that the expected status code is returned."""
+        self.assertEqual(self.url.status_code, 200)
+        self.assertEqual(self.url_hardcoded.status_code, 200)
+        self.assertEqual(self.user_register.status_code, 302)
+
+    def test_urls_templates(self):
+        """Correct templates are being used and contains expected content."""
+        self.assertTemplateUsed(self.url, "registration/register.html")
+        self.assertTemplateUsed(self.url_hardcoded, "registration/register.html")
+
+        self.assertContains(self.url, "Create an Account")
+        self.assertContains(self.url_hardcoded, "Create an Account")
+
+    def test_redirect_after_registration(self):
+        """After registration, the user is redirected to the login page."""
+        self.assertRedirects(self.user_register, reverse("login"))
+
+    def test_required_fields(self):
+        """Ensure username, email, and password are required."""
+        control = self.client.post(
+            reverse("register"),
+            {
+                "first_name": "controltest",
+                "password2": "TestPassword",
+            },
+        )
+
+        self.assertEqual(control.status_code, 200)
+        self.assertContains(control, "This field is required", count=3)
+
+        # check the specific errors.
+        form = control.context["form"]
+        self.assertIn("username", form.errors)
+        self.assertIn("email", form.errors)
+        self.assertIn("password1", form.errors)
+
+    def test_duplicate_user_registration(self):
+        """Only the first post should be successfull. The second should fail."""
+        user = self.client.post(
+            reverse("register"),
+            {
+                "username": "testuser",
+                "email": "testuser@test.com",
+                "password1": "@Test12345",
+                "password2": "@Test12345",
+            },
+        )
+
+        self.assertEqual(user.status_code, 200)
+
+        form = user.context["form"]
+        self.assertIn("username", form.errors)
+        self.assertIn("email", form.errors)
+
+        # Error messages
+        self.assertIn(
+            "A user with that username already exists.", form.errors["username"]
+        )
+        self.assertIn("User with this Email already exists.", form.errors["email"])
+
+    def test_invalid_date_format(self):
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "baduser",
+                "email": "baduser@test.com",
+                "password1": "@Test12345",
+                "password2": "@Test12345",
+                "date_of_birth": "31-12-2000",  # Wrong format
+            },
+        )
+        self.assertContains(response, "Enter a valid date.")
