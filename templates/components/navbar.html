@@ -47,7 +47,7 @@
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
                         <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32"
                             height="32">
-                        <span>{{ user.get_full_name|default:user.username }}</span>
+                        <span>{{ user.get_full_name }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>

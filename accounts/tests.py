@@ -216,7 +216,7 @@ class RegisterUserTests(TestCase):
         self.assertIn("password1", form.errors)
 
     def test_duplicate_user_registration(self):
-        """Only the first post should be successfull. The second should fail."""
+        """Only the first post should be successful. The second should fail."""
         user = self.client.post(
             reverse("register"),
             {
