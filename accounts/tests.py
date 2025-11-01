@@ -48,22 +48,30 @@ class UserManagerTests(TestCase):
         self.assertNotEqual(self.user.password, "Test1234")
         self.assertNotEqual(self.super_user.password, "Test1234")
 
-    def test_full_name(self):
+    def test_get_full_name(self):
         """Make sure the name is correct and falls back to username successfully."""
         control = User.objects.create_user(
-            username="controluser", first_name="user  ", password="control"
+            username="controluser",
+            first_name="user  ",
+            password="control",
+            email="controluser@control.com",
         )
         control1 = User.objects.create_user(
-            username="controluser1", last_name="user1  ", password="control"
+            username="controluser1",
+            last_name="user1  ",
+            password="control",
+            email="controluser1@controluser.com",
         )
-        self.assertEqual(self.user.full_name, "Testuser")
-        self.assertEqual(self.super_user.full_name, "Admin User")
-        self.assertEqual(control.full_name, "User")
-        self.assertEqual(control1.full_name, "User1")
+        self.assertEqual(self.user.get_full_name(), "Testuser")
+        self.assertEqual(self.super_user.get_full_name(), "Admin User")
+        self.assertEqual(control.get_full_name(), "User")
+        self.assertEqual(control1.get_full_name(), "User1")
 
     def test_user_id_unique(self):
         """Test to make sure that each user id is unique."""
-        control = User.objects.create_user(username="control", password="control")
+        control = User.objects.create_user(
+            username="control", password="control", email="controluser@control.com"
+        )
 
         self.assertIsNotNone(control.user_id)
         self.assertIsNotNone(self.user.user_id)
@@ -81,28 +89,40 @@ class UserManagerTests(TestCase):
         """Ensure that the user_id is an instance of UUID field"""
         self.assertIsInstance(self.user.pk, uuid.UUID)
 
+    def test_uuid_uniqueness(self):
+        """Each user must have a unique UUID."""
+        ids = [
+            User.objects.create_user(
+                username=f"user{i}", email=f"user{i}@a.com", password="123"
+            ).user_id
+            for i in range(5)
+        ]
+        self.assertEqual(len(ids), len(set(ids)))
+
     def test_age(self):
         """Make sure that age is functioning as expected and default value set."""
         dob = self.user.date_of_birth
         dob1 = self.super_user.date_of_birth
         today = timezone.now().date()
 
-        self.assertIsNotNone(dob)
+        self.assertIsNone(dob)
         self.assertIsNone(self.user.age)
-        self.assertEqual(dob, date(1900, 1, 1))
 
         expected_age = (
-            dob1.year - today.year - ((today.month, today.day) < (dob1.month, dob1.day))
+            today.year - dob1.year - ((today.month, today.day) < (dob1.month, dob1.day))
         )
         self.assertEqual(self.super_user.age, expected_age)
 
     def test_role(self):
         """Test role to ensure it behaves as expected."""
         control = User.objects.create_user(
-            username="control", password="control", role="admin"
+            username="control",
+            password="control",
+            role="admin",
+            email="controluser@control.com",
         )
         self.assertEqual(self.user.role, "student")
-        self.assertEqual(self.super_user.role, "student")
+        self.assertEqual(self.super_user.role, "admin")
         self.assertTrue(control.role, "admin")
         self.assertTrue(control.is_staff)
         self.assertTrue(control.is_superuser)
@@ -110,10 +130,16 @@ class UserManagerTests(TestCase):
     def test_user_code(self):
         """Test code exists and is unique."""
         control = User.objects.create_user(
-            username="username", password="password", role="librarian"
+            username="username",
+            password="password",
+            role="librarian",
+            email="controluser@control.com",
         )
         control1 = User.objects.create_user(
-            username="username2", password="password", role="admin"
+            username="username2",
+            password="password",
+            role="admin",
+            email="controluser@control1.com",
         )
 
         self.assertEqual(self.user.user_code[:2], "ST")
@@ -125,6 +151,14 @@ class UserManagerTests(TestCase):
 
         users = User.objects.filter(user_code=self.user.user_code)
         self.assertEqual(users.count(), 1)
+
+    def test_admin_role_sets_permissions(self):
+        """Ensure admin role always enforces is_staff and is_superuser."""
+        admin = User.objects.create_user(
+            username="adminuser", email="ad@a.com", password="123", role="admin"
+        )
+        self.assertTrue(admin.is_staff)
+        self.assertTrue(admin.is_superuser)
 
 
 class RegisterUserTests(TestCase):
