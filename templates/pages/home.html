@@ -5,7 +5,8 @@
 <!-- Hero Section -->
 <div class="text-center py-5 mb-4">
     <h1 class="display-3 fw-bold text-primary mb-3">
-        Welcome {% if user.is_authenticated %} {{user.get_full_name}} {% else %} to the Library Portal{% endif %}</h1>
+        Welcome {% if user.is_authenticated %} {{ user.get_full_name }} {% else %} to the Library Portal{% endif %}
+    </h1>
     <p class="lead fs-5 text-muted mb-4">Discover, learn, and grow — one page at a time.</p>
     <a href="#" class="btn btn-primary btn-lg px-5 py-2 rounded-pill shadow">Start Exploring</a>
 </div>
@@ -73,7 +74,7 @@
     <div class="row g-3">
         <div class="col-md-3 col-sm-6">
             <div class="text-center">
-                <img src="https://www.amazon.com/Baldacci-Published-Central-Publishing-Hardcover/dp/B00HMVPORO"
+                <img src="https://m.media-amazon.com/images/I/41IHqCZ1gmL.jpg"
                     class="img-fluid rounded-3 shadow-sm mb-2" alt="The Infinite Library"
                     style="max-height: 320px; object-fit: cover;">
                 <h6 class="fw-bold mb-1">The Infinite Library</h6>
@@ -83,7 +84,7 @@
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="text-center">
-                <img src="https://www.amazon.com/Baldacci-Published-Central-Publishing-Hardcover/dp/B00HMVPORO"
+                <img src="https://m.media-amazon.com/images/I/41IHqCZ1gmL.jpg"
                     class="img-fluid rounded-3 shadow-sm mb-2" alt="Code & Curiosity"
                     style="max-height: 320px; object-fit: cover;">
                 <h6 class="fw-bold mb-1">Code & Curiosity</h6>
@@ -93,7 +94,7 @@
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="text-center">
-                <img src="https://www.amazon.com/Baldacci-Published-Central-Publishing-Hardcover/dp/B00HMVPORO"
+                <img src="https://m.media-amazon.com/images/I/41IHqCZ1gmL.jpg"
                     class="img-fluid rounded-3 shadow-sm mb-2" alt="Health Matters"
                     style="max-height: 320px; object-fit: cover;">
                 <h6 class="fw-bold mb-1">Health Matters</h6>
@@ -103,7 +104,7 @@
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="text-center">
-                <img src="https://www.amazon.com/Baldacci-Published-Central-Publishing-Hardcover/dp/B00HMVPORO"
+                <img src="https://m.media-amazon.com/images/I/41IHqCZ1gmL.jpg"
                     class="img-fluid rounded-3 shadow-sm mb-2" alt="Art of Africa"
                     style="max-height: 320px; object-fit: cover;">
                 <h6 class="fw-bold mb-1">Art of Africa</h6>
@@ -183,7 +184,7 @@
 <div class="bg-primary text-white text-center rounded-4 py-5 mt-4 shadow">
     <h3 class="fw-bold mb-2">Ready to begin your next chapter?</h3>
     <p class="mb-3">Join our community of readers, thinkers, and dreamers.</p>
-    <a href="#" class="btn btn-light btn-lg px-4 py-2 rounded-pill">Join Now</a>
+    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4 py-2 rounded-pill">Join Now</a>
 </div>
 
 <!-- Counter Animation Script -->
