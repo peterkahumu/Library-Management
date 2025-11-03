@@ -71,23 +71,71 @@
     </div>
     {% endif %}
 
-
-
     <!-- Pagination -->
-    <nav aria-label="Page navigation" class="mt-4">
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Book pagination" class="mt-4">
         <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link rounded-pill me-2" href="#" tabindex="-1">Previous</a>
-            </li>
-            <li class="page-item active"><a class="page-link rounded-circle mx-1" href="#">1</a></li>
-            <li class="page-item"><a class="page-link rounded-circle mx-1" href="#">2</a></li>
-            <li class="page-item"><a class="page-link rounded-circle mx-1" href="#">3</a></li>
-            <li class="page-item"><a class="page-link rounded-circle mx-1" href="#">4</a></li>
+
+            <!-- First -->
+            {% if page_obj.number > 1 %}
             <li class="page-item">
-                <a class="page-link rounded-pill ms-2" href="#">Next</a>
+                <a class="page-link rounded-pill me-2" href="?page=1">First</a>
             </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link rounded-pill me-2">First</span>
+            </li>
+            {% endif %}
+
+            <!-- Previous -->
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link rounded-pill me-2" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link rounded-pill me-2">Previous</span>
+            </li>
+            {% endif %}
+
+            <!-- Page Numbers -->
+            {% for num in paginator.page_range %}
+            {% if num == page_obj.number %}
+            <li class="page-item active">
+                <span class="page-link rounded-circle mx-1">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li class="page-item">
+                <a class="page-link rounded-circle mx-1" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                <!-- Next -->
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link rounded-pill ms-2" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link rounded-pill ms-2">Next</span>
+                </li>
+                {% endif %}
+
+                <!-- Last -->
+                {% if page_obj.number < paginator.num_pages %} <li class="page-item">
+                    <a class="page-link rounded-pill ms-2" href="?page={{ paginator.num_pages }}">Last</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link rounded-pill ms-2">Last</span>
+                    </li>
+                    {% endif %}
+
         </ul>
     </nav>
+    {% endif %}
+
 
     <script src="{% static 'js/book_filter.js' %}"></script>
 
