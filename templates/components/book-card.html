@@ -1,0 +1,19 @@
+
+<div class="shadow-lg rounded py-4 mx-2 px-0 col-md-3 col-sm-6 book-item" data-category="{{ book.genre_names|lower }}"
+    data-title="{{ book.title }}" data-author="{{ book.author }}">
+    <div class="book-card">
+        <div class="text-center">
+            <img src="{{ book.cover_image.url }}" class="img-fluid rounded-3 shadow-sm mb-2" alt="{{ book.title }}"
+                style="max-height: 280px; object-fit: cover; max-width: 200px;">
+            <h6 class="fw-bold mb-1">{{ book.title }}</h6>
+            <p class="text-muted small mb-1">by {{ book.author }}</p>
+            <p class="text-orange small fw-semibold mb-2">
+                Published: {{ book.publication_date }}
+            </p>
+            <div class="d-flex gap-1 justify-content-center">
+                <a href="#" class="btn btn-sm btn-primary rounded-pill px-3">View</a>
+                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">Borrow</a>
+            </div>
+        </div>
+    </div>
+</div>
