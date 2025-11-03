@@ -2,10 +2,11 @@
     <div class="container-fluid">
         <!-- Brand -->
         <a class="navbar-brand" href="#">
+            <i class="fa-solid fa-book me-2"></i>
             {% if user.is_authenticated %}
-            <i class="fa-solid fa-book me-2"></i>{{user.role}}
+            {{user.role|title|escape}}
             {% else %}
-            <i class="fa-solid fa-book me-2"></i>Library
+            Library
             {% endif %}
         </a>
 
