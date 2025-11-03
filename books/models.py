@@ -43,6 +43,13 @@ class Book(models.Model):
         upload_to="books/", default="books/default_book.png"
     )
 
+    # other fields
+    publisher = models.CharField(blank=True, null=True)
+    format = models.CharField(blank=True, null=True)
+    dimensions = models.CharField(blank=True, null=True)  # l x w x h in inches
+    weight = models.FloatField(blank=True, null=True)
+    dewey_decimal = models.CharField(null=True, blank=True)
+
     def __str__(self):
         return self.title
 

@@ -60,10 +60,10 @@
 
 <!-- Books Grid -->
 <div class="row g-3 mb-4" id="booksContainer">
-    <!-- Book 1 -->
+    <!-- Book -->
     {% if books %}
     {% for book in books %}
-    {% include 'components/book-card.html' %}
+    {% include 'components/book_card.html' %}
     {% endfor %}
     {% else %}
     <div class="col-12 text-center py-5">

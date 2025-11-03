@@ -10,7 +10,7 @@
                 Published: {{ book.publication_date }}
             </p>
             <div class="d-flex gap-1 justify-content-center">
-                <a href="#" class="btn btn-sm btn-primary rounded-pill px-3">View</a>
+                <a href="{{book.get_absolute_url}}" class="btn btn-sm btn-primary rounded-pill px-3">View</a>
                 <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">Borrow</a>
             </div>
         </div>
