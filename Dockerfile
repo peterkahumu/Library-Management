@@ -11,10 +11,10 @@ RUN apt-get update && apt-get install -y\
     && rm -r /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache -r requirements.txt
+RUN pip install --no-cache -rf requirements.txt
 
 COPY wait-for-it.sh /wait-for-it.sh
 RUN chmod +x ./wait-for-it.sh
 
 COPY . .
-CMD ["bash", "-c", "python managepy migrate && python manage.py runserver"]
+CMD ["bash", "-c", "python manage.py migrate && python manage.py runserver"]
