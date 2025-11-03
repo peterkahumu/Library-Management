@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.urls import reverse
 from django.conf import settings
 
 from .constants import LANGUAGE_CHOICES, GENRE_CHOICES
@@ -45,6 +46,10 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def is_available(self):
+        return self.copies_available > 0
+
     def borrow_book(self):
         if self.is_available:
             self.copies_available -= 1
@@ -52,16 +57,15 @@ class Book(models.Model):
             return True
         return False
 
-    @property
-    def is_available(self):
-        return self.copies_available > 0
-
     def return_book(self):
         if self.copies_available < self.total_copies:
             self.copies_available += 1
             self.save(update_fields=["copies_available"])
             return True
         return False
+
+    def get_absolute_url(self):
+        return reverse("book_detail", kwargs={"pk": self.book_id})
 
     class Meta:
         ordering = ["-date_added"]

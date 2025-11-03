@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- Page Header -->
+<div class="text-center py-4 mb-4">
+    <h1 class="display-5 fw-bold text-primary mb-2">Browse Our Collection</h1>
+    <p class="text-muted">Explore thousands of books across all genres and subjects</p>
+</div>
+
+<!-- Search Bar -->
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <div class="input-group input-group-lg shadow-sm">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="fas fa-search text-muted"></i>
+            </span>
+            <input type="text" class="form-control border-start-0 ps-0"
+                placeholder="Search by title, author, or ISBN..." id="searchInput">
+            <button class="btn btn-primary px-4" type="button">Search</button>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-dark mb-0">
+            <i class="fas fa-filter text-orange me-2"></i>Filter by Category
+        </h5>
+        <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="clearFilters()">
+            Clear All
+        </button>
+    </div>
+    <div class="d-flex flex-wrap gap-2" id="filterContainer">
+        <span class="badge bg-light text-dark border filter-badge px-3 py-2" data-category="all">All Books</span>
+        {% for genre in genres %}
+        <span class="badge bg-light text-dark border filter-badge px-3 py-2"
+            data-category="{{genre.name}}">{{genre.name|escape|title}}</span>
+        {% endfor %}
+
+    </div>
+</div>
+
+<!-- Sort and Results Count -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">
+        Showing <span id="resultCount" class="fw-bold text-primary">{{books.count}}</span> books
+    </p>
+    <div class="d-flex align-items-center gap-2">
+        <label class="text-muted small mb-0">Sort by:</label>
+        <select class="form-select form-select-sm" style="width: auto;" id="sortSelect">
+            <option value="title">Title (A-Z)</option>
+            <option value="author">Author</option>
+            <option value="year">Year (Newest)</option>
+            <option value="popular">Most Popular</option>
+        </select>
+    </div>
+</div>
+
+<!-- Books Grid -->
+<div class="row g-3 mb-4" id="booksContainer">
+    <!-- Book 1 -->
+    {% if books %}
+    {% for book in books %}
+    <div class="col-md-3 col-sm-6 book-item" data-category="{{ book.genre_names|lower }}" data-title="{{ book.title }}"
+        data-author="{{ book.author }}">
+        <div class="book-card">
+            <div class="text-center">
+                <img src="{{ book.cover_image.url }}" class="img-fluid rounded-3 shadow-sm mb-2" alt="{{ book.title }}"
+                    style="max-height: 280px; object-fit: cover; max-width: 200px;">
+                <h6 class="fw-bold mb-1">{{ book.title }}</h6>
+                <p class="text-muted small mb-1">by {{ book.author }}</p>
+                <p class="text-orange small fw-semibold mb-2">
+                    Published: {{ book.publication_date }}
+                </p>
+                <div class="d-flex gap-1 justify-content-center">
+                    <a href="#" class="btn btn-sm btn-primary rounded-pill px-3">View</a>
+                    <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">Borrow</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <p class="no-content text-muted fs-5">No books found at the moment.</p>
+    </div>
+    {% endif %}
+
+
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+                <a class="page-link rounded-pill me-2" href="#" tabindex="-1">Previous</a>
+            </li>
+            <li class="page-item active"><a class="page-link rounded-circle mx-1" href="#">1</a></li>
+            <li class="page-item"><a class="page-link rounded-circle mx-1" href="#">2</a></li>
+            <li class="page-item"><a class="page-link rounded-circle mx-1" href="#">3</a></li>
+            <li class="page-item"><a class="page-link rounded-circle mx-1" href="#">4</a></li>
+            <li class="page-item">
+                <a class="page-link rounded-pill ms-2" href="#">Next</a>
+            </li>
+        </ul>
+    </nav>
+
+    <script src="{% static 'js/book_filter.js' %}"></script>
+
+    {% endblock content %}

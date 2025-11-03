@@ -19,22 +19,19 @@
         <div class="d-none d-lg-block me-3 position-relative">
             <button class="btn btn-outline-light d-flex align-items-center" type="button" data-bs-toggle="collapse"
                 data-bs-target="#categoryMenu">
-                <i class="fa fa-bars me-2"></i><span>All Categories</span>
+                <i class="fa fa-bars me-2"></i><span>Genres</span>
             </button>
             <div class="collapse position-absolute bg-white shadow rounded p-3 mt-2" id="categoryMenu"
                 style="z-index: 1050; width: 250px;">
                 <ul class="list-unstyled mb-0">
-                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">Accessories
-                            <span>(3)</span></a></li>
-                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">Electronics &
-                            Computer <span>(5)</span></a></li>
-                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">Laptops &
-                            Desktops <span>(2)</span></a></li>
-                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">Mobiles &
-                            Tablets <span>(8)</span></a></li>
-                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">SmartPhone &
-                            Smart TV <span>(5)</span></a></li>
+                    {% for genre in genres %}
+                    {% if genre.name != 0 %}
+                    <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">{{genre.name}}
+                            <span>{{genre.books.all.count}}</span></a></li>
+                    {% endif %}
+                    {% endfor %}
                 </ul>
+                <a class="btn btn-primary" href="{% url 'book_list' %}">View all Genres</a>
             </div>
         </div>
 
@@ -44,8 +41,7 @@
                 <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
 
                 {% if user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="#">Catalog</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Borrow</a></li>
+                <li class="nav-item"><a class="nav-link active" href="{% url 'book_list' %}">Catalog</a></li>
 
                 <!-- User Profile Dropdown -->
                 <li class="nav-item dropdown">
@@ -87,26 +83,26 @@
         <li class="nav-item"><a class="nav-link text-white" href="{% url 'home' %}">Home</a></li>
 
         {% if user.is_authenticated %}
-        <li class="nav-item"><a class="nav-link text-white" href="#">Catalog</a></li>
-        <li class="nav-item"><a class="nav-link text-white" href="#">Borrow</a></li>
+        <li class="nav-item"><a class="nav-link text-white active" href="{% url 'book_list' %}"">Catalog</a></li>
 
 
         <!-- User Profile Dropdown -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" data-bs-toggle="dropdown">
-                <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32" height="32">
-                <span>{{ user.get_full_name }}</span>
-            </a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <form action="{% url 'logout' %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="dropdown-item text-danger">Log out</button>
-                </form>
-            </ul>
+        <li class=" nav-item dropdown">
+                <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#"
+                    data-bs-toggle="dropdown">
+                    <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32" height="32">
+                    <span>{{ user.get_full_name }}</span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-danger">Log out</button>
+                    </form>
+                </ul>
         </li>
         {% else %}
         <!-- Login / Sign Up -->
@@ -116,13 +112,14 @@
 
         <!-- Categories -->
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">All Categories</a>
+            <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">Genres</a>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Accessories (3)</a></li>
-                <li><a class="dropdown-item" href="#">Electronics & Computer (5)</a></li>
-                <li><a class="dropdown-item" href="#">Laptops & Desktops (2)</a></li>
-                <li><a class="dropdown-item" href="#">Mobiles & Tablets (8)</a></li>
-                <li><a class="dropdown-item" href="#">SmartPhone & Smart TV (5)</a></li>
+                {% for genre in genres %}
+                {% if genre != 0 %}
+                <li><a class="dropdown-item" href="#">{{genre.name}} ({{genre.books.all.count}})</a></li>
+                {% endif %}
+                {% endfor %}
+                <a class="btn btn-primary" href="{% url 'book_list' %}">View all Genres</a>
             </ul>
         </li>
     </ul>
