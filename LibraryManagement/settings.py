@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # local apps
     "accounts",
     "pages",
+    "books",
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap5"
