@@ -1,4 +1,5 @@
 from django.views.generic import ListView, DetailView
+from django.db.models import Q
 
 from .models import Book, Genre
 
@@ -15,7 +16,26 @@ class BookListView(ListView):
         context["genres"] = Genre.objects.all()
         for book in context["books"]:
             book.genre_names = " ".join(book.genre.values_list("name", flat=True))
+        context["selected_genres"] = self.request.GET.get("genre", "all")
+        context["query"] = self.request.GET.get("query", "")
         return context
+
+    def get_queryset(self):
+        queryset = Book.objects.all()
+        genre = self.request.GET.get("genre", "")
+        query = self.request.GET.get("query", "")
+
+        if genre and genre.lower() != "all":
+            queryset = queryset.filter(genre__name__icontains=genre)
+
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query)
+                | Q(author__icontains=query)
+                | Q(isbn__icontains=query)
+            )
+
+        return queryset.distinct()
 
 
 class BookDetailView(DetailView):

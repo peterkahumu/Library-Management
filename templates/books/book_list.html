@@ -8,39 +8,41 @@
     <p class="text-muted">Explore thousands of books across all genres and subjects</p>
 </div>
 
-<!-- Search Bar -->
-<div class="row mb-4">
-    <div class="col-md-8 mx-auto">
-        <div class="input-group input-group-lg shadow-sm">
-            <span class="input-group-text bg-white border-end-0">
-                <i class="fas fa-search text-muted"></i>
-            </span>
-            <input type="text" class="form-control border-start-0 ps-0"
-                placeholder="Search by title, author, or ISBN..." id="searchInput">
-            <button class="btn btn-primary px-4" type="button">Search</button>
+<form method="get" id="filterForm" class="mb-4">
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <div class="input-group input-group-lg shadow-sm">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" name="query" class="form-control border-start-0 ps-0" value="{{ query }}"
+                    placeholder="Search by title, author, or ISBN..." id="searchInput">
+                <button class="btn btn-primary px-4" type="button">Search</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Filter Section -->
-<div class="mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold text-dark mb-0">
-            <i class="fas fa-filter text-orange me-2"></i>Filter by Category
-        </h5>
-        <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="clearFilters()">
-            Clear All
-        </button>
+    <!-- Filter Section -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark mb-0">
+                <i class="fas fa-filter text-orange me-2"></i>Filter by Category
+            </h5>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="clearFilters()">
+                Clear All
+            </button>
+        </div>
+        <div class="d-flex flex-wrap gap-2" id="filterContainer">
+            <input type="hidden" name="genre" id="genreInput" value="{{ selected_genre|default:'all' }}">
+            <span class="badge bg-light text-dark border filter-badge px-3 py-2" data-category="all">All Books</span>
+            {% for genre in genres %}
+            <span class="badge bg-light text-dark border filter-badge px-3 py-2"
+                data-category="{{genre.name}}">{{genre.name|escape|title}}</span>
+            {% endfor %}
+        </div>
     </div>
-    <div class="d-flex flex-wrap gap-2" id="filterContainer">
-        <span class="badge bg-light text-dark border filter-badge px-3 py-2" data-category="all">All Books</span>
-        {% for genre in genres %}
-        <span class="badge bg-light text-dark border filter-badge px-3 py-2"
-            data-category="{{genre.name}}">{{genre.name|escape|title}}</span>
-        {% endfor %}
-
-    </div>
-</div>
+</form>
 
 <!-- Sort and Results Count -->
 <div class="d-flex justify-content-between align-items-center mb-3">
