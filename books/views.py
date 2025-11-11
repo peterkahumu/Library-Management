@@ -1,7 +1,10 @@
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, CreateView
 from django.db.models import Q
+from django.urls import reverse
+from django.shortcuts import redirect
 
 from .models import Book, Genre
+from .forms import BookForm
 
 
 # Create your views here.
@@ -47,8 +50,6 @@ class BookDetailView(DetailView):
         book = context["object"]
         genres = book.genre.all()
         context["genres"] = list(genres.values_list("name", flat=True))
-
-        print(genres)
         if genres.exists():
             context["related_books"] = (
                 Book.objects.filter(genre__in=genres)
@@ -57,5 +58,17 @@ class BookDetailView(DetailView):
             )
         else:
             context["related_books"] = []
-
         return context
+
+
+class BookCreateView(CreateView):
+    model = Book
+    form_class = BookForm
+    template_name = "books/book_create.html"
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.added_by = self.request.user
+        self.object.save()
+        form.save_m2m()
+        return redirect(reverse("book_detail", kwargs={"pk": self.object.pk}))

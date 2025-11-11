@@ -1,5 +1,6 @@
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from .models import LibraryUser
+from django import forms
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -9,11 +10,7 @@ class CustomUserCreationForm(UserCreationForm):
         model = LibraryUser
         fields = ["username", "first_name", "last_name", "email", "date_of_birth"]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Remove default values and add placeholders
-        self.fields["date_of_birth"].widget.attrs.update({"placeholder": "MM/DD/YYYY"})
+        widgets = {"date_of_birth": forms.DateInput(attrs={"type": "date"})}
 
 
 class CustomUserChangeForm(UserChangeForm):
