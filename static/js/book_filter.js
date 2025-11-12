@@ -36,11 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
-// Set initial active filter
-filterBadges[0].classList.add('active');
-
-
 function clearFilters() {
     // Reset genre selection
     genreInput.value = 'all';
