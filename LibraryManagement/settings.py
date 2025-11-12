@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # local apps
     "accounts",
     "pages",
+    "books",
 ]
 
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -73,6 +74,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "books.views.genres_context",  # custom context for all the genres.
             ],
         },
     },

@@ -5,7 +5,7 @@ services:
     volumes:
       - ./:/app
     env_file:
-      - .env
+      - .env_d
     depends_on:
       - db
     ports:

@@ -6,4 +6,4 @@ media/
 staticfiles/
 *.log
 *.sqlite3
-templates/books/
+.env_d
