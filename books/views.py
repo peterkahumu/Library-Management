@@ -1,7 +1,8 @@
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.db.models import Q, Count
 from django.urls import reverse
 from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import Book, Genre
 from .forms import BookForm
@@ -70,7 +71,7 @@ class BookDetailView(DetailView):
         return context
 
 
-class BookCreateView(CreateView):
+class BookCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Book
     form_class = BookForm
     template_name = "books/book_create.html"
@@ -81,3 +82,15 @@ class BookCreateView(CreateView):
         self.object.save()
         form.save_m2m()
         return redirect(reverse("book_detail", kwargs={"pk": self.object.pk}))
+
+    def test_func(self):
+        return self.request.user.role in ["admin", "librarian"]
+
+
+class BookEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Book
+    form_class = BookForm
+    template_name = "books/book_edit.html"
+
+    def test_func(self):
+        return self.get_object().added_by == self.request.user
