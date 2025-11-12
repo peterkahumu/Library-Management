@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %} {{book.title}} {% endblock title %}
 {% block content %}
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-3">
@@ -20,9 +21,9 @@
             <button class="btn btn-primary btn-lg rounded-pill">
                 <i class="fas fa-book-reader me-2"></i>Borrow Now
             </button>
-            <button class="btn btn-outline-primary btn-lg rounded-pill">
-                <i class="fas fa-bookmark me-2"></i>Add to Wishlist
-            </button>
+            <a class="btn btn-outline-primary btn-lg rounded-pill" href="{% url 'book_edit' book.pk %}">
+                <i class="fas fa-edit me-2"></i>Edit book
+            </a>
         </div>
     </div>
 
