@@ -93,4 +93,7 @@ class BookEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = "books/book_edit.html"
 
     def test_func(self):
-        return self.get_object().added_by == self.request.user
+        return (
+            self.request.user.role in ["admin", "librarian"]
+            or self.get_object().added_by == self.request.user
+        )
