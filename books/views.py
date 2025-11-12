@@ -27,6 +27,7 @@ class BookListView(ListView):
         context = super().get_context_data(**kwargs)
         for book in context["books"]:
             book.genre_names = " ".join(book.genre.values_list("name", flat=True))
+        context["all_genres"] = Genre.objects.all()
         context["selected_genres"] = self.request.GET.get("genre", "all")
         context["query"] = self.request.GET.get("query", "")
         return context

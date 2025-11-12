@@ -37,29 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Sort functionality
-const sortSelect = document.getElementById('sortSelect');
-sortSelect.addEventListener('change', function () {
-    const sortBy = this.value;
-    const container = document.getElementById('booksContainer');
-    const items = Array.from(bookItems);
-
-    items.sort((a, b) => {
-        if (sortBy === 'title') {
-            return a.getAttribute('data-title').localeCompare(b.getAttribute('data-title'));
-        } else if (sortBy === 'author') {
-            return a.getAttribute('data-author').localeCompare(b.getAttribute('data-author'));
-        }
-        // For 'year' and 'popular', maintain current order for demo
-        return 0;
-    });
-
-    // Re-append sorted items
-    items.forEach(item => container.appendChild(item));
-});
-
 // Set initial active filter
-filterBadges[0].classList.add('active')
+filterBadges[0].classList.add('active');
 
 
 function clearFilters() {

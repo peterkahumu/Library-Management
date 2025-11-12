@@ -90,14 +90,14 @@
 
         {% if user.is_authenticated %}
         <li class="nav-item"><a class="nav-link text-white active" href="{% url 'book_list' %}">Catalog</a></li>
-        <li class=" nav-item">
+        <li class="nav-item">
             <a class="nav-link" href="{% url 'book_create' %}">
                 <i class="fa-solid fa-plus me-2"></i>Add Book
             </a>
         </li>
 
         <!-- User Profile Dropdown -->
-        <li class=" nav-item dropdown">
+        <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" data-bs-toggle="dropdown">
                 <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32" height="32">
                 <span>{{ user.get_full_name }}</span>
