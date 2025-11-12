@@ -46,5 +46,5 @@ class BookForm(forms.ModelForm):
         publication_date = self.cleaned_data.get("publication_date")
 
         if publication_date and publication_date > today:
-            raise ValidationError("The publiation date cannot be in the future.")
+            raise ValidationError("The publication date cannot be in the future.")
         return publication_date
