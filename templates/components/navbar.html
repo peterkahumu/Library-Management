@@ -25,9 +25,9 @@
                 style="z-index: 1050; width: 250px;">
                 <ul class="list-unstyled mb-0">
                     {% for genre in genres %}
-                    {% if genre.name != 0 %}
+                    {% if genre.name %}
                     <li><a href="#" class="d-flex justify-content-between text-dark text-decoration-none">{{genre.name}}
-                            <span>{{genre.books.all.count}}</span></a></li>
+                            <span>{{genre.book_count}}</span></a></li>
                     {% endif %}
                     {% endfor %}
                 </ul>
@@ -124,8 +124,8 @@
             <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">Genres</a>
             <ul class="dropdown-menu">
                 {% for genre in genres %}
-                {% if genre != 0 %}
-                <li><a class="dropdown-item" href="#">{{genre.name}} ({{genre.books.all.count}})</a></li>
+                {% if genre.name %}
+                <li><a class="dropdown-item" href="#">{{genre.name}} ({{genre.book_count}})</a></li>
                 {% endif %}
                 {% endfor %}
                 <a class="btn btn-primary" href="{% url 'book_list' %}">View all Genres</a>

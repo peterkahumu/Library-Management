@@ -1,5 +1,5 @@
 from django.views.generic import ListView, DetailView, CreateView
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.urls import reverse
 from django.shortcuts import redirect
 
@@ -8,6 +8,15 @@ from .forms import BookForm
 
 
 # Create your views here.
+def genres_context(request):
+    """Returns a global context with top five genres based on book count."""
+    genres = Genre.objects.annotate(book_count=Count("books")).order_by("-book_count")[
+        :5
+    ]
+
+    return {"genres": genres}
+
+
 class BookListView(ListView):
     model = Book
     template_name = "books/book_list.html"
@@ -16,7 +25,6 @@ class BookListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["genres"] = Genre.objects.all()
         for book in context["books"]:
             book.genre_names = " ".join(book.genre.values_list("name", flat=True))
         context["selected_genres"] = self.request.GET.get("genre", "all")
