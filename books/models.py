@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.urls import reverse
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from .constants import LANGUAGE_CHOICES, GENRE_CHOICES
 
@@ -31,7 +32,7 @@ class Book(models.Model):
     author = models.CharField(max_length=200)
     publication_date = models.DateField()  # cannot be null, user must provide.
     edition = models.CharField(max_length=10, blank=True, null=True)
-    genre = models.ManyToManyField(Genre, related_name="books", blank=True)
+    genre = models.ManyToManyField(Genre, related_name="books")
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default="en")
     date_added = models.DateField(auto_now_add=True)
     total_copies = models.PositiveSmallIntegerField(default=1)
@@ -44,7 +45,7 @@ class Book(models.Model):
     )
 
     # other fields
-    publisher = models.CharField(blank=True, null=True)
+    publisher = models.CharField(max_length=100, blank=True, null=True)
     format = models.CharField(max_length=50, blank=True, null=True)
     dimensions = models.CharField(
         max_length=50, blank=True, null=True
@@ -75,6 +76,12 @@ class Book(models.Model):
 
     def get_absolute_url(self):
         return reverse("book_detail", kwargs={"pk": self.book_id})
+
+    def clean(self):
+        super().clean()
+        if self.pk and self.genre.count() == 0:
+            # Book must be in at least one genre.
+            raise ValidationError({"genre": "A book must be at least in one genre."})
 
     class Meta:
         ordering = ["-date_added"]
