@@ -2,7 +2,6 @@ import uuid
 from django.db import models
 from django.urls import reverse
 from django.conf import settings
-from django.core.exceptions import ValidationError
 
 from .constants import LANGUAGE_CHOICES, GENRE_CHOICES
 
@@ -76,12 +75,6 @@ class Book(models.Model):
 
     def get_absolute_url(self):
         return reverse("book_detail", kwargs={"pk": self.book_id})
-
-    def clean(self):
-        super().clean()
-        if self.pk and self.genre.count() == 0:
-            # Book must be in at least one genre.
-            raise ValidationError({"genre": "A book must be at least in one genre."})
 
     class Meta:
         ordering = ["-date_added"]

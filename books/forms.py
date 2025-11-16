@@ -48,3 +48,9 @@ class BookForm(forms.ModelForm):
         if publication_date and publication_date > today:
             raise ValidationError("The publication date cannot be in the future.")
         return publication_date
+
+    def clean_genre(self):
+        genres = self.cleaned_data.get("genre")
+        if not genres:
+            raise ValidationError("A book must be in at least one genre.")
+        return genres
