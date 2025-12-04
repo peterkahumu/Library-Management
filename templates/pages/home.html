@@ -72,46 +72,15 @@
 <div class="mb-4">
     <h2 class="text-dark mb-4 fw-bold">🌟 Featured Books</h2>
     <div class="row g-3">
-        <div class="col-md-3 col-sm-6">
-            <div class="text-center">
-                <img src="https://m.media-amazon.com/images/I/41IHqCZ1gmL.jpg"
-                    class="img-fluid rounded-3 shadow-sm mb-2" alt="The Infinite Library"
-                    style="max-height: 320px; object-fit: cover;">
-                <h6 class="fw-bold mb-1">The Infinite Library</h6>
-                <p class="text-muted small mb-2">A journey through time, memory, and imagination.</p>
-                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
-            </div>
+        {% if featured_books %}
+        {% for book in featured_books %}
+        {% include 'components/book_card.html' %}
+        {% endfor %}
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <p class="no-content text-muted fs-5">There are no featured books at the moment.</p>
         </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="text-center">
-                <img src="https://m.media-amazon.com/images/I/41IHqCZ1gmL.jpg"
-                    class="img-fluid rounded-3 shadow-sm mb-2" alt="Code & Curiosity"
-                    style="max-height: 320px; object-fit: cover;">
-                <h6 class="fw-bold mb-1">Code & Curiosity</h6>
-                <p class="text-muted small mb-2">Unlock the secrets of technology and innovation.</p>
-                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="text-center">
-                <img src="https://m.media-amazon.com/images/I/41IHqCZ1gmL.jpg"
-                    class="img-fluid rounded-3 shadow-sm mb-2" alt="Health Matters"
-                    style="max-height: 320px; object-fit: cover;">
-                <h6 class="fw-bold mb-1">Health Matters</h6>
-                <p class="text-muted small mb-2">Your guide to wellness, medicine, and self-care.</p>
-                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="text-center">
-                <img src="https://m.media-amazon.com/images/I/41IHqCZ1gmL.jpg"
-                    class="img-fluid rounded-3 shadow-sm mb-2" alt="Art of Africa"
-                    style="max-height: 320px; object-fit: cover;">
-                <h6 class="fw-bold mb-1">Art of Africa</h6>
-                <p class="text-muted small mb-2">Celebrating culture, creativity, and heritage.</p>
-                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Details</a>
-            </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -159,24 +128,11 @@
 <div class="mb-4">
     <h2 class="text-dark mb-3 fw-bold">🗂️ Browse by Subject</h2>
     <div class="d-flex flex-wrap gap-2">
-        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-            <i class="fa-solid fa-microscope me-1"></i>Science
+        {% for genre in all_genres %}
+        <a href="{% url 'book_list' %}?genre={{ genre.name }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+            <i class="fa-solid fa-microscope me-1"></i>{{ genre }}
         </a>
-        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-            <i class="fa-solid fa-landmark-dome me-1"></i>History
-        </a>
-        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-            <i class="fa-solid fa-laptop-code me-1"></i>Technology
-        </a>
-        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-            <i class="fa-solid fa-palette me-1"></i>Art
-        </a>
-        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-            <i class="fa-solid fa-heart-pulse me-1"></i>Health
-        </a>
-        <a href="#" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-            <i class="fa-solid fa-book-open me-1"></i>Literature
-        </a>
+        {% endfor %}
     </div>
 </div>
 

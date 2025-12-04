@@ -43,6 +43,7 @@ class Book(models.Model):
     cover_image = models.ImageField(
         upload_to="books/", default="books/default_book.png"
     )
+    featured = models.BooleanField(default=False)
 
     # other fields
     publisher = models.CharField(max_length=100, blank=True, null=True)

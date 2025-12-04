@@ -14,8 +14,9 @@ def genres_context(request):
     genres = Genre.objects.annotate(book_count=Count("books")).order_by("-book_count")[
         :5
     ]
+    all_genres = Genre.objects.all()
 
-    return {"genres": genres}
+    return {"genres": genres, "all_genres": all_genres}
 
 
 class BookListView(ListView):
@@ -28,7 +29,6 @@ class BookListView(ListView):
         context = super().get_context_data(**kwargs)
         for book in context["books"]:
             book.genre_names = " ".join(book.genre.values_list("name", flat=True))
-        context["all_genres"] = Genre.objects.all()
         context["selected_genres"] = self.request.GET.get("genre", "all")
         context["query"] = self.request.GET.get("query", "")
         return context
