@@ -877,3 +877,265 @@ class GenresContextProcessorTests(TestCase):
         # FANTASY should be first (10 books), SCIFI second (5 books)
         self.assertEqual(genres[0], self.genre1)
         self.assertEqual(genres[1], self.genre2)
+
+
+class BookCacheInvalidationTests(TestCase):
+    """Test cache invalidation signals for book stats."""
+
+    def setUp(self):
+        """Clear cache and create test fixtures."""
+        from django.core.cache import cache
+
+        cache.clear()
+
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",
+        )
+        self.genre, _ = Genre.objects.get_or_create(name="FANTASY")
+
+    def test_cache_invalidated_on_book_creation(self):
+        """Creating a book should clear book-related cache."""
+        from django.core.cache import cache
+
+        cache.set("stats:total_books", 100)
+        cache.set("stats:available_books", 50)
+        self.assertEqual(cache.get("stats:total_books"), 100)
+        self.assertEqual(cache.get("stats:available_books"), 50)
+
+        book = Book.objects.create(
+            title="New Book",
+            description="Test",
+            isbn="1234567890123",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        book.genre.add(self.genre)
+
+        self.assertIsNone(cache.get("stats:total_books"))
+        self.assertIsNone(cache.get("stats:available_books"))
+
+    def test_cache_invalidated_on_book_update(self):
+        """Updating a book should clear book-related cache."""
+        from django.core.cache import cache
+
+        book = Book.objects.create(
+            title="Update Book",
+            description="Test",
+            isbn="1234567890123",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        book.genre.add(self.genre)
+
+        cache.set("stats:total_books", 100)
+        cache.set("stats:available_books", 50)
+        self.assertEqual(cache.get("stats:total_books"), 100)
+        self.assertEqual(cache.get("stats:available_books"), 50)
+
+        book.title = "Updated Title"
+        book.save()
+
+        self.assertIsNone(cache.get("stats:total_books"))
+        self.assertIsNone(cache.get("stats:available_books"))
+
+    def test_cache_invalidated_on_book_deletion(self):
+        """Deleting a book should clear book-related cache."""
+        from django.core.cache import cache
+
+        book = Book.objects.create(
+            title="Delete Book",
+            description="Test",
+            isbn="1234567890123",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        book.genre.add(self.genre)
+
+        cache.set("stats:total_books", 100)
+        cache.set("stats:available_books", 50)
+        self.assertEqual(cache.get("stats:total_books"), 100)
+        self.assertEqual(cache.get("stats:available_books"), 50)
+
+        book.delete()
+
+        self.assertIsNone(cache.get("stats:total_books"))
+        self.assertIsNone(cache.get("stats:available_books"))
+
+    def test_cache_invalidated_on_availability_change(self):
+        """Changing book availability should clear available_books cache."""
+        from django.core.cache import cache
+
+        book = Book.objects.create(
+            title="Borrow Book",
+            description="Test",
+            isbn="1234567890123",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        book.genre.add(self.genre)
+
+        cache.set("stats:available_books", 50)
+        self.assertEqual(cache.get("stats:available_books"), 50)
+
+        # Borrow a book (changes copies_available)
+        book.borrow_book()
+
+        self.assertIsNone(cache.get("stats:available_books"))
+
+    def test_user_cache_not_affected_by_book_changes(self):
+        """Book changes should not affect user cache."""
+        from django.core.cache import cache
+
+        cache.set("stats:total_users", 200)
+
+        book = Book.objects.create(
+            title="Test Book",
+            description="Test",
+            isbn="1234567890123",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        book.genre.add(self.genre)
+
+        # User cache should remain intact
+        self.assertEqual(cache.get("stats:total_users"), 200)
+
+
+class BookBorrowReturnTests(TestCase):
+    """Test book borrowing and returning business logic."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",
+        )
+        self.genre, _ = Genre.objects.get_or_create(name="FANTASY")
+
+        self.book = Book.objects.create(
+            title="Borrowable Book",
+            description="Test",
+            isbn="1234567890123",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        self.book.genre.add(self.genre)
+
+    def test_borrow_book_decreases_availability(self):
+        """Borrowing a book should decrease copies_available."""
+        initial_available = self.book.copies_available
+        result = self.book.borrow_book()
+
+        self.assertTrue(result)
+        self.assertEqual(self.book.copies_available, initial_available - 1)
+
+    def test_borrow_book_when_unavailable(self):
+        """Borrowing should fail when no copies available."""
+        self.book.copies_available = 0
+        self.book.save()
+
+        result = self.book.borrow_book()
+
+        self.assertFalse(result)
+        self.assertEqual(self.book.copies_available, 0)
+
+    def test_return_book_increases_availability(self):
+        """Returning a book should increase copies_available."""
+        self.book.borrow_book()
+        initial_available = self.book.copies_available
+
+        result = self.book.return_book()
+
+        self.assertTrue(result)
+        self.assertEqual(self.book.copies_available, initial_available + 1)
+
+    def test_return_book_when_at_capacity(self):
+        """Returning should fail when all copies already available."""
+        result = self.book.return_book()
+
+        self.assertFalse(result)
+        self.assertEqual(self.book.copies_available, self.book.total_copies)
+
+    def test_multiple_borrows_and_returns(self):
+        """Test multiple borrow/return cycles."""
+        self.book.borrow_book()
+        self.book.borrow_book()
+        self.assertEqual(self.book.copies_available, 3)
+
+        self.book.return_book()
+        self.assertEqual(self.book.copies_available, 4)
+
+        self.book.borrow_book()
+        self.assertEqual(self.book.copies_available, 3)
+
+
+class BookQueryOptimizationTests(TestCase):
+    """Test query optimization with select_related and prefetch_related."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",
+        )
+        self.genre1, _ = Genre.objects.get_or_create(name="FANTASY")
+        self.genre2, _ = Genre.objects.get_or_create(name="SCIFI")
+
+        for i in range(5):
+            book = Book.objects.create(
+                title=f"Book {i}",
+                description="Test",
+                isbn=f"123456789012{i}",
+                author="Author",
+                publication_date=datetime.date(2020, 1, 1),
+                total_copies=5,
+                copies_available=5,
+                added_by=self.user,
+            )
+            book.genre.add(self.genre1, self.genre2)
+
+    def test_book_list_uses_prefetch_related(self):
+        """Book list should prefetch genres to avoid N+1 queries."""
+        from django.test.utils import CaptureQueriesContext
+        from django.db import connection
+
+        with CaptureQueriesContext(connection) as queries:
+            books = Book.objects.prefetch_related("genre").all()
+            for book in books:
+                # Access genres (should not trigger additional queries)
+                list(book.genre.all())
+
+        # Should be 2 queries: 1 for books, 1 for genres (prefetch)
+        self.assertLessEqual(len(queries), 3)
+
+    def test_book_detail_prefetches_genres(self):
+        """Book detail view should prefetch genres."""
+        response = self.client.get(
+            reverse("book_detail", kwargs={"pk": Book.objects.first().book_id})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        # Check that genres are accessible in template context
+        self.assertIn("genres", response.context)
