@@ -860,7 +860,7 @@ class GenresContextProcessorTests(TestCase):
 
     def test_genres_context_returns_top_five(self):
         """Context processor should return top 5 genres by book count."""
-        from .views import genres_context
+        from .context_processors import genres_context
 
         request = self.client.get(reverse("book_list")).wsgi_request
         context = genres_context(request)
@@ -869,7 +869,7 @@ class GenresContextProcessorTests(TestCase):
 
     def test_genres_context_ordered_by_book_count(self):
         """Genres should be ordered by book count descending."""
-        from .views import genres_context
+        from .context_processors import genres_context
 
         request = self.client.get(reverse("book_list")).wsgi_request
         context = genres_context(request)
