@@ -1,27 +1,14 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-from .models import Book, Genre
+from .models import Book
 from .forms import BookForm
 
 
 # Create your views here.
-def genres_context(request):
-    """
-    Returns a global context with top five genres based on book count.
-    Return all genres in the database
-    """
-    top_5_genres = list(
-        Genre.objects.annotate(book_count=Count("books")).order_by("-book_count")[:5]
-    )
-    all_genres = list(Genre.objects.all())
-    context_data = {"top_5_genres": top_5_genres, "all_genres": all_genres}
-    return context_data
-
-
 class BookListView(ListView):
     model = Book
     template_name = "books/book_list.html"

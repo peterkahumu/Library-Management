@@ -74,7 +74,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "books.views.genres_context",  # custom context for all the genres.
+                # custom context processors
+                "books.context_processors.genres_context",
             ],
         },
     },
