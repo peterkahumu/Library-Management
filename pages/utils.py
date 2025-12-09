@@ -28,14 +28,14 @@ def get_cached_stats():
         total_users = LibraryUser.objects.filter(is_active=True).count()
         cache.set("stats:total_users", total_users, CACHE_TIMEOUT)
     else:
-        logging.info("🟢 Cache: retrieval of total books")
+        logging.info("🟢 Cache: retrieval of total users")
 
     if available_books is None:
         logging.info("🔴 DB: retrieval of available books")
         available_books = Book.objects.filter(copies_available__gt=0).count()
         cache.set("stats:available_books", available_books, CACHE_TIMEOUT)
     else:
-        logging.info("🟢 Cache: retrieval of total books")
+        logging.info("🟢 Cache: retrieval of available books")
 
     return {
         "total_books": total_books,
