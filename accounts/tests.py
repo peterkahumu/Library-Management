@@ -251,3 +251,87 @@ class RegisterUserTests(TestCase):
             },
         )
         self.assertContains(response, "Enter a valid date.")
+
+
+class UserCacheInvalidationTests(TestCase):
+    """Test cache invalidation signals for user stats."""
+
+    def setUp(self):
+        """Clear cache before each test."""
+        from django.core.cache import cache
+
+        cache.clear()
+
+    def test_cache_invalidated_on_user_creation(self):
+        """Creating a user should clear stats:total_users cache."""
+        from django.core.cache import cache
+
+        cache.set("stats:total_users", 100)
+        self.assertEqual(cache.get("stats:total_users"), 100)
+
+        User.objects.create_user(
+            username="newuser",
+            email="new@example.com",
+            password="testpass123",
+            first_name="New",
+            last_name="User",
+        )
+
+        self.assertIsNone(cache.get("stats:total_users"))
+
+    def test_cache_invalidated_on_user_update(self):
+        """Updating a user should clear stats:total_users cache."""
+        from django.core.cache import cache
+
+        user = User.objects.create_user(
+            username="updateuser",
+            email="update@example.com",
+            password="testpass123",
+            first_name="Update",
+            last_name="User",
+        )
+
+        cache.set("stats:total_users", 100)
+        self.assertEqual(cache.get("stats:total_users"), 100)
+
+        user.first_name = "Updated"
+        user.save()
+
+        self.assertIsNone(cache.get("stats:total_users"))
+
+    def test_cache_invalidated_on_user_deletion(self):
+        """Deleting a user should clear stats:total_users cache."""
+        from django.core.cache import cache
+
+        user = User.objects.create_user(
+            username="deleteuser",
+            email="delete@example.com",
+            password="testpass123",
+            first_name="Delete",
+            last_name="User",
+        )
+
+        cache.set("stats:total_users", 100)
+        self.assertEqual(cache.get("stats:total_users"), 100)
+
+        user.delete()
+
+        self.assertIsNone(cache.get("stats:total_users"))
+
+    def test_cache_not_affected_by_other_operations(self):
+        """Cache should only be invalidated by user save/delete, not reads."""
+        from django.core.cache import cache
+
+        User.objects.create_user(
+            username="readuser", email="read@example.com", password="testpass123"
+        )
+
+        cache.set("stats:total_users", 100)
+
+        # Reading user shouldn't invalidate cache
+        User.objects.get(username="readuser")
+        self.assertEqual(cache.get("stats:total_users"), 100)
+
+        # Filtering shouldn't invalidate cache
+        User.objects.filter(is_active=True)
+        self.assertEqual(cache.get("stats:total_users"), 100)
