@@ -137,7 +137,7 @@ class GetCachedStatsTests(TestCase):
         self.assertEqual(stats["available_books"], 5)  # All books have available copies
 
     def test_get_cached_stats_caches_results(self):
-        """get_cached_stats should cache results in Redis."""
+        """get_cached_stats should cache results in configured cache backend."""
         # First call - should query DB and cache
         stats = get_cached_stats()
 
@@ -172,7 +172,7 @@ class GetCachedStatsTests(TestCase):
         # Then set it again to test cache retrieval
         cache.set("stats:total_books", stats1["total_books"], timeout=60)
         cache.set("stats:total_users", stats1["total_users"], timeout=60)
-        cache.set("stats:available_books", stats1["total_users"], timeout=60)
+        cache.set("stats:available_books", stats1["available_books"], timeout=60)
 
         # Second call - should use cache (old value)
         stats2 = get_cached_stats()
