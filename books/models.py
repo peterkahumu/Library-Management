@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.urls import reverse
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from .constants import LANGUAGE_CHOICES, GENRE_CHOICES
 
@@ -31,9 +32,9 @@ class Book(models.Model):
     author = models.CharField(max_length=200)
     publication_date = models.DateField()  # cannot be null, user must provide.
     edition = models.CharField(max_length=10, blank=True, null=True)
-    genre = models.ManyToManyField(Genre, related_name="books", blank=True)
+    genre = models.ManyToManyField(Genre, related_name="books")
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default="en")
-    date_added = models.DateField(auto_now_add=True)
+    date_added = models.DateTimeField(auto_now_add=True)
     total_copies = models.PositiveSmallIntegerField(default=1)
     copies_available = models.PositiveSmallIntegerField(default=1)
     added_by = models.ForeignKey(
@@ -42,9 +43,10 @@ class Book(models.Model):
     cover_image = models.ImageField(
         upload_to="books/", default="books/default_book.png"
     )
+    featured = models.BooleanField(default=False)
 
     # other fields
-    publisher = models.CharField(blank=True, null=True)
+    publisher = models.CharField(max_length=100, blank=True, null=True)
     format = models.CharField(max_length=50, blank=True, null=True)
     dimensions = models.CharField(
         max_length=50, blank=True, null=True
@@ -75,6 +77,48 @@ class Book(models.Model):
 
     def get_absolute_url(self):
         return reverse("book_detail", kwargs={"pk": self.book_id})
+
+    def clean(self):
+        """
+        Enforce the following rules:
+        1. total_copies >=0
+        2. copies available >=0
+        3. copies available <= total copies.
+        4. An attempt to modify the total copies
+        such that new total copies < copies available raises an error.
+        """
+
+        if self.total_copies < 0:
+            raise ValidationError(
+                {"total_copies": "Total copies must be greater than 0"}
+            )
+
+        if self.copies_available < 0:
+            raise ValidationError(
+                {"copies_available": "Copies available cannot be negative."}
+            )
+
+        if self.copies_available > self.total_copies:
+            raise ValidationError(
+                {"copies_available": "Copies available cannot exceed total copies."}
+            )
+
+        # for existing books
+        if not self._state.adding:
+            old_available = self.__class__.objects.get(pk=self.pk).copies_available
+
+            if self.total_copies < old_available:
+                raise ValidationError(
+                    {
+                        "total_copies": "Total copies cannot be "
+                        "set below current available copies. "
+                        "Adjust the available copies first."
+                    }
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["-date_added"]

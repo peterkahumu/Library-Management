@@ -10,12 +10,16 @@ from .forms import BookForm
 
 # Create your views here.
 def genres_context(request):
-    """Returns a global context with top five genres based on book count."""
-    genres = Genre.objects.annotate(book_count=Count("books")).order_by("-book_count")[
-        :5
-    ]
-
-    return {"genres": genres}
+    """
+    Returns a global context with top five genres based on book count.
+    Return all genres in the database
+    """
+    top_5_genres = list(
+        Genre.objects.annotate(book_count=Count("books")).order_by("-book_count")[:5]
+    )
+    all_genres = list(Genre.objects.all())
+    context_data = {"top_5_genres": top_5_genres, "all_genres": all_genres}
+    return context_data
 
 
 class BookListView(ListView):
@@ -26,15 +30,12 @@ class BookListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        for book in context["books"]:
-            book.genre_names = " ".join(book.genre.values_list("name", flat=True))
-        context["all_genres"] = Genre.objects.all()
-        context["selected_genres"] = self.request.GET.get("genre", "all")
+        context["selected_genre"] = self.request.GET.get("genre", "all")
         context["query"] = self.request.GET.get("query", "")
         return context
 
     def get_queryset(self):
-        queryset = Book.objects.all()
+        queryset = Book.objects.prefetch_related("genre").all()
         genre = self.request.GET.get("genre", "")
         query = self.request.GET.get("query", "")
 
@@ -55,12 +56,16 @@ class BookDetailView(DetailView):
     model = Book
     template_name = "books/book_detail.html"
 
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("genre")
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         book = context["object"]
         genres = book.genre.all()
-        context["genres"] = list(genres.values_list("name", flat=True))
-        if genres.exists():
+        context["genres"] = [g.name for g in genres]
+
+        if genres:
             context["related_books"] = (
                 Book.objects.filter(genre__in=genres)
                 .exclude(book_id=book.book_id)

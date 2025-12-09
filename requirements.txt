@@ -6,6 +6,7 @@ crispy-bootstrap5==2025.6
 distlib==0.4.0
 Django==5.2.7
 django-crispy-forms==2.4
+django-redis==6.0.0
 filelock==3.20.0
 flake8==7.3.0
 identify==2.6.15
@@ -23,5 +24,6 @@ pyflakes==3.4.0
 python-dotenv==1.2.1
 pytokens==0.2.0
 PyYAML==6.0.3
+redis==7.1.0
 sqlparse==0.5.3
 virtualenv==20.35.4
