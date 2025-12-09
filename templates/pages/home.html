@@ -43,16 +43,16 @@
 <!-- Counters Section -->
 <div class="row text-center bg-light-orange rounded-4 py-4 mb-4">
     <div class="col-md-3 col-6 mb-3 mb-md-0">
-        <h2 class="display-5 fw-bold text-primary mb-0" data-count="12000">0</h2>
-        <p class="text-muted fw-semibold mb-0">Books Available</p>
-    </div>
-    <div class="col-md-3 col-6 mb-3 mb-md-0">
-        <h2 class="display-5 fw-bold text-primary mb-0" data-count="850">0</h2>
-        <p class="text-muted fw-semibold mb-0">Active Members</p>
+        <h2 class="display-5 fw-bold text-primary mb-0" data-count="{{ total_books }}">0</h2>
+        <p class="text-muted fw-semibold mb-0">Total Books</p>
     </div>
     <div class="col-md-3 col-6">
-        <h2 class="display-5 fw-bold text-primary mb-0" data-count="320">0</h2>
-        <p class="text-muted fw-semibold mb-0">Daily Visitors</p>
+        <h2 class="display-5 fw-bold text-primary mb-0" data-count="{{ available_books }}">0</h2>
+        <p class="text-muted fw-semibold mb-0">Available Books</p>
+    </div>
+    <div class="col-md-3 col-6 mb-3 mb-md-0">
+        <h2 class="display-5 fw-bold text-primary mb-0" data-count="{{ total_users }}">0</h2>
+        <p class="text-muted fw-semibold mb-0">Active Members</p>
     </div>
     <div class="col-md-3 col-6">
         <h2 class="display-5 fw-bold text-primary mb-0" data-count="75">0</h2>
