@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import Book
 from .forms import BookForm
+from accounts.models import UserRoles
 
 
 # Create your views here.
@@ -76,7 +77,7 @@ class BookCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return redirect(reverse("book_detail", kwargs={"pk": self.object.pk}))
 
     def test_func(self):
-        return self.request.user.role in ["admin", "librarian"]
+        return self.request.user.role in [UserRoles.ADMIN, UserRoles.LIBRARIAN]
 
 
 class BookEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

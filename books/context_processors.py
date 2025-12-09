@@ -1,4 +1,5 @@
 """Create global context related to books."""
+
 from django.db.models import Count
 
 from .models import Genre
