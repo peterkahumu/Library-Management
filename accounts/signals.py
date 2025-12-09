@@ -7,7 +7,7 @@ from .models import LibraryUser
 
 
 @receiver([post_save, post_delete], sender=LibraryUser)
-def invalidate_book_cache_stats(sender, instance, **kwargs):
+def invalidate_user_cache_stats(sender, instance, **kwargs):
     """
     Clear book related cache when books are created, updated, or deleted
     """

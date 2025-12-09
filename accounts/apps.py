@@ -5,5 +5,5 @@ class AccountsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "accounts"
 
-    def read(self):
+    def ready(self):
         import accounts.signals  # noqa
