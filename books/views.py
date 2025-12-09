@@ -19,10 +19,10 @@ def genres_context(request):
     context_data = cache.get("global_context_data")
 
     if not context_data:
-        top_5_genres = Genre.objects.annotate(book_count=Count("books")).order_by(
-            "-book_count"
+        top_5_genres = list(
+            Genre.objects.annotate(book_count=Count("books")).order_by("-book_count")
         )[:5]
-        all_genres = Genre.objects.all()
+        all_genres = list(Genre.objects.all())
         context_data = {"top_5_genres": top_5_genres, "all_genres": all_genres}
         cache.set("global_context_data", context_data, timeout=7200)
 
