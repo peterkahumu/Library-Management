@@ -3,7 +3,6 @@ from django.db.models import Q, Count
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.cache import cache
 
 from .models import Book, Genre
 from .forms import BookForm
@@ -14,18 +13,12 @@ def genres_context(request):
     """
     Returns a global context with top five genres based on book count.
     Return all genres in the database
-    Refresh the data only once every 2 hours.
     """
-    context_data = cache.get("global_context_data")
-
-    if not context_data:
-        top_5_genres = list(
-            Genre.objects.annotate(book_count=Count("books")).order_by("-book_count")
-        )[:5]
-        all_genres = list(Genre.objects.all())
-        context_data = {"top_5_genres": top_5_genres, "all_genres": all_genres}
-        cache.set("global_context_data", context_data, timeout=7200)
-
+    top_5_genres = list(
+        Genre.objects.annotate(book_count=Count("books")).order_by("-book_count")[:5]
+    )
+    all_genres = list(Genre.objects.all())
+    context_data = {"top_5_genres": top_5_genres, "all_genres": all_genres}
     return context_data
 
 

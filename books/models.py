@@ -90,20 +90,17 @@ class Book(models.Model):
 
         if self.total_copies < 0:
             raise ValidationError(
-                {"total_copies": "Total copies must be a positive integer"}
+                {"total_copies": "Total copies must be greater than 0"}
             )
 
         if self.copies_available < 0:
             raise ValidationError(
-                {"copies_available": "Copies available" " must be a positive integer."}
+                {"copies_available": "Copies available cannot be negative."}
             )
 
         if self.copies_available > self.total_copies:
             raise ValidationError(
-                {
-                    "copies_available": "Copies available"
-                    " cannot exceed Total copies available."
-                }
+                {"copies_available": "Copies available cannot exceed total copies."}
             )
 
         # for existing books

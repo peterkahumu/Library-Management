@@ -8,5 +8,7 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["featured_books"] = Book.objects.filter(featured=True)
+        context["featured_books"] = Book.objects.filter(featured=True).prefetch_related(
+            "genre"
+        )
         return context

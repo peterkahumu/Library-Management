@@ -442,7 +442,7 @@ class BookListViewTests(TestCase):
         response = self.client.get(reverse("book_list"))
         self.assertIn("all_genres", response.context)
         # Should contain at least the genres we created
-        self.assertGreaterEqual(response.context["all_genres"].count(), 3)
+        self.assertGreaterEqual(len(response.context["all_genres"]), 3)
         # Verify our specific genres are included
         genre_names = [g.name for g in response.context["all_genres"]]
         self.assertIn("FANTASY", genre_names)
@@ -507,7 +507,7 @@ class BookDetailViewTests(TestCase):
         response = self.client.get(
             reverse("book_detail", kwargs={"pk": self.book.book_id})
         )
-        self.assertIn("genres", response.context)
+        self.assertIn("top_5_genres", response.context)
         self.assertEqual(len(response.context["genres"]), 2)
         self.assertIn("FANTASY", response.context["genres"])
         self.assertIn("SCIFI", response.context["genres"])
@@ -864,8 +864,8 @@ class GenresContextProcessorTests(TestCase):
 
         request = self.client.get(reverse("book_list")).wsgi_request
         context = genres_context(request)
-        self.assertIn("genres", context)
-        self.assertEqual(len(context["genres"]), 5)
+        self.assertIn("top_5_genres", context)
+        self.assertEqual(len(context["top_5_genres"]), 5)
 
     def test_genres_context_ordered_by_book_count(self):
         """Genres should be ordered by book count descending."""
@@ -873,7 +873,7 @@ class GenresContextProcessorTests(TestCase):
 
         request = self.client.get(reverse("book_list")).wsgi_request
         context = genres_context(request)
-        genres = list(context["genres"])
+        genres = list(context["top_5_genres"])
         # FANTASY should be first (10 books), SCIFI second (5 books)
         self.assertEqual(genres[0], self.genre1)
         self.assertEqual(genres[1], self.genre2)
