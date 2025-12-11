@@ -30,7 +30,6 @@ class BookForm(forms.ModelForm):
             "publication_date": forms.DateInput(attrs={"type": "date"}),
             "description": forms.Textarea(attrs={"rows": 4}),
             "genre": forms.CheckboxSelectMultiple(),
-            "format": forms.TextInput(attrs={"placeholder": "ebook, hardcopy,..."}),
         }
 
     def clean_isbn(self):

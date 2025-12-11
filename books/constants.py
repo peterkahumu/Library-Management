@@ -61,3 +61,9 @@ GENRE_CHOICES = [
     ("HEALTH", "Health / Wellness"),
     ("POLITICS", "Politics / Current Affairs"),
 ]
+
+FORMAT_CHOICES = [
+    ("EBOOK", "E-Book"),
+    ("AUDIOBOOK", "Audio Book"),
+    ("HARDCOPY", "Hard copy"),
+]

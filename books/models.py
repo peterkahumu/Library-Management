@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import F
 
-from .constants import LANGUAGE_CHOICES, GENRE_CHOICES
+from .constants import LANGUAGE_CHOICES, GENRE_CHOICES, FORMAT_CHOICES
 
 
 # Create your models here.
@@ -48,7 +48,7 @@ class Book(models.Model):
 
     # other fields
     publisher = models.CharField(max_length=100, blank=True, null=True)
-    format = models.CharField(max_length=50, blank=True, null=True)
+    format = models.CharField(max_length=50, choices=FORMAT_CHOICES, default="HARDCOPY")
     dimensions = models.CharField(
         max_length=50, blank=True, null=True
     )  # l x w x h in inches
@@ -61,6 +61,16 @@ class Book(models.Model):
     @property
     def is_available(self):
         return self.copies_available > 0
+
+    @property
+    def is_digital(self):
+        """
+        Classify object as digital or not.
+
+        :param self: Object instance.
+        """
+
+        return self.format in ["EBOOK", "AUDIOBOOK"]
 
     def borrow_book(self):
         """
