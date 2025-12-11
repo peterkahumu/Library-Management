@@ -4,22 +4,12 @@ from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import F
-from django.core.cache import cache
 
 from .constants import LANGUAGE_CHOICES, GENRE_CHOICES, FORMAT_CHOICES
+from .utils import invalidate_cache
 
 
 # Create your models here.
-
-
-def invalidate_cache():
-    """
-    Manually delete book related cache on object update.
-    """
-    cache.delete("stats:total_books")
-    cache.delete("stats:available_books")
-
-
 class Genre(models.Model):
     """
     Represents a literary genre or category that can be assigned to one or more books.
