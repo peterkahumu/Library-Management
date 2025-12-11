@@ -4,11 +4,22 @@ from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import F
+from django.core.cache import cache
 
 from .constants import LANGUAGE_CHOICES, GENRE_CHOICES, FORMAT_CHOICES
 
 
 # Create your models here.
+
+
+def invalidate_cache():
+    """
+    Manually delete book related cache on object update.
+    """
+    cache.delete("stats:total_books")
+    cache.delete("stats:available_books")
+
+
 class Genre(models.Model):
     """
     Represents a literary genre or category that can be assigned to one or more books.
@@ -48,7 +59,9 @@ class Book(models.Model):
 
     # other fields
     publisher = models.CharField(max_length=100, blank=True, null=True)
-    format = models.CharField(max_length=50, choices=FORMAT_CHOICES, default="HARDCOPY")
+    format = models.CharField(
+        max_length=50, blank=True, choices=FORMAT_CHOICES, default="HARDCOPY"
+    )
     dimensions = models.CharField(
         max_length=50, blank=True, null=True
     )  # l x w x h in inches
@@ -81,6 +94,7 @@ class Book(models.Model):
         ).update(copies_available=F("copies_available") - 1)
         if updated:
             self.refresh_from_db()
+            invalidate_cache()
             return True
         return False
 
@@ -94,6 +108,7 @@ class Book(models.Model):
 
         if updated:
             self.refresh_from_db()
+            invalidate_cache()
             return True
         return False
 
