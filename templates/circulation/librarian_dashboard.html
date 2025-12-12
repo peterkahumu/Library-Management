@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 text-primary">Librarian Dashboard</h1>
+    <span class="badge bg-secondary">{{ transactions.count }} Active Transactions</span>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">User</th>
+                        <th>Book Details</th>
+                        <th>Dates</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in transactions %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ txn.user.profile_image.url }}" class="rounded-circle me-2" width="32"
+                                    height="32" style="object-fit: cover;" alt="User">
+                                <div>
+                                    <p class="mb-0 fw-bold">{{ txn.user.get_full_name }}</p>
+                                    <small class="text-muted">{{ txn.user.user_code }}</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <p class="mb-0 fw-semibold">{{ txn.book.title }}</p>
+                            <small class="text-muted">
+                                {% if txn.is_ebook %}
+                                <i class="fas fa-tablet-alt me-1"></i>E-Book
+                                {% else %}
+                                <i class="fas fa-book me-1"></i>Physical Copy
+                                {% endif %}
+                            </small>
+                        </td>
+
+                        <td>
+                            {% if txn.status == 'PENDING' %}
+                            <span class="text-muted">Requested: {{ txn.checkout_date|date:"M d" }}</span>
+                            {% else %}
+                            <div class="d-flex flex-column">
+                                <small>Out: {{ txn.checkout_date|date:"M d" }}</small>
+                                <small class="{% if txn.is_overdue %}text-danger fw-bold{% endif %}">
+                                    Due: {{ txn.due_date|date:"M d" }}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if txn.status == 'PENDING' %}
+                            <span class="badge bg-warning text-dark">Request Pending</span>
+                            {% elif txn.status == 'ISSUED' %}
+                            <span class="badge bg-success">Issued</span>
+                            {% elif txn.status == 'RETURNED' %}
+                            <span class="badge bg-secondary">Returned</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end pe-4">
+                            {% if txn.status == 'PENDING' %}
+                            <a href="{% url 'approve_borrow' txn.pk %}"
+                                class="btn btn-sm btn-success rounded-pill px-3">
+                                <i class="fas fa-check me-1"></i>Approve
+                            </a>
+                            {% elif txn.status == 'ISSUED' and not txn.is_ebook %}
+                            <a href="{% url 'return_book' txn.pk %}"
+                                class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <i class="fas fa-undo me-1"></i>Return
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">No actions</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No active transactions found.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

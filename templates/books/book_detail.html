@@ -18,9 +18,9 @@
     <div class="col-md-4 mb-4 mb-md-0">
         <img src="{{book.cover_image.url}}" class="img-fluid rounded-3 shadow" alt="{{book.title}}">
         <div class="d-grid gap-2 mt-3">
-            <button class="btn btn-primary btn-lg rounded-pill">
+            <a class="btn btn-primary btn-lg rounded-pill" href="{% url 'borrow_book' book.pk %}">
                 <i class="fas fa-book-reader me-2"></i>Borrow Now
-            </button>
+            </a>
             <a class="btn btn-outline-primary btn-lg rounded-pill" href="{% url 'book_edit' book.pk %}">
                 <i class="fas fa-edit me-2"></i>Edit book
             </a>
