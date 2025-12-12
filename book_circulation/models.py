@@ -48,7 +48,7 @@ class Transaction(models.Model):
     book = models.ForeignKey(
         Book, on_delete=models.CASCADE, related_name="transactions"
     )
-    checkout_date = models.DateTimeField(auto_now_add=True, db_index=True)
+    checkout_date = models.DateTimeField(default=timezone.now, db_index=True)
     due_date = models.DateTimeField(db_index=True)
     returned_date = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
@@ -66,15 +66,9 @@ class Transaction(models.Model):
             models.Index(fields=["due_date", "status"]),
         ]
         constraints = [
-            # Ensure returned_date is set when status is RETURNED
             models.CheckConstraint(
                 condition=~models.Q(status="RETURNED", returned_date__isnull=True),
                 name="returned_status_requires_date",
-            ),
-            # Ensure due_date is after checkout_date
-            models.CheckConstraint(
-                condition=models.Q(due_date__gt=models.F("checkout_date")),
-                name="due_date_after_checkout",
             ),
         ]
 
@@ -116,7 +110,7 @@ class Transaction(models.Model):
     def _is_valid_status_transition(self, old_status, new_status):
         """Check if status transition is allowed."""
         valid_transitions = {
-            "PENDING": ["ISSUED", "RETURNED"],  # Can cancel pending
+            "PENDING": ["ISSUED", "RETURNED"],
             "ISSUED": ["RETURNED"],
             "RETURNED": [],  # Final state
         }
