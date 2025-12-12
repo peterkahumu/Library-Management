@@ -1,6 +1,38 @@
-from django.db import models
+from datetime import timedelta
+from django.db import models, transaction as db_transaction
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+
 from books.models import Book
+
+
+class TransactionManager(models.Manager):
+    """Custom manager for Transaction queries."""
+
+    def active(self):
+        """Get all active (not returned) transactions."""
+        return self.filter(status__in=["PENDING", "ISSUED"])
+
+    def overdue(self):
+        """Get all overdue transactions."""
+        return self.filter(status="ISSUED", due_date__lt=timezone.now())
+
+    def for_user(self, user):
+        """Get transactions for a specific user with related data."""
+        return self.filter(user=user).select_related("book", "user")
+
+    def for_book(self, book):
+        """Get transactions for a specific book."""
+        return self.filter(book=book).select_related("user")
+
+    def returned_on_time(self):
+        """Get transactions returned on or before due date."""
+        return self.filter(status="RETURNED", returned_date__lte=models.F("due_date"))
+
+    def returned_late(self):
+        """Get transactions returned after due date."""
+        return self.filter(status="RETURNED", returned_date__gt=models.F("due_date"))
 
 
 class Transaction(models.Model):
@@ -24,30 +56,149 @@ class Transaction(models.Model):
     )
     is_ebook = models.BooleanField(default=False)
 
+    objects = TransactionManager()
+
     class Meta:
         ordering = ["-checkout_date"]
-        indexes = [models.Index(fields=["user", "status"])]
+        indexes = [
+            models.Index(fields=["user", "status"]),
+            models.Index(fields=["book", "status"]),
+            models.Index(fields=["due_date", "status"]),
+        ]
+        constraints = [
+            # Ensure returned_date is set when status is RETURNED
+            models.CheckConstraint(
+                condition=~models.Q(status="RETURNED", returned_date__isnull=True),
+                name="returned_status_requires_date",
+            ),
+            # Ensure due_date is after checkout_date
+            models.CheckConstraint(
+                condition=models.Q(due_date__gt=models.F("checkout_date")),
+                name="due_date_after_checkout",
+            ),
+        ]
+
+    def clean(self):
+        """Validate transaction data before saving."""
+        super().clean()
+
+        # Validate due_date is after checkout_date
+        if self.due_date and self.checkout_date:
+            if self.due_date <= self.checkout_date:
+                raise ValidationError(
+                    {"due_date": "Due date must be after checkout date."}
+                )
+
+        # Validate returned_date
+        if self.returned_date:
+            if self.returned_date < self.checkout_date:
+                raise ValidationError(
+                    {"returned_date": "Return date cannot be before checkout date."}
+                )
+            if self.status != "RETURNED":
+                raise ValidationError(
+                    {"status": "Status must be RETURNED when returned_date is set."}
+                )
+
+        # Validate status transitions
+        if self.pk:
+            try:
+                original = Transaction.objects.get(pk=self.pk)
+                if not self._is_valid_status_transition(original.status, self.status):
+                    raise ValidationError(
+                        {
+                            "status": f"Invalid status transition from {original.status} to {self.status}."  # noqa
+                        }
+                    )
+            except Transaction.DoesNotExist:
+                pass
+
+    def _is_valid_status_transition(self, old_status, new_status):
+        """Check if status transition is allowed."""
+        valid_transitions = {
+            "PENDING": ["ISSUED", "RETURNED"],  # Can cancel pending
+            "ISSUED": ["RETURNED"],
+            "RETURNED": [],  # Final state
+        }
+        return new_status in valid_transitions.get(old_status, [])
 
     def save(self, *args, **kwargs):
         """
-        Only decrement stock when the book is physically checked out (ISSUED).
+        Handle stock management atomically.
         """
-        if not self.is_ebook:
-            # Scenario 1: Librarian creates a new 'ISSUED' record directly
-            if not self.pk and self.status == "ISSUED":
-                if not self.book.borrow_book():
-                    raise ValueError("Book not available.")
+        if not self.due_date and self.status == "ISSUED":
+            # auto-set due date if not provided.
+            self.due_date = timezone.now() + timedelta(days=14)
 
-            # Scenario 2: Librarian updates 'PENDING' -> 'ISSUED'
-            elif self.pk:
-                original = Transaction.objects.get(pk=self.pk)
-                if original.status == "PENDING" and self.status == "ISSUED":
-                    if not self.book.borrow_book():
-                        # multiple people made a request for the last copy.
-                        # Issue to the first person
-                        raise ValueError("Book is no longer available.")
+        with db_transaction.atomic():
+            if not self.is_ebook:  # physical book
+                if self.pk:
+                    original = Transaction.objects.select_for_update().get(
+                        pk=self.pk
+                    )  # prevent concurent updates
 
-        super().save(*args, **kwargs)
+                    # PENDING -> ISSUED
+                    if original.status == "PENDING" and self.status == "ISSUED":
+                        if not self.book.borrow_book():
+                            raise ValidationError("Book is no longer available.")
+
+                    # ISSUED -> RETURNED
+                    elif original.status == "ISSUED" and self.status == "RETURNED":
+                        if not self.returned_date:
+                            self.returned_date = timezone.now()
+                        if not self.book.return_book():
+                            raise ValidationError(
+                                "Cannot return book - all copies already available."
+                            )
+                else:  # new record
+                    if self.status == "ISSUED":
+                        if not self.book.borrow_book():
+                            raise ValidationError("Book not available for checkout.")
+
+            super().save(*args, **kwargs)
+
+    @property
+    def is_overdue(self):
+        """Check if transaction is overdue."""
+        if self.status == "RETURNED":
+            return False
+        return timezone.now() > self.due_date
+
+    @property
+    def days_overdue(self):
+        """Calculate number of days overdue."""
+        if not self.is_overdue:
+            return 0
+        delta = timezone.now() - self.due_date
+        return delta.days
+
+    @property
+    def borrowing_period_days(self):
+        """Calculate actual borrowing period in days."""
+        end_date = self.returned_date or timezone.now()
+        delta = end_date - self.checkout_date
+        return delta.days
+
+    def mark_as_returned(self):
+        """Mark transaction as returned and update book stock."""
+        if self.status == "RETURNED":
+            return False
+
+        self.status = "RETURNED"
+        self.returned_date = timezone.now()
+        self.save()
+        return True
+
+    def extend_due_date(self, days=7):
+        """Extend the due date by specified days."""
+        if self.status != "ISSUED":
+            raise ValidationError("Can only extend due date for issued books.")
+
+        self.due_date += timedelta(days=days)
+        self.save()
 
     def __str__(self):
-        return f"{self.book.title} - {self.status}"
+        return f"{self.user.email} - {self.book.title} ({self.get_status_display()})"
+
+    def __repr__(self):
+        return f"<Transaction: {self.pk} - {self.book.title} - {self.status}>"
