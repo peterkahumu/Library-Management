@@ -39,11 +39,13 @@
                 {% if user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link active" href="{% url 'book_list' %}">Catalog</a></li>
 
+                {% if user.role == "student" %}
                 <li class="nav-item">
                     <a class="nav-link active" href="{% url 'my_books' %}">
                         <i class="fas fa-book-open me-1"></i>My Books
                     </a>
                 </li>
+                {% endif %}
 
                 {% if user.is_staff or user.role == 'librarian' %}
                 <li class="nav-item">
