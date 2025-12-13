@@ -4,8 +4,8 @@ from django.core.exceptions import ValidationError
 
 class BorrowForm(forms.Form):
     """
-    Allow user to specify number of days to borrow book.
-    Application validation to ensure number of days
+    Allow user to specify number of days to borrow a book.
+    Validate to ensure number of days is within allowed limits (1 - 14 days)
     """
 
     duration_days = forms.IntegerField(
