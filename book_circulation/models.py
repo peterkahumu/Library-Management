@@ -99,7 +99,7 @@ class Transaction(models.Model):
                     {"status": "Status must be RETURNED when returned_date is set."}
                 )
 
-        if self.pk:
+        if not self._state.adding:
             try:
                 original = Transaction.objects.get(pk=self.pk)
                 if not self._is_valid_status_transition(original.status, self.status):
@@ -130,7 +130,7 @@ class Transaction(models.Model):
 
         with db_transaction.atomic():
             if not self.is_ebook:
-                if self.pk:
+                if not self._state.adding:
                     original = Transaction.objects.select_for_update().get(pk=self.pk)
 
                     # PENDING -> ISSUED
