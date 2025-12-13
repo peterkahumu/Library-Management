@@ -69,8 +69,6 @@ class Book(models.Model):
     def is_digital(self):
         """
         Classify object as digital or not.
-
-        :param self: Object instance.
         """
 
         return self.format in ["EBOOK", "AUDIOBOOK"]
