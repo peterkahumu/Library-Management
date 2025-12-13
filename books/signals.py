@@ -1,6 +1,6 @@
 from django.db.models.signals import post_migrate, post_save, post_delete
 from django.dispatch import receiver
-from django.core.cache import cache
+from .utils import invalidate_cache
 
 from .models import Genre, Book
 from .constants import GENRE_CHOICES
@@ -17,5 +17,4 @@ def create_genres(sender, **kwargs):
 def invalidate_book_cache_stats(sender, instance, **kwargs):
     "Clear book related cache when a book is created, updated, or deleted"
     # NB: Check pages.utils and pages.views for stats consumptions
-    cache.delete("stats:total_books")
-    cache.delete("stats:available_books")
+    invalidate_cache()

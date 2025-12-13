@@ -1,6 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
-        <!-- Brand -->
         <a class="navbar-brand" href="#">
             <i class="fa-solid fa-book me-2"></i>
             {% if user.is_authenticated %}
@@ -10,12 +9,10 @@
             {% endif %}
         </a>
 
-        <!-- Mobile Toggler -->
         <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Floating Categories (Desktop only) -->
         <div class="d-none d-lg-block me-3 position-relative">
             <button class="btn btn-outline-light d-flex align-items-center" type="button" data-bs-toggle="collapse"
                 data-bs-target="#categoryMenu">
@@ -35,7 +32,6 @@
             </div>
         </div>
 
-        <!-- Desktop Menu -->
         <div class="collapse navbar-collapse d-none d-lg-flex" id="desktopNav">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
@@ -43,13 +39,28 @@
                 {% if user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link active" href="{% url 'book_list' %}">Catalog</a></li>
 
+                {% if user.role == "student" %}
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'my_books' %}">
+                        <i class="fas fa-book-open me-1"></i>My Books
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if user.is_staff or user.role == 'librarian' %}
+                <li class="nav-item">
+                    <a class="nav-link active fw-bold text-warning" href="{% url 'librarian_dashboard' %}">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    </a>
+                </li>
+
                 <li class="nav-item">
                     <a class="nav-link active" href="{% url 'book_create' %}">
                         <i class="fa-solid fa-plus me-2"></i>Add Book
                     </a>
                 </li>
+                {% endif %}
 
-                <!-- User Profile Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
                         <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32"
@@ -68,7 +79,6 @@
                     </ul>
                 </li>
                 {% else %}
-                <!-- Login / Sign Up -->
                 <li class="nav-item"><a class="btn bg-light-orange mx-3" href="{% url 'login' %}">Login</a></li>
                 <li class="nav-item"><a class="btn bg-orange" href="{% url 'register' %}">Sign Up</a></li>
                 {% endif %}
@@ -77,7 +87,6 @@
     </div>
 </nav>
 
-<!-- Mobile Overlay Menu -->
 <div class="collapse d-lg-none position-fixed top-0 end-0 bg-primary text-white p-4 shadow" id="mobileMenu"
     style="width: 280px; height: 100vh; z-index: 1050;">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -90,13 +99,29 @@
 
         {% if user.is_authenticated %}
         <li class="nav-item"><a class="nav-link text-white active" href="{% url 'book_list' %}">Catalog</a></li>
+
+        {% if user.role == 'student' %}
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'book_create' %}">
-                <i class="fa-solid fa-plus me-2"></i>Add Book
+            <a class="nav-link text-white" href="{% url 'my_books' %}">
+                <i class="fas fa-book-open me-1"></i>My Books
+            </a>
+        </li>
+        {% endif %}
+
+        {% if user.is_staff or user.role == 'librarian' %}
+        <li class="nav-item">
+            <a class="nav-link text-warning fw-bold" href="{% url 'librarian_dashboard' %}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
             </a>
         </li>
 
-        <!-- User Profile Dropdown -->
+        <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'book_create' %}">
+                <i class="fa-solid fa-plus me-2"></i>Add Book
+            </a>
+        </li>
+        {% endif %}
+
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" data-bs-toggle="dropdown">
                 <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32" height="32">
@@ -114,12 +139,10 @@
             </ul>
         </li>
         {% else %}
-        <!-- Login / Sign Up -->
         <li class="nav-item"><a class="nav-link text-white" href="{% url 'login' %}">Login</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="{% url 'register' %}">Sign Up</a></li>
         {% endif %}
 
-        <!-- Categories -->
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">Genres</a>
             <ul class="dropdown-menu">

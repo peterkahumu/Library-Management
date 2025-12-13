@@ -3,8 +3,10 @@ from django.db import models
 from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models import F
 
-from .constants import LANGUAGE_CHOICES, GENRE_CHOICES
+from .constants import LANGUAGE_CHOICES, GENRE_CHOICES, FORMAT_CHOICES
+from .utils import invalidate_cache
 
 
 # Create your models here.
@@ -47,7 +49,9 @@ class Book(models.Model):
 
     # other fields
     publisher = models.CharField(max_length=100, blank=True, null=True)
-    format = models.CharField(max_length=50, blank=True, null=True)
+    format = models.CharField(
+        max_length=50, blank=True, choices=FORMAT_CHOICES, default="HARDCOPY"
+    )
     dimensions = models.CharField(
         max_length=50, blank=True, null=True
     )  # l x w x h in inches
@@ -61,17 +65,38 @@ class Book(models.Model):
     def is_available(self):
         return self.copies_available > 0
 
+    @property
+    def is_digital(self):
+        """
+        Classify object as digital or not.
+        """
+
+        return self.format in ["EBOOK", "AUDIOBOOK"]
+
     def borrow_book(self):
-        if self.is_available:
-            self.copies_available -= 1
-            self.save(update_fields=["copies_available"])
+        """
+        Atomic decrement of books
+        """
+        updated = Book.objects.filter(
+            book_id=self.book_id, copies_available__gt=0
+        ).update(copies_available=F("copies_available") - 1)
+        if updated:
+            self.refresh_from_db()
+            invalidate_cache()
             return True
         return False
 
     def return_book(self):
-        if self.copies_available < self.total_copies:
-            self.copies_available += 1
-            self.save(update_fields=["copies_available"])
+        """
+        Atomic increment of books. Does not exceed total_copies
+        """
+        updated = Book.objects.filter(
+            book_id=self.book_id, copies_available__lt=F("total_copies")
+        ).update(copies_available=F("copies_available") + 1)
+
+        if updated:
+            self.refresh_from_db()
+            invalidate_cache()
             return True
         return False
 
