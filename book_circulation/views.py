@@ -61,7 +61,7 @@ class BorrowBookView(LoginRequiredMixin, FormView):
                     user=self.request.user,
                     book=self.book,
                     due_date=due_date,
-                    status="ISSUED",
+                    status="DOWNLOADED",
                     is_ebook=True,
                 )
                 messages.success(self.request, "E-Book downloaded successfully!")

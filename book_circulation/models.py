@@ -12,7 +12,7 @@ class TransactionManager(models.Manager):
     """Custom manager for Transaction queries."""
 
     def active(self):
-        """Get all active (not returned) transactions."""
+        """Get all active (not returned hard copies) transactions."""
         return self.filter(status__in=["PENDING", "ISSUED", "RETURN_REQUESTED"])
 
     def overdue(self):
@@ -42,6 +42,7 @@ class Transaction(models.Model):
     STATUS_CHOICES = [
         ("PENDING", "Pending"),
         ("ISSUED", "Issued"),
+        ("DOWNLOADED", "Downloaded"),
         ("RETURN_REQUESTED", "Return Requested"),
         ("RETURNED", "Returned"),
     ]
@@ -114,7 +115,7 @@ class Transaction(models.Model):
     def _is_valid_status_transition(self, old_status, new_status):
         """Check if status transition is allowed."""
         valid_transitions = {
-            "PENDING": ["ISSUED", "RETURNED"],
+            "PENDING": ["ISSUED", "RETURNED", "DOWNLOADED"],
             "ISSUED": ["RETURN_REQUESTED", "RETURNED"],
             "RETURN_REQUESTED": ["RETURNED", "ISSUED"],
             "RETURNED": [],
