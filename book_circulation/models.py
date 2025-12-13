@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 from django.db import models, transaction as db_transaction
 from django.conf import settings
@@ -45,6 +46,9 @@ class Transaction(models.Model):
         ("RETURNED", "Returned"),
     ]
 
+    transaction_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions"
     )
