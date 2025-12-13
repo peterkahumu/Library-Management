@@ -130,7 +130,7 @@ class RequestReturnView(LoginRequiredMixin, View):
         else:
             messages.error(
                 request,
-                f"Books with status {transaction.status} cannot perform this operation",
+                f"Books with status {transaction.get_status_display()} cannot perform this operation",  # noqa
             )
 
         return redirect("my_books")
