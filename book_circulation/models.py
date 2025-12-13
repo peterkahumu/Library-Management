@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 from django.db import models, transaction as db_transaction
 from django.conf import settings
@@ -45,6 +46,9 @@ class Transaction(models.Model):
         ("RETURNED", "Returned"),
     ]
 
+    transaction_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions"
     )
@@ -95,7 +99,7 @@ class Transaction(models.Model):
                     {"status": "Status must be RETURNED when returned_date is set."}
                 )
 
-        if self.pk:
+        if not self._state.adding:
             try:
                 original = Transaction.objects.get(pk=self.pk)
                 if not self._is_valid_status_transition(original.status, self.status):
@@ -126,7 +130,7 @@ class Transaction(models.Model):
 
         with db_transaction.atomic():
             if not self.is_ebook:
-                if self.pk:
+                if not self._state.adding:
                     original = Transaction.objects.select_for_update().get(pk=self.pk)
 
                     # PENDING -> ISSUED

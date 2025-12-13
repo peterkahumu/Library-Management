@@ -7,7 +7,7 @@ urlpatterns = [
     path("borrow/<uuid:book_id>/", views.BorrowBookView.as_view(), name="borrow_book"),
     path("my-books/", views.MyBooksListView.as_view(), name="my_books"),
     path(
-        "return-request/<int:pk>/",
+        "return-request/<uuid:pk>/",
         views.RequestReturnView.as_view(),
         name="request_return",
     ),
@@ -17,12 +17,12 @@ urlpatterns = [
     ),
     # Action URLs
     path(
-        "approve-borrow/<int:pk>/",
+        "approve-borrow/<uuid:pk>/",
         views.ApproveBorrowView.as_view(),
         name="approve_borrow",
     ),
     path(
-        "approve-return/<int:pk>/",
+        "approve-return/<uuid:pk>/",
         views.ApproveReturnView.as_view(),
         name="approve_return",
     ),
