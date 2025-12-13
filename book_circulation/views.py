@@ -1,17 +1,22 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.utils import timezone
 from datetime import timedelta
 from django.views.generic import FormView, ListView
+from django.views import View
 
 from books.models import Book
+from accounts.models import UserRoles
 from .models import Transaction
 from .forms import BorrowForm
 
 # --- Student Views ---
+
+
+def is_librarian_or_staff(user):
+    return user.is_authenticated and user.role in [UserRoles.ADMIN, UserRoles.LIBRARIAN]
 
 
 class BorrowBookView(LoginRequiredMixin, FormView):
@@ -78,7 +83,6 @@ class BorrowBookView(LoginRequiredMixin, FormView):
                     "Request submitted. Please visit the librarian to complete checkout.",  # noqa
                 )
         except Exception as e:
-            # Catch any unexpected model validation errors
             messages.error(self.request, f"An error occurred: {e}")
             return self.form_invalid(form)
 
@@ -86,6 +90,11 @@ class BorrowBookView(LoginRequiredMixin, FormView):
 
 
 class MyBooksListView(LoginRequiredMixin, ListView):
+    """
+    List all the books that the user has borrowed
+    Includes all books, whether issued or not.
+    """
+
     model = Transaction
     template_name = "circulation/my_books.html"
     context_object_name = "transactions"
@@ -100,17 +109,44 @@ class MyBooksListView(LoginRequiredMixin, ListView):
         )
 
 
+class RequestReturnView(LoginRequiredMixin, View):
+    """
+    Allow student to reqeust a return for an issued book."""
+
+    def post(self, request, pk):
+        transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
+
+        if transaction.status == "ISSUED":
+            transaction.status = "RETURN_REQUESTED"
+            try:
+                transaction.save()
+                messages.success(
+                    request,
+                    "Return request submitted. "
+                    "Please hand in the physical copy to the librarian for approval.",
+                )
+            except Exception as e:
+                messages.error(request, f"Error submitting request: {e}")
+        else:
+            messages.error(
+                request,
+                f"Books with status {transaction.status} cannot perform this operation",
+            )
+
+        return redirect("my_books")
+
+
 # --- Librarian Views ---
 
 
 class LibrarianDashboardView(UserPassesTestMixin, ListView):
     model = Transaction
     template_name = "circulation/librarian_dashboard.html"
-    context_object_name = "transactions"
+    context_object_name = "borrow_requests"
 
     def test_func(self):
         """Ensure only staff/librarians can access this view."""
-        return self.request.user.is_staff or self.request.user.role == "librarian"
+        return is_librarian_or_staff(self.request.user)
 
     def get_queryset(self):
         """Show only pending requests."""
@@ -118,31 +154,49 @@ class LibrarianDashboardView(UserPassesTestMixin, ListView):
             "book", "user"
         )
 
-
-def is_librarian_or_staff(user):
-    return user.is_authenticated and (user.is_staff or user.role == "librarian")
-
-
-@user_passes_test(is_librarian_or_staff)
-def approve_borrow(request, transaction_id):
-    txn = get_object_or_404(Transaction, pk=transaction_id)
-    try:
-        txn.status = "ISSUED"
-        txn.save()  # Triggers model logic to decrement stock
-        messages.success(request, f"Book issued to {txn.user.username}.")
-    except Exception as e:
-        messages.error(request, f"Error: {e}")
-
-    return redirect("librarian_dashboard")
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["return_requests"] = Transaction.objects.filter(
+            status="RETURN_REQUESTED"
+        ).select_related("book", "user")
+        return context
 
 
-@user_passes_test(is_librarian_or_staff)
-def return_book_action(request, transaction_id):
-    txn = get_object_or_404(Transaction, pk=transaction_id)
-    try:
-        txn.mark_as_returned()
-        messages.success(request, "Book returned successfully.")
-    except Exception as e:
-        messages.error(request, f"Error: {e}")
+class ApproveBorrowView(UserPassesTestMixin, View):
+    """Approve a borrow request."""
 
-    return redirect("librarian_dashboard")
+    def test_func(self):
+        return is_librarian_or_staff(self.request.user)
+
+    def post(self, request, pk):
+        transaction = get_object_or_404(Transaction, pk=pk)
+        if transaction.status == "PENDING":
+            try:
+                transaction.status = "ISSUED"
+                transaction.save()
+                messages.success(request, f"Book issued to {transaction.user.username}")
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+        return redirect("librarian_dashboard")
+
+
+class ApproveReturnView(UserPassesTestMixin, View):
+    """
+    Approve a return request for a book
+    """
+
+    def test_func(self):
+        return is_librarian_or_staff(self.request.user)
+
+    def post(self, request, pk):
+        transaction = get_object_or_404(Transaction, pk=pk)
+        try:
+            if transaction.mark_as_returned():
+                messages.success(
+                    request, f"{transaction.book.title} returned successfully."
+                )
+            else:
+                messages.warning(request, "Book is already returned.")
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+        return redirect("librarian_dashboard")

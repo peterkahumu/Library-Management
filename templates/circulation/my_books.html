@@ -23,30 +23,39 @@
                 </td>
                 <td>
                     {% if txn.status == 'ISSUED' %}
-                        <span class="badge bg-success">Issued</span>
+                    <span class="badge bg-success">Issued</span>
                     {% elif txn.status == 'PENDING' %}
-                        <span class="badge bg-warning text-dark">Pending Approval</span>
+                    <span class="badge bg-warning text-dark">Pending Approval</span>
+                    {% elif txn.status == 'RETURN_REQUESTED' %}
+                    <span class="badge bg-info text-dark">Return Requested</span>
                     {% else %}
-                        <span class="badge bg-secondary">Returned</span>
+                    <span class="badge bg-secondary">Returned</span>
                     {% endif %}
                 </td>
                 <td>
-                    {% if txn.status == 'ISSUED' %}
-                        <span class="{% if txn.is_overdue %}text-danger fw-bold{% endif %}">
-                            {{ txn.due_date|date:"M d, Y" }}
-                        </span>
+                    {% if not txn.status == 'PENDING' %}
+                    <span class="{% if txn.is_overdue %}text-danger fw-bold{% endif %}">
+                        {{ txn.due_date|date:"M d, Y" }}
+                    </span>
                     {% else %}
-                        -
+                    -
                     {% endif %}
                 </td>
                 <td>
-                    {% if txn.is_ebook and txn.status == 'ISSUED' %}
-                        <a href="#" class="btn btn-sm btn-outline-primary">Download</a>
+                    {% if txn.status == 'ISSUED' and not txn.is_ebook %}
+                    <form action="{% url 'request_return' txn.pk %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Return Book</button>
+                    </form>
+                    {% elif txn.is_ebook and txn.status == 'ISSUED' %}
+                    <a href="#" class="btn btn-sm btn-outline-primary">Download</a>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center py-4">No active book transactions.</td></tr>
+            <tr>
+                <td colspan="4" class="text-center py-4">No active book transactions.</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>

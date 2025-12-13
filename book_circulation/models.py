@@ -12,11 +12,13 @@ class TransactionManager(models.Manager):
 
     def active(self):
         """Get all active (not returned) transactions."""
-        return self.filter(status__in=["PENDING", "ISSUED"])
+        return self.filter(status__in=["PENDING", "ISSUED", "RETURN_REQUESTED"])
 
     def overdue(self):
         """Get all overdue transactions."""
-        return self.filter(status="ISSUED", due_date__lt=timezone.now())
+        return self.filter(
+            status__in=["ISSUED", "RETURN_REQUESTED"], due_date__lt=timezone.now()
+        )
 
     def for_user(self, user):
         """Get transactions for a specific user with related data."""
@@ -77,14 +79,12 @@ class Transaction(models.Model):
         """Validate transaction data before saving."""
         super().clean()
 
-        # Validate due_date is after checkout_date
         if self.due_date and self.checkout_date:
             if self.due_date <= self.checkout_date:
                 raise ValidationError(
                     {"due_date": "Due date must be after checkout date."}
                 )
 
-        # Validate returned_date
         if self.returned_date:
             if self.returned_date < self.checkout_date:
                 raise ValidationError(
@@ -95,7 +95,6 @@ class Transaction(models.Model):
                     {"status": "Status must be RETURNED when returned_date is set."}
                 )
 
-        # Validate status transitions
         if self.pk:
             try:
                 original = Transaction.objects.get(pk=self.pk)
@@ -112,9 +111,9 @@ class Transaction(models.Model):
         """Check if status transition is allowed."""
         valid_transitions = {
             "PENDING": ["ISSUED", "RETURNED"],
-            "ISSUED": ["RETURN_REQEUSTED", "RETURNED"],
-            "RETURN_REQUESTED": ["RETURNED", "ISSUED"],  # Allow approval or reject.
-            "RETURNED": [],  # Final state
+            "ISSUED": ["RETURN_REQUESTED", "RETURNED"],
+            "RETURN_REQUESTED": ["RETURNED", "ISSUED"],
+            "RETURNED": [],
         }
         return new_status in valid_transitions.get(old_status, [])
 
@@ -123,30 +122,29 @@ class Transaction(models.Model):
         Handle stock management atomically.
         """
         if not self.due_date and self.status == "ISSUED":
-            # auto-set due date if not provided.
             self.due_date = timezone.now() + timedelta(days=14)
 
         with db_transaction.atomic():
-            if not self.is_ebook:  # physical book
+            if not self.is_ebook:
                 if self.pk:
-                    original = Transaction.objects.select_for_update().get(
-                        pk=self.pk
-                    )  # prevent concurent updates
+                    original = Transaction.objects.select_for_update().get(pk=self.pk)
 
                     # PENDING -> ISSUED
                     if original.status == "PENDING" and self.status == "ISSUED":
                         if not self.book.borrow_book():
                             raise ValidationError("Book is no longer available.")
 
-                    # ISSUED -> RETURNED
-                    elif original.status == "ISSUED" and self.status == "RETURNED":
+                    # ISSUED/REQUESTED -> RETURNED
+                    elif (
+                        original.status in ["ISSUED", "RETURN_REQUESTED"]
+                    ) and self.status == "RETURNED":
                         if not self.returned_date:
                             self.returned_date = timezone.now()
                         if not self.book.return_book():
                             raise ValidationError(
                                 "Cannot return book - all copies already available."
                             )
-                else:  # new record
+                else:
                     if self.status == "ISSUED":
                         if not self.book.borrow_book():
                             raise ValidationError("Book not available for checkout.")
