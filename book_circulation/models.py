@@ -39,6 +39,7 @@ class Transaction(models.Model):
     STATUS_CHOICES = [
         ("PENDING", "Pending"),
         ("ISSUED", "Issued"),
+        ("RETURN_REQUESTED", "Return Requested"),
         ("RETURNED", "Returned"),
     ]
 
@@ -52,7 +53,7 @@ class Transaction(models.Model):
     due_date = models.DateTimeField(db_index=True)
     returned_date = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
-        max_length=10, choices=STATUS_CHOICES, default="ISSUED", db_index=True
+        max_length=20, choices=STATUS_CHOICES, default="ISSUED", db_index=True
     )
     is_ebook = models.BooleanField(default=False)
 
@@ -111,7 +112,8 @@ class Transaction(models.Model):
         """Check if status transition is allowed."""
         valid_transitions = {
             "PENDING": ["ISSUED", "RETURNED"],
-            "ISSUED": ["RETURNED"],
+            "ISSUED": ["RETURN_REQEUSTED", "RETURNED"],
+            "RETURN_REQUESTED": ["RETURNED", "ISSUED"],  # Allow approval or reject.
             "RETURNED": [],  # Final state
         }
         return new_status in valid_transitions.get(old_status, [])
