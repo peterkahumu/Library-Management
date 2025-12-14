@@ -29,7 +29,7 @@
                     {% elif txn.status == 'RETURN_REQUESTED' %}
                     <span class="badge bg-info text-dark">Return Requested</span>
                     {% else %}
-                    <span class="badge bg-secondary">Returned</span>
+                    <span class="badge bg-success">{{txn.status}}</span>
                     {% endif %}
                 </td>
                 <td>
@@ -47,8 +47,10 @@
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-danger">Return Book</button>
                     </form>
-                    {% elif txn.is_ebook and txn.status == 'ISSUED' %}
+                    {% elif txn.is_ebook%}
                     <a href="#" class="btn btn-sm btn-outline-primary">Download</a>
+                    {% else %}
+                    <a href="{{ txn.book.get_absolute_url }}" class="btn btn-sm btn-outline-success">View book</a>
                     {% endif %}
                 </td>
             </tr>

@@ -33,11 +33,16 @@ class BorrowBookView(LoginRequiredMixin, FormView):
 
         # Check for active transactions
         if Transaction.objects.filter(
-            user=request.user, book=self.book, status__in=["ISSUED", "PENDING"]
+            user=request.user,
+            book=self.book,
+            status__in=["ISSUED", "PENDING", "RETURN_REQUESTED"],
         ).exists():
             messages.warning(
                 request, "You already have an active request or loan for this book."
             )
+            return redirect("book_detail", pk=self.book.pk)
+        if not self.book.is_available:
+            messages.error(request, "Book out of stock at the moment. Try again later.")
             return redirect("book_detail", pk=self.book.pk)
 
         return super().dispatch(request, *args, **kwargs)

@@ -21,7 +21,9 @@
                 <tbody>
                     {% for txn in borrow_requests %}
                     <tr>
-                        <td class="ps-4">{{ txn.user.get_full_name }} <small class="text-muted">({{ txn.user.user_code }})</small></td>
+                        <td class="ps-4">{{ txn.user.get_full_name }}
+                            <small class="text-muted">({{ txn.user.user_code}})</small>
+                        </td>
                         <td>{{ txn.book.title }}</td>
                         <td>{{ txn.checkout_date|date:"M d, Y" }}</td>
                         <td class="text-end pe-4">
@@ -66,8 +68,9 @@
                         <td>{{ txn.book.title }}</td>
                         <td>
                             <small class="d-block">Out: {{ txn.checkout_date|date:"M d, Y" }}</small>
-                            <small class="{% if txn.is_overdue %}text-danger{% endif %}">Due: {{ txn.due_date|date:"M d,
-                                Y" }}</small>
+                            <small class="{% if txn.is_overdue %}text-danger{% endif %}">
+                                Due: {{ txn.due_date|date:"M d, Y" }}
+                            </small>
                         </td>
                         <td class="text-end pe-4">
                             <form action="{% url 'approve_return' txn.pk %}" method="post">
