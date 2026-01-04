@@ -144,27 +144,79 @@ class RequestReturnView(LoginRequiredMixin, View):
 # --- Librarian Views ---
 
 
-class LibrarianDashboardView(UserPassesTestMixin, ListView):
+class LibrarianBorrowRequestsView(UserPassesTestMixin, ListView):
     model = Transaction
-    template_name = "circulation/librarian_dashboard.html"
+    template_name = "circulation/librarian_borrow_requests.html"
     context_object_name = "borrow_requests"
+    paginate_by = 10
 
     def test_func(self):
-        """Ensure only staff/librarians can access this view."""
         return is_librarian_or_staff(self.request.user)
 
     def get_queryset(self):
-        """Show only pending requests."""
-        return Transaction.objects.filter(status="PENDING").select_related(
-            "book", "user"
+        return (
+            Transaction.objects.filter(status="PENDING")
+            .select_related("book", "user")
+            .order_by("checkout_date")
         )
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["return_requests"] = Transaction.objects.filter(
-            status="RETURN_REQUESTED"
-        ).select_related("book", "user")
-        return context
+
+class LibrarianReturnRequestsView(UserPassesTestMixin, ListView):
+    model = Transaction
+    template_name = "circulation/librarian_return_requests.html"
+    context_object_name = "return_requests"
+    paginate_by = 10
+
+    def test_func(self):
+        return is_librarian_or_staff(self.request.user)
+
+    def get_queryset(self):
+        return (
+            Transaction.objects.filter(status="RETURN_REQUESTED")
+            .select_related("book", "user")
+            .order_by("returned_date")
+        )
+
+
+class RejectBorrowView(UserPassesTestMixin, View):
+    """Reject a borrow request."""
+
+    def test_func(self):
+        return is_librarian_or_staff(self.request.user)
+
+    def post(self, request, pk):
+        transaction = get_object_or_404(Transaction, pk=pk)
+        if transaction.status == "PENDING":
+            try:
+                transaction.delete()
+                messages.warning(
+                    request,
+                    f"Borrow request for {transaction.book.title} rejected/cancelled.",
+                )
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+        return redirect("librarian_borrow_requests")
+
+
+class RejectReturnView(UserPassesTestMixin, View):
+    """Reject a return request (e.g., book damaged or not received)."""
+
+    def test_func(self):
+        return is_librarian_or_staff(self.request.user)
+
+    def post(self, request, pk):
+        transaction = get_object_or_404(Transaction, pk=pk)
+        if transaction.status == "RETURN_REQUESTED":
+            try:
+                # Revert to ISSUED status so it stays as borrowed
+                transaction.status = "ISSUED"
+                transaction.save()
+                messages.warning(
+                    request, "Return request rejected. Book marked as still ISSUED."
+                )
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+        return redirect("librarian_return_requests")
 
 
 class ApproveBorrowView(UserPassesTestMixin, View):
@@ -179,10 +231,12 @@ class ApproveBorrowView(UserPassesTestMixin, View):
             try:
                 transaction.status = "ISSUED"
                 transaction.save()
-                messages.success(request, f"Book issued to {transaction.user.username}")
+                messages.success(
+                    request, f"Book issued to {transaction.user.get_full_name()}"
+                )
             except Exception as e:
                 messages.error(request, f"Error: {e}")
-        return redirect("librarian_dashboard")
+        return redirect("librarian_borrow_requests")
 
 
 class ApproveReturnView(UserPassesTestMixin, View):
@@ -204,4 +258,4 @@ class ApproveReturnView(UserPassesTestMixin, View):
                 messages.warning(request, "Book is already returned.")
         except Exception as e:
             messages.error(request, f"Error: {e}")
-        return redirect("librarian_dashboard")
+        return redirect("librarian_return_requests")

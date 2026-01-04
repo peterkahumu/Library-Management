@@ -1,0 +1,32 @@
+<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
+    <li class="nav-item"><a class="nav-link active" href="{% url 'book_list' %}">Catalog</a></li>
+    <li class="nav-item">
+        <a class="nav-link active" href="{% url 'student_dashboard' %}">
+            <i class="fas fa-columns me-1"></i>My Dashboard
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active" href="{% url 'my_books' %}">
+            <i class="fas fa-book-open me-1"></i>My Books
+        </a>
+    </li>
+
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+            <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32" height="32">
+            <span>{{ user.get_full_name }}</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <!-- <li><a class="dropdown-item" href="#">Profile</a></li> -->
+            <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item text-danger">Log out</button>
+            </form>
+        </ul>
+    </li>
+</ul>

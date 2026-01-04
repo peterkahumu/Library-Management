@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} My Dashboard {% endblock title %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="fw-bold text-primary">Welcome, {{ user.get_full_name }}</h2>
+        <p class="text-muted">Here is an overview of your borrowing activity.</p>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row mb-5 g-3">
+    <div class="col-md-4">
+        <div class="card card-custom bg-primary-custom text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0 opacity-75">Books Borrowed</h6>
+                        <h2 class="mt-2 mb-0 fw-bold">{{ borrowed_books }}</h2>
+                    </div>
+                    <i class="fas fa-book fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-custom bg-danger-custom text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0 opacity-75">Overdue Books</h6>
+                        <h2 class="mt-2 mb-0 fw-bold">{{ overdue_books }}</h2>
+                    </div>
+                    <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-custom bg-secondary-custom text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0 opacity-75">Estimated Fines</h6>
+                        <h2 class="mt-2 mb-0 fw-bold">${{ fines }}</h2>
+                    </div>
+                    <i class="fas fa-hand-holding-usd fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card card-custom border-0">
+            <div class="card-body py-4 d-flex justify-content-center align-items-center flex-wrap gap-3">
+                <span class="fw-bold text-muted text-uppercase small me-2">Quick Actions:</span>
+
+                <a href="{% url 'my_books' %}" class="btn btn-outline-primary rounded-pill px-4">
+                    <i class="fas fa-book-reader me-2"></i>My Books & History
+                </a>
+
+                <a href="{% url 'book_list' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fas fa-search me-2"></i>Browse Catalog
+                </a>
+
+                <a href="{% url 'password_change' %}" class="btn btn-outline-dark rounded-pill px-4">
+                    <i class="fas fa-user-cog me-2"></i>My Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Borrow Requests{% endblock title %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-primary">Pending Borrow Requests</h2>
+        <p class="text-muted">Manage book issuance requests from students.</p>
+    </div>
+</div>
+
+<div class="card card-custom border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">User</th>
+                        <th>Book</th>
+                        <th>Requested On</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in borrow_requests %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold">{{ req.user.get_full_name }}</div>
+                            <small class="text-muted">{{ req.user.user_code }}</small>
+                        </td>
+                        <td>{{ req.book.title }}</td>
+                        <td>{{ req.checkout_date|date:"M d, Y H:i" }}</td>
+                        <td class="text-end pe-4">
+                            <form action="{% url 'approve_borrow' req.pk %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 me-1"
+                                    title="Approve">
+                                    <i class="fas fa-check me-1"></i>Approve
+                                </button>
+                            </form>
+                            <form action="{% url 'reject_borrow' req.pk %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                    title="Reject"
+                                    onclick="return confirm('Are you sure you want to reject this request?');">
+                                    <i class="fas fa-times me-1"></i>Reject
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="fas fa-inbox fa-3x mb-3 opacity-25 d-block"></i>
+                            No pending borrow requests at the moment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if is_paginated %}
+    <div class="card-footer bg-white border-0 py-3">
+        {% include 'components/pagination.html' %}
+    </div>
+    {% endif %}
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'librarian_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+{% endblock content %}

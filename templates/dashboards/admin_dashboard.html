@@ -21,11 +21,59 @@
         </div>
     </div>
 
-   <div class="row g-3 mb-4">
-        {% include 'components/kpi_card.html' with title='Total Books' value=total_books color='primary' icon='fa-book' %}
-        {% include 'components/kpi_card.html' with title='Active Members' value=active_students color='success' icon='fa-users' %}
-        {% include 'components/kpi_card.html' with title='Currently Issued' value=issued_books color='info' icon='fa-hand-holding-book' %}
-        {% include 'components/kpi_card.html' with title='Overdue Books' value=overdue_books color='danger' icon='fa-exclamation-triangle' %}
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card card-custom bg-primary-custom text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Total Books</p>
+                            <h3 class="fw-bold mb-0">{{ total_books }}</h3>
+                        </div>
+                        <i class="fas fa-book fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-custom bg-success-custom text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Active Members</p>
+                            <h3 class="fw-bold mb-0">{{ active_students }}</h3>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-custom bg-info-custom text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Currently Issued</p>
+                            <h3 class="fw-bold mb-0">{{ issued_books }}</h3>
+                        </div>
+                        <i class="fas fa-hand-holding-book fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-custom bg-danger-custom text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Overdue Books</p>
+                            <h3 class="fw-bold mb-0">{{ overdue_books }}</h3>
+                        </div>
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -60,13 +108,26 @@
         </div>
     </form>
 
-   <h4 class="fw-bold text-dark mb-3 mt-4">Analytical Insights <small class="text-muted fs-6">(Based on filter)</small>
+    <h4 class="fw-bold text-dark mb-3 mt-4">Analytical Insights <small class="text-muted fs-6">(Based on filter)</small>
     </h4>
     <div class="row g-3 mb-5">
         {% with day_url=active_day|lower %}
         <div class="col-md-4">
             <a href="{% url 'transaction_logs' %}?day={{ day_url }}" class="text-decoration-none">
-                {% include 'components/drill_down_card.html' with title='Most Active Day' value=active_day count=active_day_count color='warning' icon='fa-calendar-day' %}
+                <div class="card card-custom h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-warning-custom text-white p-3 rounded-circle me-3">
+                                <i class="fas fa-calendar-day fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-0 text-uppercase fw-bold">Most Active Day</p>
+                                <h5 class="fw-bold mb-0 text-dark">{{ active_day }}</h5>
+                                <small class="text-muted">{{ active_day_count }} transactions</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </a>
         </div>
         {% endwith %}
@@ -74,7 +135,20 @@
         {% with hour_url=active_hour|slice:":2" %}
         <div class="col-md-4">
             <a href="{% url 'transaction_logs' %}?hour={{ hour_url }}" class="text-decoration-none">
-                {% include 'components/drill_down_card.html' with title='Most Active Hour' value=active_hour count=active_hour_count color='secondary' icon='fa-clock' %}
+                <div class="card card-custom h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-secondary-custom text-white p-3 rounded-circle me-3">
+                                <i class="fas fa-clock fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-0 text-uppercase fw-bold">Most Active Hour</p>
+                                <h5 class="fw-bold mb-0 text-dark">{{ active_hour }}</h5>
+                                <small class="text-muted">{{ active_hour_count }} transactions</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </a>
         </div>
         {% endwith %}
@@ -82,7 +156,20 @@
         {% with user_url=active_user_display %}
         <div class="col-md-4">
             <a href="{% url 'transaction_logs' %}?user_code={{ user_url }}" class="text-decoration-none">
-                {% include 'components/drill_down_card.html' with title='Most Active User' value=active_user_display count=active_user_count color='dark' icon='fa-user-graduate' %}
+                <div class="card card-custom h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary-custom text-white p-3 rounded-circle me-3">
+                                <i class="fas fa-user-graduate fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-0 text-uppercase fw-bold">Most Active User</p>
+                                <h5 class="fw-bold mb-0 text-dark">{{ active_user_display }}</h5>
+                                <small class="text-muted">{{ active_user_count }} transactions</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </a>
         </div>
         {% endwith %}
@@ -165,7 +252,7 @@
                                     <small class="text-muted">{{ txn.user.user_code }}</small>
                                 </td>
                                 <td><a href="{{txn.book.get_absolute_url}}" class="text-decoration-none">
-                                    {{ txn.book.title|truncatechars:30 }}</a></td>
+                                        {{ txn.book.title|truncatechars:30 }}</a></td>
                                 <td>
                                     {% if txn.status == 'ISSUED' %}
                                     <span class="badge bg-warning text-dark">Issued</span>

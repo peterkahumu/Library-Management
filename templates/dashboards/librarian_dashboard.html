@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Librarian Dashboard {% endblock title %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="fw-bold text-primary">Librarian Dashboard</h2>
+        <p class="text-muted">Overview of today's activities and library status.</p>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row mb-5 g-3">
+    <div class="col-md-4">
+        <div class="card card-custom bg-success-custom text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0 opacity-75">Issued Today</h6>
+                        <h2 class="mt-2 mb-0 fw-bold">{{ issued_today_count }}</h2>
+                    </div>
+                    <i class="fas fa-arrow-up fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-custom bg-info-custom text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0 opacity-75">Returned Today</h6>
+                        <h2 class="mt-2 mb-0 fw-bold">{{ returned_today_count }}</h2>
+                    </div>
+                    <i class="fas fa-arrow-down fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-custom bg-danger-custom text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0 opacity-75">Total Overdue</h6>
+                        <h2 class="mt-2 mb-0 fw-bold">{{ total_overdue_count }}</h2>
+                    </div>
+                    <i class="fas fa-exclamation-circle fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Actions Summary -->
+<div class="row mb-5 g-4">
+    <div class="col-md-6">
+        <div class="card card-custom h-100 border-0 shadow-sm">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="fw-bold mb-1 text-primary-custom">Pending Borrows</h5>
+                    <h2 class="fw-bold mb-0">{{ pending_borrow_count }}</h2>
+                    <small class="text-muted">Requests waiting approval</small>
+                </div>
+                <a href="{% url 'librarian_borrow_requests' %}" class="btn btn-primary rounded-pill px-4">
+                    Review <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card card-custom h-100 border-0 shadow-sm">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="fw-bold mb-1 text-success-custom">Pending Returns</h5>
+                    <h2 class="fw-bold mb-0">{{ pending_return_count }}</h2>
+                    <small class="text-muted">Requests waiting confirmation</small>
+                </div>
+                <a href="{% url 'librarian_return_requests' %}" class="btn btn-success rounded-pill px-4">
+                    Review <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card card-custom h-100 border-0 shadow-sm bg-light">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-bolt me-2 text-warning"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body d-flex flex-column gap-2">
+                <a href="{% url 'book_create' %}"
+                    class="btn btn-white border shadow-sm text-start py-3 d-flex align-items-center card-custom">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                        <i class="fas fa-plus text-primary"></i>
+                    </div>
+                    <span class="fw-bold text-dark">Add New Book</span>
+                </a>
+                <a href="{% url 'book_list' %}"
+                    class="btn btn-white border shadow-sm text-start py-3 d-flex align-items-center card-custom">
+                    <div class="bg-info bg-opacity-10 p-2 rounded-circle me-3">
+                        <i class="fas fa-search text-info"></i>
+                    </div>
+                    <span class="fw-bold text-dark">Search Catalogue</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent System Transactions (Brief) -->
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Recent Activity</h5>
+                <a href="{% url 'transaction_logs' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">User</th>
+                                <th>Book Title</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trans in recent_transactions %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold">{{ trans.user.get_full_name }}</div>
+                                    <small class="text-muted">{{ trans.user.user_code }}</small>
+                                </td>
+                                <td>{{ trans.book.title|truncatechars:30 }}</td>
+                                <td>{{ trans.checkout_date|date:"M d, H:i" }}</td>
+                                <td>
+                                    <span
+                                        class="badge {% if trans.status == 'ISSUED' %}bg-warning text-dark{% elif trans.status == 'RETURNED' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ trans.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'transaction_logs' %}?user_code={{ trans.user.user_code }}"
+                                        class="btn btn-sm btn-light">
+                                        <i class="fas fa-search"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No recent transactions found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

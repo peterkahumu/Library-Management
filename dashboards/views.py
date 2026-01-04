@@ -191,7 +191,7 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             context["active_user_count"] = 0
 
         # Recent activity table
-        context["recent_activity"] = queryset.order_by("-checkout_date")[:5]
+        context["recent_activity"] = queryset.order_by("-checkout_date")[:3]
 
         # User management data
         context["all_users"] = LibraryUser.objects.filter(is_superuser=False).values(
@@ -315,3 +315,77 @@ class UserRoleUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
             request, f"Role for user {user_code} updated to {new_role.title()}."
         )
         return redirect(redirect_url)
+
+
+class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    """
+    Dashboard view for Students, providing their borrowing history and status.
+    """
+
+    template_name = "dashboards/student_dashboard.html"
+
+    def test_func(self):
+        return self.request.user.role in [
+            UserRoles.STUDENT,
+            UserRoles.LIBRARIAN,
+            UserRoles.ADMIN,
+        ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student = self.request.user
+
+        # KPI Metrics
+        context["borrowed_books"] = Transaction.objects.filter(
+            user=student, status__in=["ISSUED", "PENDING"]
+        ).count()
+
+        context["overdue_books"] = Transaction.objects.filter(
+            user=student, status="ISSUED", due_date__lt=timezone.now()
+        ).count()
+
+        # Calculate estimated fines (simple logic: $1 per overdue day)
+        overdue_txns = Transaction.objects.filter(
+            user=student, status="ISSUED", due_date__lt=timezone.now()
+        )
+        total_fines = sum(txn.days_overdue for txn in overdue_txns)
+        context["fines"] = total_fines
+
+        return context
+
+
+class LibrarianDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = "dashboards/librarian_dashboard.html"
+
+    def test_func(self):
+        return self.request.user.role in [UserRoles.LIBRARIAN, UserRoles.ADMIN]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Date filtering
+        today = timezone.now().date()
+
+        # KPI Metrics
+        context["issued_today_count"] = Transaction.objects.filter(
+            status="ISSUED", checkout_date__date=today
+        ).count()
+
+        context["returned_today_count"] = Transaction.objects.filter(
+            status="RETURNED", returned_date__date=today
+        ).count()
+
+        context["total_overdue_count"] = Transaction.objects.overdue().count()
+
+        # Counts for "Pending Actions" badges/cards
+        context["pending_borrow_count"] = Transaction.objects.filter(
+            status="PENDING"
+        ).count()
+        context["pending_return_count"] = Transaction.objects.filter(
+            status="RETURN_REQUESTED"
+        ).count()
+
+        context["recent_transactions"] = Transaction.objects.select_related(
+            "user", "book"
+        ).order_by("-checkout_date")[:2]
+        return context

@@ -17,7 +17,7 @@ class HomeView(TemplateView):
             elif request.user.role == UserRoles.LIBRARIAN:
                 return redirect("librarian_dashboard")
             elif request.user.role == UserRoles.STUDENT:
-                return redirect("book_list")
+                return redirect("student_dashboard")
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

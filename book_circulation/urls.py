@@ -13,7 +13,14 @@ urlpatterns = [
     ),
     # Librarian URLs
     path(
-        "dashboard/", views.LibrarianDashboardView.as_view(), name="librarian_dashboard"
+        "librarian/borrow-requests/",
+        views.LibrarianBorrowRequestsView.as_view(),
+        name="librarian_borrow_requests",
+    ),
+    path(
+        "librarian/return-requests/",
+        views.LibrarianReturnRequestsView.as_view(),
+        name="librarian_return_requests",
     ),
     # Action URLs
     path(
@@ -22,8 +29,18 @@ urlpatterns = [
         name="approve_borrow",
     ),
     path(
+        "reject-borrow/<uuid:pk>/",
+        views.RejectBorrowView.as_view(),
+        name="reject_borrow",
+    ),
+    path(
         "approve-return/<uuid:pk>/",
         views.ApproveReturnView.as_view(),
         name="approve_return",
+    ),
+    path(
+        "reject-return/<uuid:pk>/",
+        views.RejectReturnView.as_view(),
+        name="reject_return",
     ),
 ]

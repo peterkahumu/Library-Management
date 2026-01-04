@@ -32,58 +32,22 @@
             </div>
         </div>
 
-        <div class="collapse navbar-collapse d-none d-lg-flex" id="desktopNav">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
-
-                {% if user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link active" href="{% url 'book_list' %}">Catalog</a></li>
-
-                {% if user.role == "student" %}
-                <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'my_books' %}">
-                        <i class="fas fa-book-open me-1"></i>My Books
-                    </a>
-                </li>
-                {% endif %}
-
-                {% if user.is_staff or user.role == 'librarian' %}
-                <li class="nav-item">
-                    <a class="nav-link active fw-bold text-warning" href="{% url 'librarian_dashboard' %}">
-                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'book_create' %}">
-                        <i class="fa-solid fa-plus me-2"></i>Add Book
-                    </a>
-                </li>
-                {% endif %}
-
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
-                        <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32"
-                            height="32">
-                        <span>{{ user.get_full_name }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <form action="{% url 'logout' %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="dropdown-item text-danger">Log out</button>
-                        </form>
-                    </ul>
-                </li>
-                {% else %}
-                <li class="nav-item"><a class="btn bg-light-orange mx-3" href="{% url 'login' %}">Login</a></li>
-                <li class="nav-item"><a class="btn bg-orange" href="{% url 'register' %}">Sign Up</a></li>
-                {% endif %}
-            </ul>
-        </div>
+        {% if user.is_authenticated %}
+        {% if user.role == 'admin' %}
+        {% include 'components/nav_admin.html' %}
+        {% elif user.role == 'librarian' %}
+        {% include 'components/nav_librarian.html' %}
+        {% elif user.role == 'student' %}
+        {% include 'components/nav_student.html' %}
+        {% endif %}
+        {% else %}
+        <!-- Public/Guest Links -->
+        <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
+        <li class="nav-item"><a class="btn bg-light-orange mx-3" href="{% url 'login' %}">Login</a></li>
+        <li class="nav-item"><a class="btn bg-orange" href="{% url 'register' %}">Sign Up</a></li>
+        {% endif %}
+        </ul>
+    </div>
     </div>
 </nav>
 
