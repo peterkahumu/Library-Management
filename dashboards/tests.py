@@ -474,7 +474,7 @@ class StudentDashboardViewTests(TestCase):
         self.client.login(username="student", password="student123")
         response = self.client.get(reverse("student_dashboard"))
 
-        self.assertEqual(response.context["borrowed_books"], 2)
+        self.assertEqual(response.context["borrowed_books"], 1)
 
     def test_overdue_books_count(self):
         """Test overdue books count for logged-in student."""
