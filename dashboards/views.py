@@ -53,7 +53,7 @@ def get_filtered_queryset(request):
             # Invalid date format; notify user and fall back to default range
             messages.error(
                 request,
-                "Invalid date format for the selected range. Showing default date range instead.",
+                "Invalid date format for the selected range. Fallback to default range",
             )
             if frequency == "monthly":
                 time_limit = timezone.now() - timedelta(days=180)
@@ -248,7 +248,7 @@ class TransactionLogsView(LoginRequiredMixin, UserPassesTestMixin, ListView):
                 date_obj = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
                 queryset = queryset.filter(checkout_date__date=date_obj)
             except ValueError:
-               pass # fallback to original queryset
+                pass  # fallback to original queryset
             queryset = queryset.filter(status=status.upper())
         if user_code:
             try:
@@ -278,7 +278,7 @@ class TransactionLogsView(LoginRequiredMixin, UserPassesTestMixin, ListView):
                     hour=hour_num
                 )
             except (ValueError, TypeError):
-                # if the hour is invalid, ignore and return the queryset without filtering.
+                pass  # ignore and return the queryset without filtering.
         return queryset
 
     def get_context_data(self, **kwargs):

@@ -13,7 +13,9 @@ class TransactionManager(models.Manager):
 
     def active(self):
         """Get all active (not returned hard copies) and Downloaded transactions."""
-        return self.filter(status__in=["PENDING", "ISSUED", "RETURN_REQUESTED", "DOWNLOADED"])
+        return self.filter(
+            status__in=["PENDING", "ISSUED", "RETURN_REQUESTED", "DOWNLOADED"]
+        )
 
     def overdue(self):
         """Get all overdue transactions."""
@@ -119,6 +121,7 @@ class Transaction(models.Model):
             "ISSUED": ["RETURN_REQUESTED", "RETURNED"],
             "RETURN_REQUESTED": ["RETURNED", "ISSUED"],
             "RETURNED": [],
+            "DOWNLOADED": [],  # e-book links will be set to expire
         }
         return new_status in valid_transitions.get(old_status, [])
 
