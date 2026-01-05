@@ -9,6 +9,7 @@ from django.views import View
 
 from books.models import Book
 from accounts.models import UserRoles
+from communications.email import LibraryEmailService
 from .models import Transaction
 from .forms import BorrowForm
 
@@ -55,19 +56,21 @@ class BorrowBookView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         """Handle the business logic once the form is submitted and valid."""
-        # Use .get() with a default or safety net as discussed
         duration = form.cleaned_data.get("duration_days") or 7
         due_date = timezone.now() + timedelta(days=duration)
 
         try:
             if self.book.is_digital:
                 # E-Book Flow
-                Transaction.objects.create(
+                transaction = Transaction.objects.create(
                     user=self.request.user,
                     book=self.book,
                     due_date=due_date,
                     status="DOWNLOADED",
                     is_ebook=True,
+                )
+                LibraryEmailService.send_book_issued_notification(
+                    transaction, download_link="https://library.example.com/download/..."
                 )
                 messages.success(self.request, "E-Book downloaded successfully!")
             else:
@@ -76,16 +79,17 @@ class BorrowBookView(LoginRequiredMixin, FormView):
                     messages.error(self.request, "This book is currently out of stock.")
                     return redirect("book_detail", pk=self.book.pk)
 
-                Transaction.objects.create(
+                transaction = Transaction.objects.create(
                     user=self.request.user,
                     book=self.book,
                     due_date=due_date,
                     status="PENDING",
                     is_ebook=False,
                 )
+                LibraryEmailService.send_borrow_request_confirmation(transaction)
                 messages.success(
                     self.request,
-                    "Request submitted. Please visit the librarian to complete checkout.",  # noqa
+                    "Request submitted. Please visit the librarian to complete checkout.",
                 )
         except Exception as e:
             messages.error(self.request, f"An error occurred: {e}")
@@ -116,7 +120,7 @@ class MyBooksListView(LoginRequiredMixin, ListView):
 
 class RequestReturnView(LoginRequiredMixin, View):
     """
-    Allow student to reqeust a return for an issued book."""
+    Allow student to request a return for an issued book."""
 
     def post(self, request, pk):
         transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
@@ -125,6 +129,7 @@ class RequestReturnView(LoginRequiredMixin, View):
             transaction.status = "RETURN_REQUESTED"
             try:
                 transaction.save()
+                LibraryEmailService.send_return_confirmation(transaction)
                 messages.success(
                     request,
                     "Return request submitted. "
@@ -135,7 +140,7 @@ class RequestReturnView(LoginRequiredMixin, View):
         else:
             messages.error(
                 request,
-                f"Books with status {transaction.get_status_display()} cannot perform this operation",  # noqa
+                f"Books with status {transaction.get_status_display()} cannot perform this operation",
             )
 
         return redirect("my_books")
@@ -186,6 +191,8 @@ class RejectBorrowView(UserPassesTestMixin, View):
         transaction = get_object_or_404(Transaction, pk=pk)
         if transaction.status == "PENDING":
             try:
+                reason = "Item not available or other library policy."
+                LibraryEmailService.send_book_request_denied(reason, transaction)
                 transaction.delete()
                 messages.warning(
                     request,
@@ -209,6 +216,9 @@ class RejectReturnView(UserPassesTestMixin, View):
                 # Revert to ISSUED status so it stays as borrowed
                 transaction.status = "ISSUED"
                 transaction.save()
+                LibraryEmailService.send_return_denied(
+                    "Book damaged or not received.", transaction
+                )
                 messages.warning(
                     request, "Return request rejected. Book marked as still ISSUED."
                 )
@@ -229,6 +239,7 @@ class ApproveBorrowView(UserPassesTestMixin, View):
             try:
                 transaction.status = "ISSUED"
                 transaction.save()
+                LibraryEmailService.send_book_issued_notification(transaction)
                 messages.success(
                     request, f"Book issued to {transaction.user.get_full_name()}"
                 )
@@ -249,6 +260,7 @@ class ApproveReturnView(UserPassesTestMixin, View):
         transaction = get_object_or_404(Transaction, pk=pk)
         try:
             if transaction.mark_as_returned():
+                LibraryEmailService.send_return_approval(transaction)
                 messages.success(
                     request, f"{transaction.book.title} returned successfully."
                 )

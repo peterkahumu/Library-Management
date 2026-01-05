@@ -4,9 +4,21 @@
 <h2 class="mb-4">My Books</h2>
 <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active rounded-pill px-4" id="pills-active-tab" data-bs-toggle="pill"
-            data-bs-target="#pills-active" type="button" role="tab">
+        <button class="nav-link active rounded-pill px-4" id="pills-pending-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-pending" type="button" role="tab">
+            Pending Requests
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="pills-current-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-current" type="button" role="tab">
             Current Loans
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="pills-digital-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-digital" type="button" role="tab">
+            Digital Shelf
         </button>
     </li>
     <li class="nav-item" role="presentation">
@@ -18,8 +30,8 @@
 </ul>
 
 <div class="tab-content" id="pills-tabContent">
-    <!-- Active Loans Tab -->
-    <div class="tab-pane fade show active" id="pills-active" role="tabpanel">
+    <!-- 2. Pending Requests Tab (PENDING) - Now First and Active -->
+    <div class="tab-pane fade show active" id="pills-pending" role="tabpanel">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -27,15 +39,67 @@
                         <thead class="bg-light">
                             <tr>
                                 <th class="ps-4">Book</th>
-                                <th>Format</th>
+                                <th>Requested On</th>
                                 <th>Status</th>
-                                <th>Due Date / Timeline</th>
+                                <th class="text-end pe-4">Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in transactions %}
+                            {% if txn.status == 'PENDING' %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if txn.book.cover_image %}
+                                        <img src="{{ txn.book.cover_image.url }}" width="40"
+                                            class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ txn.book.title }}</div>
+                                            <small class="text-muted">{{ txn.book.author }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ txn.checkout_date|date:"M d, Y" }}</td>
+                                <td><span class="badge bg-primary">Pending Approval</span></td>
+                                <td class="text-end pe-4"><small class="text-muted">Visit library to collect</small>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No pending requests.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Current Loans Tab (ISSUED, RETURN_REQUESTED) - Now Second -->
+    <div class="tab-pane fade" id="pills-current" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Book</th>
+                                <th>Status</th>
+                                <th>Timeline</th>
                                 <th class="text-end pe-4">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for txn in transactions %}
-                            {% if txn.status != "RETURNED" and txn.status != "DOWNLOADED" %}
+                            {% if txn.status == 'ISSUED' or txn.status == 'RETURN_REQUESTED' %}
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
@@ -55,43 +119,35 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div>
-                                        <div class="fw-bold">{{ txn.book.format }}</div>
-                                    </div>
-                                </td>
-                                <td>
                                     {% if txn.status == 'ISSUED' %}
                                     <span class="badge bg-warning text-dark">Issued</span>
-                                    {% elif txn.status == 'PENDING' %}
-                                    <span class="badge bg-primary">Pending Approval</span>
                                     {% elif txn.status == 'RETURN_REQUESTED' %}
                                     <span class="badge bg-info">Return Requested</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if txn.status == 'PENDING' %}
-                                    <small class="text-muted">Requested: {{ txn.checkout_date|timesince }} ago</small>
-                                    {% else %}
                                     {% if txn.is_overdue %}
                                     <span class="text-danger fw-bold"><i
-                                            class="fas fa-exclamation-circle me-1"></i>Overdue</span>
+                                            class="fas fa-exclamation-circle me-1"></i>Overdue by {{ txn.days_overdue }}
+                                        days</span>
                                     <div class="small text-danger">Due: {{ txn.due_date|date:"M d" }}</div>
                                     {% else %}
-                                    <span class="text-success">Due {{ txn.due_date|date:"M d" }}</span>
-                                    {% endif %}
+                                    <span class="text-success fw-bold"><i class="fas fa-clock me-1"></i>
+                                        {{ txn.due_date|timeuntil }} remaining
+                                    </span>
+                                    <div class="small text-success">Due: {{ txn.due_date|date:"M d" }}</div>
                                     {% endif %}
                                 </td>
                                 <td class="text-end pe-4">
-                                    {% if txn.status == 'ISSUED' and not txn.is_ebook %}
+                                    {% if txn.status == 'ISSUED' %}
                                     <form action="{% url 'request_return' txn.pk %}" method="post" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit"
                                             class="btn btn-sm btn-outline-danger rounded-pill px-3">Return</button>
                                     </form>
-                                    {% elif txn.status == 'DOWNLOADED' %}
-                                    <span class="text-muted small">E-Book</span>
-                                    {% elif txn.status == 'PENDING' %}
-                                    <button class="btn btn-sm btn-light rounded-pill px-3" disabled>Waiting...</button>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-light rounded-pill px-3"
+                                        disabled>Processing...</button>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -108,8 +164,8 @@
         </div>
     </div>
 
-    <!-- History Tab -->
-    <div class="tab-pane fade" id="pills-history" role="tabpanel">
+    <!-- 3. Digital Shelf Tab (DOWNLOADED) -->
+    <div class="tab-pane fade" id="pills-digital" role="tabpanel">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -117,15 +173,13 @@
                         <thead class="bg-light">
                             <tr>
                                 <th class="ps-4">Book</th>
-                                <th>Format</th>
-                                <th>Status</th>
-                                <th>Returned On</th>
-                                <th class="text-end pe-4">Details</th>
+                                <th>Downloaded On</th>
+                                <th class="text-end pe-4">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for txn in transactions %}
-                            {% if txn.status == 'RETURNED' or txn.status == "DOWNLOADED" %}
+                            {% if txn.status == 'DOWNLOADED' %}
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
@@ -144,14 +198,61 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <div>
-                                        <div class="fw-bold">{{ txn.book.format }}</div>
+                                <td>{{ txn.checkout_date|date:"M d, Y" }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="#" class="btn btn-sm btn-outline-primary rounded-pill">Read Now</a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted">No digital books found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Borrowing History Tab (RETURNED) -->
+    <div class="tab-pane fade" id="pills-history" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Book</th>
+                                <th>Returned On</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in transactions %}
+                            {% if txn.status == 'RETURNED' %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if txn.book.cover_image %}
+                                        <img src="{{ txn.book.cover_image.url }}" width="40"
+                                            class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ txn.book.title }}</div>
+                                            <small class="text-muted">{{ txn.book.author }}</small>
+                                        </div>
                                     </div>
                                 </td>
-                                <td><span class="badge bg-secondary">{{ txn.get_status_display }}</span></td>
-
                                 <td>{{ txn.returned_date|date:"M d, Y" }}</td>
+                                <td><span class="badge bg-secondary">Returned</span></td>
                                 <td class="text-end pe-4">
                                     <a href="{{ txn.book.get_absolute_url }}"
                                         class="btn btn-sm btn-outline-secondary rounded-pill">View Book</a>
