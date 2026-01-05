@@ -235,14 +235,20 @@ class RejectBorrowView(UserPassesTestMixin, View):
 
     def post(self, request, pk):
         transaction = get_object_or_404(Transaction, pk=pk)
+        reason = request.POST.get(
+            "reason", "Item not available or other library policy."
+        )
+        custom_note = request.POST.get("custom_note", "")
+
         if transaction.status == "PENDING":
             try:
-                reason = "Item not available or other library policy."
-                LibraryEmailService.send_book_request_denied(reason, transaction)
+                LibraryEmailService.send_book_request_denied(
+                    reason, custom_note, transaction
+                )
                 transaction.delete()
                 messages.warning(
                     request,
-                    f"Borrow request for {transaction.book.title} rejected/cancelled.",
+                    f"Borrow request for {transaction.book.title} rejected. User notified",  # noqa
                 )
             except Exception as e:
                 messages.error(request, f"Error: {e}")
@@ -257,14 +263,15 @@ class RejectReturnView(UserPassesTestMixin, View):
 
     def post(self, request, pk):
         transaction = get_object_or_404(Transaction, pk=pk)
+        reason = request.POST.get("reason", "Book damaged or not received.")
+        custom_note = request.POST.get("custom_note", "")
+
         if transaction.status == "RETURN_REQUESTED":
             try:
                 # Revert to ISSUED status so it stays as borrowed
                 transaction.status = "ISSUED"
                 transaction.save()
-                LibraryEmailService.send_return_denied(
-                    "Book damaged or not received.", transaction
-                )
+                LibraryEmailService.send_return_denied(reason, custom_note, transaction)
                 messages.warning(
                     request, "Return request rejected. Book marked as still ISSUED."
                 )

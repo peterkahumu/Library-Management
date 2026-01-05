@@ -32,21 +32,17 @@
                         <td>{{ req.book.title }}</td>
                         <td>{{ req.returned_date|default:req.due_date|date:"M d, Y" }}</td>
                         <td class="text-end pe-4">
-                            <form action="{% url 'approve_return' req.pk %}" method="post" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 me-1"
-                                    title="Confirm Return">
-                                    <i class="fas fa-check-double me-1"></i>Confirm
-                                </button>
-                            </form>
-                            <form action="{% url 'reject_return' req.pk %}" method="post" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                    title="Reject (Not Returned/Damaged)"
-                                    onclick="return confirm('Rejecting this will revert status to ISSUED. Continue?');">
-                                    <i class="fas fa-times me-1"></i>Reject
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 me-1"
+                                data-bs-toggle="modal" data-bs-target="#confirmReturnModal{{ req.pk }}"
+                                title="Confirm Return">
+                                <i class="fas fa-check-double me-1"></i>Confirm
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                data-bs-toggle="modal" data-bs-target="#rejectReturnModal{{ req.pk }}" title="Reject">
+                                <i class="fas fa-times me-1"></i>Reject
+                            </button>
+
+
                         </td>
                     </tr>
                     {% empty %}
@@ -73,4 +69,79 @@
         <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
     </a>
 </div>
+
+<!-- Modals Container -->
+{% for req in return_requests %}
+<!-- Confirm Return Modal -->
+<div class="modal fade" id="confirmReturnModal{{ req.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-primary">Confirm Return</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3 text-primary bg-primary bg-opacity-10 p-3 rounded-circle d-inline-block">
+                    <i class="fas fa-book fa-2x"></i>
+                </div>
+                <h5 class="mb-2">Accept Return?</h5>
+                <p class="text-muted mb-0">
+                    Confirm that <strong>{{ req.book.title }}</strong> has been returned by
+                    <strong>{{ req.user.get_full_name }}</strong> in good condition.
+                </p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <form action="{% url 'approve_return' req.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 ms-2">Confirm Return</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Return Modal -->
+<div class="modal fade" id="rejectReturnModal{{ req.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-start">
+            <form action="{% url 'reject_return' req.pk %}" method="post">
+                {% csrf_token %}
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-danger">Reject Return</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning small mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Rejecting this will revert the transaction status to <strong>ISSUED</strong>.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Reason for Rejection</label>
+                        <select class="form-select" name="reason" required>
+                            <option value="" selected disabled>Select a reason...</option>
+                            <option value="Book Damaged - Fine Required">Book Damaged - Fine Required</option>
+                            <option value="Wrong Book Returned">Wrong Book Returned</option>
+                            <option value="Pages Missing">Pages Missing / Vandalism</option>
+                            <option value="Book Not Received (User Error)">Book Not Received (User clicked by mistake)
+                            </option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Additional Notes</label>
+                        <textarea class="form-control" name="custom_note" rows="2"
+                            placeholder="Details about damage..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">Reject Return</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock content %}
