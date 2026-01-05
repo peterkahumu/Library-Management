@@ -253,7 +253,12 @@ class TransactionLogsView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             except ValueError:
                 pass  # fallback to original queryset
         if status:
-            queryset = queryset.filter(status=status.upper())
+            if status.upper() == "OVERDUE":
+                queryset = queryset.filter(status="ISSUED", due_date__lt=timezone.now())
+            elif status.upper() == "DOWNLOADED":
+                queryset = queryset.filter(status="DOWNLOADED")
+            else:
+                queryset = queryset.filter(status=status.upper())
         if user_code:
             try:
                 user = LibraryUser.objects.get(user_code__iexact=user_code)
@@ -351,7 +356,11 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
 
         # KPI Metrics
         context["borrowed_books"] = Transaction.objects.filter(
-            user=student, status__in=["ISSUED", "PENDING"]
+            user=student, status="ISSUED"
+        ).count()
+
+        context["pending_requests"] = Transaction.objects.filter(
+            user=student, status="PENDING"
         ).count()
 
         context["overdue_books"] = Transaction.objects.filter(
@@ -378,7 +387,6 @@ class LibrarianDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         context = super().get_context_data(**kwargs)
 
         # Date filtering
-        today = timezone.now().date()
         today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
         # KPI Metrics
@@ -387,7 +395,7 @@ class LibrarianDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         ).count()
 
         context["returned_today_count"] = Transaction.objects.filter(
-            status="RETURNED", returned_date__gte=today_start
+            status="RETURNED", returned_date__gte=today_start, is_ebook=False
         ).count()
         context["active_digital_loans"] = Transaction.objects.filter(
             status="DOWNLOADED"

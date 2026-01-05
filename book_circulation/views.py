@@ -70,7 +70,8 @@ class BorrowBookView(LoginRequiredMixin, FormView):
                     is_ebook=True,
                 )
                 LibraryEmailService.send_book_issued_notification(
-                    transaction, download_link="https://library.example.com/download/..."
+                    transaction,
+                    download_link="https://library.example.com/download/...",
                 )
                 messages.success(self.request, "E-Book downloaded successfully!")
             else:
@@ -89,7 +90,7 @@ class BorrowBookView(LoginRequiredMixin, FormView):
                 LibraryEmailService.send_borrow_request_confirmation(transaction)
                 messages.success(
                     self.request,
-                    "Request submitted. Please visit the librarian to complete checkout.",
+                    "Request submitted. Please visit the librarian to complete checkout.",  # noqa
                 )
         except Exception as e:
             messages.error(self.request, f"An error occurred: {e}")
@@ -110,12 +111,57 @@ class MyBooksListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        """Filter transactions to show only the current user's history."""
+        """
+        Main queryset for pagination: Only 'History' (Returned items).
+        Active/Pending/Digital items are loaded separately in context
+        to avoid being hidden by pagination.
+        """
         return (
-            Transaction.objects.filter(user=self.request.user)
+            Transaction.objects.filter(user=self.request.user, status="RETURNED")
+            .select_related("book")
+            .order_by("-returned_date", "-checkout_date")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # 1. Pending Requests (Includes Return Requests)
+        context["pending_requests"] = (
+            Transaction.objects.filter(
+                user=user, status__in=["PENDING", "RETURN_REQUESTED"]
+            )
             .select_related("book")
             .order_by("-checkout_date")
         )
+
+        # 2. Current Loans (Issued and Return Requested)
+        context["current_loans"] = (
+            Transaction.objects.filter(
+                user=user, status__in=["ISSUED", "RETURN_REQUESTED"]
+            )
+            .select_related("book")
+            .order_by("due_date")
+        )
+
+        # 3. Overdue Books (Issued & Late)
+        # Note: Return requested in pending tab
+        context["overdue_books"] = (
+            Transaction.objects.filter(
+                user=user, status="ISSUED", due_date__lt=timezone.now()
+            )
+            .select_related("book")
+            .order_by("due_date")
+        )
+
+        # 4. Digital Shelf
+        context["digital_books"] = (
+            Transaction.objects.filter(user=user, status="DOWNLOADED")
+            .select_related("book")
+            .order_by("-checkout_date")
+        )
+
+        return context
 
 
 class RequestReturnView(LoginRequiredMixin, View):
@@ -140,7 +186,7 @@ class RequestReturnView(LoginRequiredMixin, View):
         else:
             messages.error(
                 request,
-                f"Books with status {transaction.get_status_display()} cannot perform this operation",
+                f"Books with status {transaction.get_status_display()} cannot perform this operation",  # noqa
             )
 
         return redirect("my_books")

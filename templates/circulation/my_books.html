@@ -7,18 +7,36 @@
         <button class="nav-link active rounded-pill px-4" id="pills-pending-tab" data-bs-toggle="pill"
             data-bs-target="#pills-pending" type="button" role="tab">
             Pending Requests
+            {% if pending_requests %}
+            <span class="badge bg-primary ms-2">{{ pending_requests|length }}</span>
+            {% endif %}
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link rounded-pill px-4" id="pills-current-tab" data-bs-toggle="pill"
             data-bs-target="#pills-current" type="button" role="tab">
             Current Loans
+            {% if current_loans %}
+            <span class="badge bg-warning text-dark ms-2">{{ current_loans|length }}</span>
+            {% endif %}
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="pills-overdue-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-overdue" type="button" role="tab">
+            Overdue Books
+            {% if overdue_books %}
+            <span class="badge bg-danger ms-2">{{ overdue_books|length }}</span>
+            {% endif %}
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link rounded-pill px-4" id="pills-digital-tab" data-bs-toggle="pill"
             data-bs-target="#pills-digital" type="button" role="tab">
             Digital Shelf
+            {% if digital_books %}
+            <span class="badge bg-info text-dark ms-2">{{ digital_books|length }}</span>
+            {% endif %}
         </button>
     </li>
     <li class="nav-item" role="presentation">
@@ -45,8 +63,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for txn in transactions %}
-                            {% if txn.status == 'PENDING' %}
+                            {% for txn in pending_requests %}
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
@@ -66,14 +83,30 @@
                                     </div>
                                 </td>
                                 <td>{{ txn.checkout_date|date:"M d, Y" }}</td>
-                                <td><span class="badge bg-primary">Pending Approval</span></td>
-                                <td class="text-end pe-4"><small class="text-muted">Visit library to collect</small>
+                                <td>
+                                    {% if txn.status == 'PENDING' %}
+                                    <span class="badge bg-primary">Borrow Pending</span>
+                                    {% elif txn.status == 'RETURN_REQUESTED' %}
+                                    <span class="badge bg-warning text-dark">Return Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    {% if txn.status == 'PENDING' %}
+                                    <small class="text-muted">Visit library to collect</small>
+                                    {% elif txn.status == 'RETURN_REQUESTED' %}
+                                    <small class="text-muted">Hand over book to librarian</small>
+                                    {% endif %}
                                 </td>
                             </tr>
-                            {% endif %}
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center py-4 text-muted">No pending requests.</td>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="text-muted opacity-50 mb-3">
+                                        <i class="fas fa-clipboard-list fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-muted">No pending requests</h6>
+                                    <p class="small text-muted mb-0">Books you request will appear here.</p>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -98,8 +131,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for txn in transactions %}
-                            {% if txn.status == 'ISSUED' or txn.status == 'RETURN_REQUESTED' %}
+                            {% for txn in current_loans %}
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
@@ -151,10 +183,17 @@
                                     {% endif %}
                                 </td>
                             </tr>
-                            {% endif %}
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center py-4 text-muted">No active loans.</td>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="text-muted opacity-50 mb-3">
+                                        <i class="fas fa-book-reader fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-muted">No active loans</h6>
+                                    <p class="small text-muted mb-0">Search the catalog to find your next read!</p>
+                                    <a href="{% url 'book_list' %}"
+                                        class="btn btn-sm btn-outline-primary mt-3 rounded-pill">Browse Catalog</a>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -178,8 +217,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for txn in transactions %}
-                            {% if txn.status == 'DOWNLOADED' %}
+                            {% for txn in digital_books %}
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
@@ -203,10 +241,15 @@
                                     <a href="#" class="btn btn-sm btn-outline-primary rounded-pill">Read Now</a>
                                 </td>
                             </tr>
-                            {% endif %}
                             {% empty %}
                             <tr>
-                                <td colspan="3" class="text-center py-4 text-muted">No digital books found.</td>
+                                <td colspan="3" class="text-center py-5">
+                                    <div class="text-muted opacity-50 mb-3">
+                                        <i class="fas fa-tablet-alt fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-muted">Your digital shelf is empty</h6>
+                                    <p class="small text-muted mb-0">E-books you borrow will appear here.</p>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -232,7 +275,6 @@
                         </thead>
                         <tbody>
                             {% for txn in transactions %}
-                            {% if txn.status == 'RETURNED' %}
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
@@ -251,14 +293,19 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ txn.returned_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {{ txn.returned_date|date:"M d, Y" }}
+                                    {% if txn.returned_date > txn.due_date %}
+                                    <div class="text-danger small fw-bold"> <i class="fas fa-exclamation-circle"></i>
+                                        Late Return</div>
+                                    {% endif %}
+                                </td>
                                 <td><span class="badge bg-secondary">Returned</span></td>
                                 <td class="text-end pe-4">
                                     <a href="{{ txn.book.get_absolute_url }}"
                                         class="btn btn-sm btn-outline-secondary rounded-pill">View Book</a>
                                 </td>
                             </tr>
-                            {% endif %}
                             {% empty %}
                             <tr>
                                 <td colspan="4" class="text-center py-4 text-muted">No history found.</td>
@@ -270,5 +317,85 @@
             </div>
         </div>
     </div>
+    <!-- 5. Overdue Books Tab (ISSUED + Overdue) -->
+    <div class="tab-pane fade" id="pills-overdue" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Book</th>
+                                <th>Status</th>
+                                <th>Timeline</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in overdue_books %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if txn.book.cover_image %}
+                                        <img src="{{ txn.book.cover_image.url }}" width="40"
+                                            class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ txn.book.title }}</div>
+                                            <small class="text-muted">{{ txn.book.author }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-danger">Overdue</span></td>
+                                <td>
+                                    <span class="text-danger fw-bold"><i
+                                            class="fas fa-exclamation-circle me-1"></i>Overdue by {{ txn.days_overdue }}
+                                        days</span>
+                                    <div class="small text-danger">Due: {{ txn.due_date|date:"M d" }}</div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <form action="{% url 'request_return' txn.pk %}" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Return</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="text-success opacity-50 mb-3">
+                                        <i class="fas fa-check-circle fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-success">Good job!</h6>
+                                    <p class="small text-muted mb-0">You have no overdue books.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabName = urlParams.get('tab');
+        if (tabName) {
+            const tabEl = document.querySelector(`#pills-${tabName}-tab`);
+            if (tabEl) {
+                const tab = new bootstrap.Tab(tabEl);
+                tab.show();
+            }
+        }
+    });
+</script>
 {% endblock %}
