@@ -91,6 +91,9 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             role=UserRoles.STUDENT, is_active=True
         ).count()
         context["issued_books"] = Transaction.objects.filter(status="ISSUED").count()
+        context["active_digital_loans"] = Transaction.objects.filter(
+            status="DOWNLOADED"
+        ).count()
         context["overdue_books"] = Transaction.objects.filter(
             status="ISSUED", due_date__lt=timezone.now()
         ).count()
@@ -376,16 +379,19 @@ class LibrarianDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
 
         # Date filtering
         today = timezone.now().date()
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
         # KPI Metrics
         context["issued_today_count"] = Transaction.objects.filter(
-            status="ISSUED", checkout_date__date=today
+            status="ISSUED", checkout_date__gte=today_start
         ).count()
 
         context["returned_today_count"] = Transaction.objects.filter(
-            status="RETURNED", returned_date__date=today
+            status="RETURNED", returned_date__gte=today_start
         ).count()
-
+        context["active_digital_loans"] = Transaction.objects.filter(
+            status="DOWNLOADED"
+        ).count()
         context["total_overdue_count"] = Transaction.objects.overdue().count()
 
         # Counts for "Pending Actions" badges/cards
