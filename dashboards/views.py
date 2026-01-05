@@ -50,7 +50,18 @@ def get_filtered_queryset(request):
             ).date() + timedelta(days=1)
             queryset = queryset.filter(checkout_date__range=(start_date, end_date))
         except ValueError:
-            pass
+            # Invalid date format; notify user and fall back to default range
+            messages.error(
+                request,
+                "Invalid date format for the selected range. Showing default date range instead.",
+            )
+            if frequency == "monthly":
+                time_limit = timezone.now() - timedelta(days=180)
+            elif frequency == "annual":
+                time_limit = timezone.now() - timedelta(days=365 * 3)
+            else:
+                time_limit = timezone.now() - timedelta(days=180)
+            queryset = queryset.filter(checkout_date__gte=time_limit)
 
     return queryset, frequency
 
@@ -237,7 +248,18 @@ class TransactionLogsView(LoginRequiredMixin, UserPassesTestMixin, ListView):
                 date_obj = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
                 queryset = queryset.filter(checkout_date__date=date_obj)
             except ValueError:
-                pass
+                # Invalid date format; notify user and fall back to default range
+                messages.error(
+                    request,
+                    "Invalid date format for the selected range. Showing default date range instead.",
+                )
+                if frequency == "monthly":
+                    time_limit = timezone.now() - timedelta(days=180)
+                elif frequency == "annual":
+                    time_limit = timezone.now() - timedelta(days=365 * 3)
+                else:
+                    time_limit = timezone.now() - timedelta(days=180)
+                queryset = queryset.filter(checkout_date__gte=time_limit)
         if status:
             queryset = queryset.filter(status=status.upper())
         if user_code:

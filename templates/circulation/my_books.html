@@ -27,6 +27,7 @@
                         <thead class="bg-light">
                             <tr>
                                 <th class="ps-4">Book</th>
+                                <th>Format</th>
                                 <th>Status</th>
                                 <th>Due Date / Timeline</th>
                                 <th class="text-end pe-4">Action</th>
@@ -34,7 +35,7 @@
                         </thead>
                         <tbody>
                             {% for txn in transactions %}
-                            {% if txn.status in 'ISSUED,PENDING,RETURN_REQUESTED,DOWNLOADED' %}
+                            {% if txn.status != "RETURNED" and txn.status != "DOWNLOADED" %}
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
@@ -54,14 +55,17 @@
                                     </div>
                                 </td>
                                 <td>
+                                    <div>
+                                        <div class="fw-bold">{{ txn.book.format }}</div>
+                                    </div>
+                                </td>
+                                <td>
                                     {% if txn.status == 'ISSUED' %}
                                     <span class="badge bg-warning text-dark">Issued</span>
                                     {% elif txn.status == 'PENDING' %}
                                     <span class="badge bg-primary">Pending Approval</span>
                                     {% elif txn.status == 'RETURN_REQUESTED' %}
                                     <span class="badge bg-info">Return Requested</span>
-                                    {% elif txn.status == 'DOWNLOADED' %}
-                                    <span class="badge bg-success">Downloaded</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -113,6 +117,7 @@
                         <thead class="bg-light">
                             <tr>
                                 <th class="ps-4">Book</th>
+                                <th>Format</th>
                                 <th>Status</th>
                                 <th>Returned On</th>
                                 <th class="text-end pe-4">Details</th>
@@ -120,12 +125,32 @@
                         </thead>
                         <tbody>
                             {% for txn in transactions %}
-                            {% if txn.status == 'RETURNED' %}
+                            {% if txn.status == 'RETURNED' or txn.status == "DOWNLOADED" %}
                             <tr>
                                 <td class="ps-4">
-                                    <div class="fw-bold">{{ txn.book.title }}</div>
+                                    <div class="d-flex align-items-center">
+                                        {% if txn.book.cover_image %}
+                                        <img src="{{ txn.book.cover_image.url }}" width="40"
+                                            class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ txn.book.title }}</div>
+                                            <small class="text-muted">{{ txn.book.author }}</small>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td><span class="badge bg-secondary">Returned</span></td>
+                                <td>
+                                    <div>
+                                        <div class="fw-bold">{{ txn.book.format }}</div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-secondary">{{ txn.get_status_display }}</span></td>
+
                                 <td>{{ txn.returned_date|date:"M d, Y" }}</td>
                                 <td class="text-end pe-4">
                                     <a href="{{ txn.book.get_absolute_url }}"

@@ -142,8 +142,6 @@ class RequestReturnView(LoginRequiredMixin, View):
 
 
 # --- Librarian Views ---
-
-
 class LibrarianBorrowRequestsView(UserPassesTestMixin, ListView):
     model = Transaction
     template_name = "circulation/librarian_borrow_requests.html"

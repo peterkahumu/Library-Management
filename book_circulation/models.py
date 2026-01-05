@@ -12,8 +12,8 @@ class TransactionManager(models.Manager):
     """Custom manager for Transaction queries."""
 
     def active(self):
-        """Get all active (not returned hard copies) transactions."""
-        return self.filter(status__in=["PENDING", "ISSUED", "RETURN_REQUESTED"])
+        """Get all active (not returned hard copies) and Downloaded transactions."""
+        return self.filter(status__in=["PENDING", "ISSUED", "RETURN_REQUESTED", "DOWNLOADED"])
 
     def overdue(self):
         """Get all overdue transactions."""

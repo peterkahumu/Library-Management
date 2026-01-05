@@ -207,9 +207,9 @@ class Command(BaseCommand):
                     book=book,
                     status="RETURNED",
                     checkout_date=timezone.now() - timedelta(days=1),
-                    due_date=timezone.now() + timedelta(days=46),
+                    due_date=timezone.now() + timedelta(days=5),
                     returned_date=timezone.now()
-                    - timedelta(days=random.randint(40, 50)),
+                    + timedelta(days=random.randint(0,5)),
                     is_ebook=False,
                 )
 
@@ -221,9 +221,9 @@ class Command(BaseCommand):
                     book=book,
                     status="RETURNED",
                     checkout_date=timezone.now() - timedelta(days=2),
-                    due_date=timezone.now() - timedelta(days=46),
+                    due_date=timezone.now() + timedelta(days=5),
                     returned_date=timezone.now()
-                    - timedelta(days=random.randint(40, 50)),
+                    + timedelta(days=random.randint(0, 5)),
                     is_ebook=False,
                 )
 
