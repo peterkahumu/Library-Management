@@ -241,6 +241,7 @@ class TransactionLogsView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             .order_by("-checkout_date")
         )
         date_str = self.request.GET.get("date")
+        date_field = self.request.GET.get("date_field", "checkout_date")
         status = self.request.GET.get("status")
         user_code = self.request.GET.get("user_code")
         day_of_week = self.request.GET.get("day")
@@ -248,13 +249,22 @@ class TransactionLogsView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
         if date_str:
             try:
+                # Security check: only allow specific date fields
+                if date_field not in ["checkout_date", "returned_date", "due_date"]:
+                    date_field = "checkout_date"
+
                 date_obj = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
-                queryset = queryset.filter(checkout_date__date=date_obj)
+                # Use dictionary unpacking for dynamic field filtering
+                filter_kwargs = {f"{date_field}__date": date_obj}
+                queryset = queryset.filter(**filter_kwargs)
             except ValueError:
                 pass  # fallback to original queryset
         if status:
             if status.upper() == "OVERDUE":
                 queryset = queryset.filter(status="ISSUED", due_date__lt=timezone.now())
+            elif "," in status:
+                status_list = [s.strip().upper() for s in status.split(",")]
+                queryset = queryset.filter(status__in=status_list)
             elif status.upper() == "DOWNLOADED":
                 queryset = queryset.filter(status="DOWNLOADED")
             else:
@@ -391,7 +401,8 @@ class LibrarianDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
 
         # KPI Metrics
         context["issued_today_count"] = Transaction.objects.filter(
-            status="ISSUED", checkout_date__gte=today_start
+            status__in=["ISSUED", "RETURN_REQUESTED", "RETURNED"],
+            checkout_date__gte=today_start,
         ).count()
 
         context["returned_today_count"] = Transaction.objects.filter(
