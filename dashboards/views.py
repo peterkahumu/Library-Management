@@ -249,6 +249,7 @@ class TransactionLogsView(LoginRequiredMixin, UserPassesTestMixin, ListView):
                 queryset = queryset.filter(checkout_date__date=date_obj)
             except ValueError:
                 pass  # fallback to original queryset
+        if status:
             queryset = queryset.filter(status=status.upper())
         if user_code:
             try:
