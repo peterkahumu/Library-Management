@@ -16,12 +16,12 @@
     <div class="col-md-3">
         <a href="{% url 'transaction_logs' %}?status=ISSUED,RETURNED,RETURN_REQUESTED&date={% now 'Y-m-d' %}&date_field=checkout_date"
             class="text-decoration-none">
-            <div class="card card-custom bg-success-custom text-white h-100">
+            <div class="card card-custom bg-primary-custom text-white h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title mb-0 opacity-75">Issued Today</h6>
-                            <h2 class="mt-2 mb-0 fw-bold">{{ issued_today_count }}</h2>
+                            <h3 class="mt-2 mb-0 fw-bold">{{ issued_today_count }}</h2>
                         </div>
                         <i class="fas fa-arrow-up fa-2x opacity-50"></i>
                     </div>
@@ -37,7 +37,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title mb-0 opacity-75">Active Digital Loans</h6>
-                            <h2 class="mt-2 mb-0 fw-bold">{{ active_digital_loans }}</h2>
+                            <h3 class="mt-2 mb-0 fw-bold">{{ active_digital_loans }}</h2>
                         </div>
                         <i class="fas fa-tablet-alt fa-2x opacity-50"></i>
                     </div>
@@ -54,7 +54,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title mb-0 opacity-75">Returned Today</h6>
-                            <h2 class="mt-2 mb-0 fw-bold">{{ returned_today_count }}</h2>
+                            <h3 class="mt-2 mb-0 fw-bold">{{ returned_today_count }}</h2>
                         </div>
                         <i class="fas fa-arrow-down fa-2x opacity-50"></i>
                     </div>
@@ -70,7 +70,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title mb-0 opacity-75">Total Overdue</h6>
-                            <h2 class="mt-2 mb-0 fw-bold">{{ total_overdue_count }}</h2>
+                            <h3 class="mt-2 mb-0 fw-bold">{{ total_overdue_count }}</h2>
                         </div>
                         <i class="fas fa-exclamation-circle fa-2x opacity-50"></i>
                     </div>
