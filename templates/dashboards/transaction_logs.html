@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Transaction Logs{% endblock title %}
+
+{% block content %}
+<h1 class="h3 fw-bold text-dark mb-4">Transaction Logs & Audit</h1>
+
+<form method="get" class="card shadow-sm mb-4 p-3 bg-light">
+    <div class="row g-3 align-items-end">
+
+        <div class="col-md-3">
+            <label for="date_filter" class="form-label small fw-bold">Date</label>
+            <input type="date" name="date" id="date_filter" class="form-control form-control-sm"
+                value="{{ current_date }}">
+        </div>
+
+        <div class="col-md-3">
+            <label for="status_filter" class="form-label small fw-bold">Status</label>
+            <select name="status" id="status_filter" class="form-select form-select-sm">
+                <option value="">All Statuses</option>
+                {% for value, label in statuses %}
+                <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label for="user_code_filter" class="form-label small fw-bold">User Code (e.g., STXXXX)</label>
+            <input type="text" name="user_code" id="user_code_filter" class="form-control form-control-sm"
+                placeholder="Enter user code" value="{{ current_user_code }}">
+        </div>
+
+        {% if current_day %}
+        <input type="hidden" name="day" value="{{ current_day }}">
+        {% endif %}
+        {% if current_hour %}
+        <input type="hidden" name="hour" value="{{ current_hour }}">
+        {% endif %}
+
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary btn-sm me-2">Apply Filters</button>
+            <a href="{% url 'transaction_logs' %}" class="btn btn-outline-secondary btn-sm">Clear Filters</a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm border-0 mt-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>User</th>
+                    <th>Book</th>
+                    <th>Checkout Date</th>
+                    <th>Due Date</th>
+                    <th>Returned Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for txn in transactions %}
+                <tr>
+                    <td>
+                        <p class="mb-0 fw-bold">{{ txn.user.get_full_name }}</p>
+                        <small class="text-muted">{{ txn.user.user_code }}</small>
+                    </td>
+                    <td>
+                        <a href="{{ txn.book.get_absolute_url }}" class="text-primary text-decoration-none">
+                            {{ txn.book.title }}
+                        </a>
+                    </td>
+                    <td>{{ txn.checkout_date|date:"M d, Y H:i" }}</td>
+                    <td class="{% if txn.is_overdue and txn.status != 'RETURNED' %}text-danger fw-bold{% endif %}">
+                        {{ txn.due_date|date:"M d, Y" }}
+                    </td>
+                    <td>{{ txn.returned_date|default:"-" }}</td>
+                    <td>
+                        {% if txn.status == 'ISSUED' %}
+                        <span class="badge bg-warning text-dark">{{ txn.get_status_display }}</span>
+                        {% elif txn.status == 'RETURNED' %}
+                        <span class="badge bg-success">{{ txn.get_status_display }}</span>
+                        {% elif txn.status == 'PENDING' or txn.status == 'RETURN_REQUESTED' %}
+                        <span class="badge bg-info text-dark">{{ txn.get_status_display }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ txn.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No transactions found matching the current
+                        criteria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include 'components/pagination.html' %}
+
+{% endblock content %}

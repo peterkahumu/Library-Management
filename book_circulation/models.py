@@ -12,8 +12,10 @@ class TransactionManager(models.Manager):
     """Custom manager for Transaction queries."""
 
     def active(self):
-        """Get all active (not returned) transactions."""
-        return self.filter(status__in=["PENDING", "ISSUED", "RETURN_REQUESTED"])
+        """Get all active (not returned hard copies) and Downloaded transactions."""
+        return self.filter(
+            status__in=["PENDING", "ISSUED", "RETURN_REQUESTED", "DOWNLOADED"]
+        )
 
     def overdue(self):
         """Get all overdue transactions."""
@@ -42,6 +44,7 @@ class Transaction(models.Model):
     STATUS_CHOICES = [
         ("PENDING", "Pending"),
         ("ISSUED", "Issued"),
+        ("DOWNLOADED", "Downloaded"),
         ("RETURN_REQUESTED", "Return Requested"),
         ("RETURNED", "Returned"),
     ]
@@ -114,10 +117,11 @@ class Transaction(models.Model):
     def _is_valid_status_transition(self, old_status, new_status):
         """Check if status transition is allowed."""
         valid_transitions = {
-            "PENDING": ["ISSUED", "RETURNED"],
+            "PENDING": ["ISSUED", "RETURNED", "DOWNLOADED"],
             "ISSUED": ["RETURN_REQUESTED", "RETURNED"],
             "RETURN_REQUESTED": ["RETURNED", "ISSUED"],
             "RETURNED": [],
+            "DOWNLOADED": [],  # e-book links will be set to expire
         }
         return new_status in valid_transitions.get(old_status, [])
 

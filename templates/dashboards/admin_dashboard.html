@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Admin Dashboard {% endblock title %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    {{ trend_labels|json_script:"trend-labels-data" }}
+    {{ trend_data|json_script:"trend-data" }}
+    {{ genre_labels|json_script:"genre-labels-data" }}
+    {{ genre_data|json_script:"genre-data" }}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-dark">System Overview</h1>
+            <p class="text-muted">Welcome back, {{ user.get_full_name }}</p>
+        </div>
+        <div class="date text-muted">
+            <i class="fas fa-calendar-alt me-2"></i>{% now "l, F jS Y" %}
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-5 g-3 mb-4">
+        <div class="col">
+            <div class="card card-custom bg-primary-custom text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Total Books</p>
+                            <h3 class="fw-bold mb-0">{{ total_books }}</h3>
+                        </div>
+                        <i class="fas fa-book fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card card-custom bg-purple-custom text-white h-100" style="background-color: #6f42c1;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Digital Loans</p>
+                            <h3 class="fw-bold mb-0">{{ active_digital_loans }}</h3>
+                        </div>
+                        <i class="fas fa-tablet-alt fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card card-custom bg-success-custom text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Active Members</p>
+                            <h3 class="fw-bold mb-0">{{ active_students }}</h3>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card card-custom bg-info-custom text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Currently Issued</p>
+                            <h3 class="fw-bold mb-0">{{ issued_books }}</h3>
+                        </div>
+                        <i class="fas fa-hand-holding-book fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card card-custom bg-danger-custom text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-1 opacity-75">Overdue Books</p>
+                            <h3 class="fw-bold mb-0">{{ overdue_books }}</h3>
+                        </div>
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <form method="get" class="card shadow-sm mb-5 p-3 bg-light">
+        <h5 class="fw-bold mb-3"><i class="fas fa-chart-line me-2 text-primary"></i>Data Visualization Filter</h5>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="frequency" class="form-label small fw-bold">Frequency</label>
+                <select name="frequency" id="frequency" class="form-select form-select-sm">
+                    <option value="monthly" {% if frequency == 'monthly' %}selected{% endif %}>Monthly (6 Months)</option>
+                    <option value="annual" {% if frequency == 'annual' %}selected{% endif %}>Annual (3 Years)</option>
+                    <option value="custom" {% if frequency == 'custom' %}selected{% endif %}>Custom Range</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="start_date" class="form-label small fw-bold">Start Date</label>
+                <input type="date" name="start_date" id="start_date" class="form-control form-control-sm"
+                    value="{{ current_start_date }}">
+            </div>
+
+            <div class="col-md-3">
+                <label for="end_date" class="form-label small fw-bold">End Date</label>
+                <input type="date" name="end_date" id="end_date" class="form-control form-control-sm"
+                    value="{{ current_end_date }}">
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-sm me-2">Apply Filters</button>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm">Reset</a>
+            </div>
+        </div>
+    </form>
+
+    <h4 class="fw-bold text-dark mb-3 mt-4">Analytical Insights <small class="text-muted fs-6">(Based on filter)</small>
+    </h4>
+    <div class="row g-3 mb-5">
+        {% with day_url=active_day|lower %}
+        <div class="col-md-4">
+            <a href="{% url 'transaction_logs' %}?day={{ day_url }}" class="text-decoration-none">
+                <div class="card card-custom h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-warning-custom text-white p-3 rounded-circle me-3">
+                                <i class="fas fa-calendar-day fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-0 text-uppercase fw-bold">Most Active Day</p>
+                                <h5 class="fw-bold mb-0 text-dark">{{ active_day }}</h5>
+                                <small class="text-muted">{{ active_day_count }} transactions</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endwith %}
+
+        {% with hour_url=active_hour|slice:":2" %}
+        <div class="col-md-4">
+            <a href="{% url 'transaction_logs' %}?hour={{ hour_url }}" class="text-decoration-none">
+                <div class="card card-custom h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-secondary-custom text-white p-3 rounded-circle me-3">
+                                <i class="fas fa-clock fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-0 text-uppercase fw-bold">Most Active Hour</p>
+                                <h5 class="fw-bold mb-0 text-dark">{{ active_hour }}</h5>
+                                <small class="text-muted">{{ active_hour_count }} transactions</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endwith %}
+
+        {% with user_url=active_user_display %}
+        <div class="col-md-4">
+            <a href="{% url 'transaction_logs' %}?user_code={{ user_url }}" class="text-decoration-none">
+                <div class="card card-custom h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary-custom text-white p-3 rounded-circle me-3">
+                                <i class="fas fa-user-graduate fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-muted small mb-0 text-uppercase fw-bold">Most Active User</p>
+                                <h5 class="fw-bold mb-0 text-dark">{{ active_user_display }}</h5>
+                                <small class="text-muted">{{ active_user_count }} transactions</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endwith %}
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0">Borrowing Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="trendChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0">Top Categories</h5>
+                </div>
+                <div class="card-body d-flex justify-content-center align-items-center">
+                    <canvas id="genreChart" height="200" width="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-user-shield me-2 text-danger"></i>Update User Roles</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'user_role_update' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="user_code" class="form-label small fw-bold">User Code (STxxxx/LIxxxx)</label>
+                            <input type="text" name="user_code" id="user_code" class="form-control form-control-sm"
+                                placeholder="Enter user code (e.g., ST1A2B3C)" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_role" class="form-label small fw-bold">New Role</label>
+                            <select name="new_role" id="new_role" class="form-select form-select-sm" required>
+                                <option value="" disabled selected>Select new role</option>
+                                {% for value, label in all_roles %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input type="hidden" name="next" value="{% url 'admin_dashboard' %}">
+                        <button type="submit" class="btn btn-danger btn-sm w-100">Update Role</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Recent Activity</h5>
+                    <a href="{% url 'transaction_logs' %}" class="btn btn-sm btn-outline-primary">View All Logs</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">User</th>
+                                <th>Book Title</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in recent_activity %}
+                            <tr>
+                                <td class="ps-4">
+                                    <p class="mb-0 fw-bold small">{{ txn.user.get_full_name }}</p>
+                                    <small class="text-muted">{{ txn.user.user_code }}</small>
+                                </td>
+                                <td><a href="{{txn.book.get_absolute_url}}" class="text-decoration-none">
+                                        {{ txn.book.title|truncatechars:30 }}</a></td>
+                                <td>
+                                    {% if txn.status == 'ISSUED' %}
+                                    <span class="badge bg-warning text-dark">Issued</span>
+                                    {% elif txn.status == 'RETURNED' %}
+                                    <span class="badge bg-success">Returned</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ txn.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ txn.checkout_date|date:"M d, H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No recent activity found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Function to safely extract JSON data from the script tags
+    function getJsonData(id) {
+        const element = document.getElementById(id);
+        // Safely parse or return empty array on failure/missing
+        try {
+            return element ? JSON.parse(element.textContent) : [];
+        } catch (e) {
+            console.error("Could not parse JSON for element:", id, e);
+            return [];
+        }
+    }
+
+    // Retrieve data safely
+    const trendLabels = getJsonData('trend-labels-data');
+    const trendData = getJsonData('trend-data');
+    const genreLabels = getJsonData('genre-labels-data');
+    const genreData = getJsonData('genre-data');
+
+
+    // 1. Borrowing Trends Chart
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx) {
+        new Chart(trendCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Books Issued',
+                    data: trendData,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [5, 5] },
+                        ticks: {
+                            // Ensure only whole numbers are displayed
+                            callback: function (value, index, values) {
+                                if (value % 1 === 0) {
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Genre Distribution Chart
+    const genreCtx = document.getElementById('genreChart');
+    if (genreCtx) {
+        new Chart(genreCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: genreLabels,
+                datasets: [{
+                    data: genreData,
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+</script>
+{% endblock content %}

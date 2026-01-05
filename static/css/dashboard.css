@@ -1,0 +1,126 @@
+/* Professional Color Palette */
+:root {
+    --primary-color: #2c3e50;
+    /* Deep Blue */
+    --secondary-color: #34495e;
+    /* Muted Blue */
+    --accent-color: #3498db;
+    /* Bright Blue */
+    --success-color: #27ae60;
+    /* Muted Green */
+    --warning-color: #f39c12;
+    /* Muted Orange */
+    --danger-color: #c0392b;
+    /* Muted Red */
+    --info-color: #16a085;
+    /* Teal */
+    --light-bg: #f8f9fa;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bg-primary-custom {
+    background-color: var(--primary-color) !important;
+}
+
+.bg-secondary-custom {
+    background-color: var(--secondary-color) !important;
+}
+
+.bg-success-custom {
+    background-color: var(--success-color) !important;
+}
+
+.bg-warning-custom {
+    background-color: var(--warning-color) !important;
+}
+
+.bg-danger-custom {
+    background-color: var(--danger-color) !important;
+}
+
+.bg-info-custom {
+    background-color: var(--info-color) !important;
+}
+
+.border-primary-custom {
+    border-color: var(--primary-color) !important;
+}
+
+.border-secondary-custom {
+    border-color: var(--secondary-color) !important;
+}
+
+.border-success-custom {
+    border-color: var(--success-color) !important;
+}
+
+.border-warning-custom {
+    border-color: var(--warning-color) !important;
+}
+
+.border-danger-custom {
+    border-color: var(--danger-color) !important;
+}
+
+.border-info-custom {
+    border-color: var(--info-color) !important;
+}
+
+.text-primary-custom {
+    color: var(--primary-color) !important;
+}
+
+.text-secondary-custom {
+    color: var(--secondary-color) !important;
+}
+
+.text-success-custom {
+    color: var(--success-color) !important;
+}
+
+.text-warning-custom {
+    color: var(--warning-color) !important;
+}
+
+.text-danger-custom {
+    color: var(--danger-color) !important;
+}
+
+.text-info-custom {
+    color: var(--info-color) !important;
+}
+
+.bg-opacity-10 {
+    --bs-bg-opacity: 0.1;
+}
+
+.card-custom {
+    border: none;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease-in-out;
+}
+
+.card-custom:hover {
+    transform: translateY(-5px);
+}
+
+.nav-link-custom {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.nav-link-custom:hover {
+    color: var(--accent-color);
+}
+
+.admin-link {
+    color: #8e44ad !important;
+    /* Wisteria Purple */
+    font-weight: bold;
+}
+
+/* Offcanvas Navbar */
+.offcanvas-end {
+    width: 300px;
+}

@@ -13,9 +13,11 @@ services:
       - 8000:8000
 
   db:
-    image: postgres:18
+    image: postgres:latest
     volumes:
       - postgres_data:/var/lib/postgresql
+    env_file:
+      - .env_d
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}

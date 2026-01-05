@@ -1,0 +1,7 @@
+Dear {{ user }},
+
+We have received your request to borrow "{{ book_title }}". This request is pending approval.
+Once approved, you will receive a notification to collect your copy.
+
+Sincerely,
+The Library Team
