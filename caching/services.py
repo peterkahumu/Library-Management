@@ -295,23 +295,6 @@ class LibraryCacheService:
         cache.delete(keys.DASHBOARD_LIBRARIAN_KPIS)
         logger.info("🧹 Cache Cleared: Librarian KPIs")
 
-    @staticmethod
-    def invalidate_all_stats():
-        """
-        Invalidation: books/signals.py, accounts/signals.py, book_circulation/signals.py
-        DEPRECATED: Use granular invalidation methods instead.
-        """
-        cache.delete_many(
-            [
-                keys.STATS_TOTAL_BOOKS,
-                keys.STATS_TOTAL_USERS,
-                keys.STATS_AVAILABLE_BOOKS,
-                keys.DASHBOARD_ADMIN_KPIS,
-                keys.DASHBOARD_LIBRARIAN_KPIS,
-                keys.DASHBOARD_ADMIN_ANALYTICS,
-            ]
-        )
-        logger.info("🧹 Cache Cleared: Homepage Stats, Admin and Librarian KPIs")
 
     @staticmethod
     def invalidate_genres():

@@ -1,11 +1,10 @@
 import datetime
+from datetime import date
+import uuid
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
-
-import uuid
-from datetime import date
 from .models import Book, Genre
 from .forms import BookForm
 from .constants import GENRE_CHOICES

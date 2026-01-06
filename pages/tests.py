@@ -1,5 +1,5 @@
 import datetime
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
@@ -13,7 +13,6 @@ class HomeViewTests(TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.client = Client()
         self.user = User.objects.create_user(
             username="testuser",
             email="test@example.com",
