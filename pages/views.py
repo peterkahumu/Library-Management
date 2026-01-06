@@ -2,7 +2,7 @@ from django.views.generic import TemplateView
 from django.shortcuts import redirect
 
 from books.models import Book
-from .utils import get_cached_stats
+from caching.services import LibraryCacheService
 from accounts.models import UserRoles
 
 
@@ -24,7 +24,7 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         # get cached stats.
-        stats: dict[str, int] = get_cached_stats()
+        stats = LibraryCacheService.get_homepage_stats()
 
         context["featured_books"] = Book.objects.filter(featured=True).prefetch_related(
             "genre"

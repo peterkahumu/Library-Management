@@ -14,8 +14,8 @@ from django.shortcuts import redirect
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
+from caching.services import LibraryCacheService
 
-from books.models import Book
 from accounts.models import LibraryUser, UserRoles
 from book_circulation.models import Transaction
 
@@ -86,123 +86,126 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context["current_end_date"] = self.request.GET.get("end_date", "")
 
         # KPI cards
-        context["total_books"] = Book.objects.count()
-        context["active_students"] = LibraryUser.objects.filter(
-            role=UserRoles.STUDENT, is_active=True
-        ).count()
-        context["issued_books"] = Transaction.objects.filter(status="ISSUED").count()
-        context["active_digital_loans"] = Transaction.objects.filter(
-            status="DOWNLOADED"
-        ).count()
-        context["overdue_books"] = Transaction.objects.filter(
-            status="ISSUED", due_date__lt=timezone.now()
-        ).count()
+        context.update(LibraryCacheService.get_admin_kpis())
 
-        # Determine truncation for charts
-        if frequency == "annual":
-            trunc_func = TruncYear
-            date_format = "%Y"
-        elif frequency == "monthly":
-            trunc_func = TruncMonth
-            date_format = "%b %Y"
+        if (
+            frequency == "monthly"
+            and not context["current_start_date"]
+            and not context["current_end_date"]
+        ):
+            context.update(LibraryCacheService.get_admin_analytics())
         else:
-            trunc_func = TruncDay
-            date_format = "%d"
-            month_format = "%b"
-
-        # Borrowing trends
-        borrowing_trends = (
-            queryset.annotate(period=trunc_func("checkout_date"))
-            .values("period")
-            .annotate(count=Count("pk"))
-            .order_by("period")
-        )
-
-        labels = []
-        last_month = None
-        for entry in borrowing_trends:
-            period = entry["period"]
-            if frequency not in ["monthly", "annual"]:
-                month_label = (
-                    period.strftime(month_format) if period.month != last_month else ""
-                )
-                last_month = period.month
-                label = f"{period.day} {month_label}".strip()
+            # Calculate from queryset (fallback for custom filters)
+            if frequency == "annual":
+                trunc_func = TruncYear
+                date_format = "%Y"
+            elif frequency == "monthly":
+                trunc_func = TruncMonth
+                date_format = "%b %Y"
             else:
-                label = period.strftime(date_format)
-            labels.append(label)
+                trunc_func = TruncDay
+                date_format = "%d"
+                month_format = "%b"
 
-        context["trend_labels"] = labels
-        context["trend_data"] = [entry["count"] for entry in borrowing_trends]
+            # Borrowing trends
+            borrowing_trends = (
+                queryset.annotate(period=trunc_func("checkout_date"))
+                .values("period")
+                .annotate(count=Count("pk"))
+                .order_by("period")
+            )
 
-        # Popular genres
-        popular_genres = (
-            queryset.values("book__genre__name")
-            .annotate(count=Count("pk"))
-            .order_by("-count")[:5]
-        )
-        context["genre_labels"] = [
-            entry["book__genre__name"]
-            for entry in popular_genres
-            if entry["book__genre__name"]
-        ]
-        context["genre_data"] = [
-            entry["count"] for entry in popular_genres if entry["book__genre__name"]
-        ]
+            labels = []
+            last_month = None
+            for entry in borrowing_trends:
+                period = entry["period"]
+                if frequency not in ["monthly", "annual"]:
+                    month_label = (
+                        period.strftime(month_format)
+                        if period.month != last_month
+                        else ""
+                    )
+                    last_month = period.month
+                    label = f"{period.day} {month_label}".strip()
+                else:
+                    label = period.strftime(date_format)
+                labels.append(label)
 
-        # Most active day of the week
-        active_day_aggregation = (
-            queryset.annotate(day=ExtractWeekDay("checkout_date"))
-            .values("day")
-            .annotate(count=Count("pk"))
-            .order_by("-count", "day")
-        ).first()
-        day_map = {
-            1: "Sunday",
-            2: "Monday",
-            3: "Tuesday",
-            4: "Wednesday",
-            5: "Thursday",
-            6: "Friday",
-            7: "Saturday",
-        }
-        context["active_day"] = (
-            day_map.get(active_day_aggregation["day"])
-            if active_day_aggregation
-            else "N/A"
-        )
-        context["active_day_count"] = (
-            active_day_aggregation["count"] if active_day_aggregation else 0
-        )
+            context["trend_labels"] = labels
+            context["trend_data"] = [entry["count"] for entry in borrowing_trends]
 
-        # Most active hour
-        active_hour_aggregation = (
-            queryset.annotate(hour=ExtractHour("checkout_date"))
-            .values("hour")
-            .annotate(count=Count("pk"))
-            .order_by("-count", "hour")
-        ).first()
-        context["active_hour"] = (
-            f"{active_hour_aggregation['hour']:02d}:00"
-            if active_hour_aggregation
-            else "N/A"
-        )
-        context["active_hour_count"] = (
-            active_hour_aggregation["count"] if active_hour_aggregation else 0
-        )
+            # Popular genres
+            popular_genres = (
+                queryset.values("book__genre__name")
+                .annotate(count=Count("pk"))
+                .order_by("-count")[:5]
+            )
+            context["genre_labels"] = [
+                entry["book__genre__name"]
+                for entry in popular_genres
+                if entry["book__genre__name"]
+            ]
+            context["genre_data"] = [
+                entry["count"] for entry in popular_genres if entry["book__genre__name"]
+            ]
 
-        # Most active user
-        active_user_aggregation = (
-            queryset.values("user__user_code", "user__first_name", "user__last_name")
-            .annotate(count=Count("pk"))
-            .order_by("-count")
-        ).first()
-        if active_user_aggregation:
-            context["active_user_display"] = active_user_aggregation["user__user_code"]
-            context["active_user_count"] = active_user_aggregation["count"]
-        else:
-            context["active_user_display"] = "N/A"
-            context["active_user_count"] = 0
+            # Most active day of the week
+            active_day_aggregation = (
+                queryset.annotate(day=ExtractWeekDay("checkout_date"))
+                .values("day")
+                .annotate(count=Count("pk"))
+                .order_by("-count", "day")
+            ).first()
+            day_map = {
+                1: "Sunday",
+                2: "Monday",
+                3: "Tuesday",
+                4: "Wednesday",
+                5: "Thursday",
+                6: "Friday",
+                7: "Saturday",
+            }
+            context["active_day"] = (
+                day_map.get(active_day_aggregation["day"])
+                if active_day_aggregation
+                else "N/A"
+            )
+            context["active_day_count"] = (
+                active_day_aggregation["count"] if active_day_aggregation else 0
+            )
+
+            # Most active hour
+            active_hour_aggregation = (
+                queryset.annotate(hour=ExtractHour("checkout_date"))
+                .values("hour")
+                .annotate(count=Count("pk"))
+                .order_by("-count", "hour")
+            ).first()
+            context["active_hour"] = (
+                f"{active_hour_aggregation['hour']:02d}:00"
+                if active_hour_aggregation
+                else "N/A"
+            )
+            context["active_hour_count"] = (
+                active_hour_aggregation["count"] if active_hour_aggregation else 0
+            )
+
+            # Most active user
+            active_user_aggregation = (
+                queryset.values(
+                    "user__user_code", "user__first_name", "user__last_name"
+                )
+                .annotate(count=Count("pk"))
+                .order_by("-count")
+            ).first()
+            if active_user_aggregation:
+                context["active_user_display"] = active_user_aggregation[
+                    "user__user_code"
+                ]
+                context["active_user_count"] = active_user_aggregation["count"]
+            else:
+                context["active_user_display"] = "N/A"
+                context["active_user_count"] = 0
 
         # Recent activity table
         context["recent_activity"] = queryset.order_by("-checkout_date")[:3]
@@ -397,29 +400,8 @@ class LibrarianDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         context = super().get_context_data(**kwargs)
 
         # Date filtering
-        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-
         # KPI Metrics
-        context["issued_today_count"] = Transaction.objects.filter(
-            status__in=["ISSUED", "RETURN_REQUESTED", "RETURNED"],
-            checkout_date__gte=today_start,
-        ).count()
-
-        context["returned_today_count"] = Transaction.objects.filter(
-            status="RETURNED", returned_date__gte=today_start, is_ebook=False
-        ).count()
-        context["active_digital_loans"] = Transaction.objects.filter(
-            status="DOWNLOADED"
-        ).count()
-        context["total_overdue_count"] = Transaction.objects.overdue().count()
-
-        # Counts for "Pending Actions" badges/cards
-        context["pending_borrow_count"] = Transaction.objects.filter(
-            status="PENDING"
-        ).count()
-        context["pending_return_count"] = Transaction.objects.filter(
-            status="RETURN_REQUESTED"
-        ).count()
+        context.update(LibraryCacheService.get_librarian_kpis())
 
         context["recent_transactions"] = Transaction.objects.select_related(
             "user", "book"
