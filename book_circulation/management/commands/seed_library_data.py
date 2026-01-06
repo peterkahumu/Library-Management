@@ -118,32 +118,38 @@ class Command(BaseCommand):
 
         for student in students:
             # 1. Active Loan (Issued)
-            book = random.choice(books)
-            if not Transaction.objects.filter(
-                user=student, book=book, status__in=["ISSUED", "PENDING"]
-            ).exists():
-                Transaction.objects.create(
-                    user=student,
-                    book=book,
-                    status="ISSUED",
-                    checkout_date=timezone.now() - timedelta(days=5),
-                    due_date=timezone.now() + timedelta(days=9),
-                    is_ebook=False,
-                )
+            # Find a book with available copies
+            available_books = [b for b in Book.objects.all() if b.copies_available > 0]
+            if available_books:
+                book = random.choice(available_books)
+                if not Transaction.objects.filter(
+                    user=student, book=book, status__in=["ISSUED", "PENDING"]
+                ).exists():
+                    Transaction.objects.create(
+                        user=student,
+                        book=book,
+                        status="ISSUED",
+                        checkout_date=timezone.now() - timedelta(days=5),
+                        due_date=timezone.now() + timedelta(days=9),
+                        is_ebook=False,
+                    )
 
             # 2. Overdue Loan
-            book = random.choice(books)
-            if not Transaction.objects.filter(
-                user=student, book=book, status__in=["ISSUED", "PENDING"]
-            ).exists():
-                Transaction.objects.create(
-                    user=student,
-                    book=book,
-                    status="ISSUED",
-                    checkout_date=timezone.now() - timedelta(days=20),
-                    due_date=timezone.now() - timedelta(days=5),  # Overdue by 5 days
-                    is_ebook=False,
-                )
+            # Re-fetch available hooks just in case
+            available_books = [b for b in Book.objects.all() if b.copies_available > 0]
+            if available_books:
+                book = random.choice(available_books)
+                if not Transaction.objects.filter(
+                    user=student, book=book, status__in=["ISSUED", "PENDING"]
+                ).exists():
+                    Transaction.objects.create(
+                        user=student,
+                        book=book,
+                        status="ISSUED",
+                        checkout_date=timezone.now() - timedelta(days=20),
+                        due_date=timezone.now() - timedelta(days=5),  # Overdue by 5 days
+                        is_ebook=False,
+                    )
 
             # 3. Pending Borrow Request
             book = random.choice(books)
