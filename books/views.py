@@ -54,10 +54,10 @@ class BookDetailView(DetailView):
         context["genres"] = [g.name for g in genres]
 
         if genres:
-            context["related_books"] = (
-                Book.objects.filter(genre__in=genres)
-                .exclude(book_id=book.book_id)
-                .distinct()[:5]
+            from caching.services import LibraryCacheService
+
+            context["related_books"] = LibraryCacheService.get_related_books(
+                book.book_id, [g.id for g in genres]
             )
         else:
             context["related_books"] = []

@@ -12,3 +12,7 @@ GENRES_ALL = "genres:all"
 # Dashboard KPI keys
 DASHBOARD_ADMIN_KPIS = "dashboard:admin_kpis"
 DASHBOARD_LIBRARIAN_KPIS = "dashboard:librarian_kpis"
+DASHBOARD_ADMIN_ANALYTICS = "dashboard:admin_analytics"
+
+# Book related keys
+RELATED_BOOKS = "book:related:{}"

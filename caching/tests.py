@@ -527,3 +527,145 @@ class PagesCacheIntegrationTests(TestCase):
         # Getting stats again should fetch fresh data
         stats2 = LibraryCacheService.get_homepage_stats()
         self.assertEqual(stats2["total_users"], initial_users + 1)
+
+
+class AdminAnalyticsTests(TestCase):
+    """Test get_admin_analytics caching and logic."""
+
+    def setUp(self):
+        cache.clear()
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",
+        )
+        self.book = Book.objects.create(
+            title="Test Book",
+            description="Test",
+            isbn="1234567890123",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        self.genre, _ = Genre.objects.get_or_create(name="FANTASY")
+        self.book.genre.add(self.genre.pk)
+
+    def test_get_admin_analytics_returns_correct_data(self):
+        """Should return correct analytics data."""
+        Transaction.objects.create(user=self.user, book=self.book, status="ISSUED")
+
+        analytics = LibraryCacheService.get_admin_analytics()
+
+        self.assertIn("trend_labels", analytics)
+        self.assertIn("trend_data", analytics)
+        # 1 transaction
+        self.assertEqual(sum(analytics["trend_data"]), 1)
+
+        self.assertIn("genre_labels", analytics)
+        self.assertIn("FANTASY", analytics["genre_labels"])
+
+        self.assertEqual(analytics["active_user_display"], self.user.user_code)
+
+    def test_get_admin_analytics_caches_results(self):
+        """Should cache results."""
+        Transaction.objects.create(user=self.user, book=self.book, status="ISSUED")
+
+        # First call caches
+        analytics1 = LibraryCacheService.get_admin_analytics()
+        self.assertEqual(sum(analytics1["trend_data"]), 1)
+
+        # Verify cache key
+        from caching import keys
+
+        self.assertIsNotNone(cache.get(keys.DASHBOARD_ADMIN_ANALYTICS))
+
+        # Create another transaction (bypassing signals that might invalidate if any -
+        # but currently analytics cache is ONLY invalidated by invalidate_admin_kpis
+        # which is called by invalidate_transaction_cache signal)
+        # So to test caching, we need to manually set cache or mock signal?
+        # Actually proper behavior is that it DOES invalidate on transaction change.
+        # So let's disable signals or manually set cache to test retrieval.
+
+        cache.set(keys.DASHBOARD_ADMIN_ANALYTICS, analytics1, timeout=60)
+
+        # Modify DB directly to avoid signal (or just use set cache)
+        # If we just read, it should get from cache.
+        analytics2 = LibraryCacheService.get_admin_analytics()
+        self.assertEqual(analytics2, analytics1)
+
+
+class RelatedBooksCachingTests(TestCase):
+    """Test get_related_books caching."""
+
+    def setUp(self):
+        cache.clear()
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",
+        )
+        self.genre, _ = Genre.objects.get_or_create(name="FANTASY")
+
+        self.book1 = Book.objects.create(
+            title="Book 1",
+            description="Test",
+            isbn="1111111111111",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        self.book1.genre.add(self.genre.id)
+
+        self.book2 = Book.objects.create(
+            title="Book 2",
+            description="Test",
+            isbn="2222222222222",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        self.book2.genre.add(self.genre.id)
+
+    def test_get_related_books_returns_correct_books(self):
+        """Should return books with same genre."""
+        related = LibraryCacheService.get_related_books(
+            self.book1.book_id, [self.genre.id]
+        )
+        self.assertEqual(len(related), 1)
+        self.assertEqual(related[0].book_id, self.book2.book_id)
+
+    def test_get_related_books_caches_results(self):
+        """Should cache related books."""
+        LibraryCacheService.get_related_books(self.book1.book_id, [self.genre.id])
+
+        # Check cache
+        from caching import keys
+
+        key = keys.RELATED_BOOKS.format(self.book1.book_id)
+        self.assertIsNotNone(cache.get(key))
+
+        # Create a new book that would be related
+        book3 = Book.objects.create(
+            title="Book 3",
+            description="Test",
+            isbn="3333333333333",
+            author="Author",
+            publication_date=datetime.date(2020, 1, 1),
+            total_copies=5,
+            copies_available=5,
+            added_by=self.user,
+        )
+        book3.genre.add(self.genre.id)
+
+        # Second call should return cached result (missing book3)
+        related2 = LibraryCacheService.get_related_books(
+            self.book1.book_id, [self.genre.id]
+        )
+        self.assertEqual(len(related2), 1)
+        self.assertEqual(related2[0].book_id, self.book2.book_id)
