@@ -102,16 +102,14 @@ class LibraryCacheService:
 
         def fetch():
             # Date filtering
-            today_start = timezone.now().replace(
-                hour=0, minute=0, second=0, microsecond=0
-            )
+            today_start = timezone.now().date()
             return {
                 "issued_today_count": Transaction.objects.filter(
                     status__in=["ISSUED", "RETURN_REQUESTED", "RETURNED"],
-                    checkout_date__gte=today_start,
+                    checkout_date__date=today_start,
                 ).count(),
                 "returned_today_count": Transaction.objects.filter(
-                    status="RETURNED", returned_date__gte=today_start, is_ebook=False
+                    status="RETURNED", returned_date__date=today_start, is_ebook=False
                 ).count(),
                 "active_digital_loans": Transaction.objects.filter(
                     status="DOWNLOADED"
