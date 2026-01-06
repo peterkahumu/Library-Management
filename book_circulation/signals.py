@@ -17,6 +17,7 @@ def invalidate_transaction_cache(sender, instance, **kwargs):
     if instance.status in ["ISSUED", "RETURNED", "DOWNLOADED", "RETURN_REQUESTED"]:
         LibraryCacheService.invalidate_available_books()
 
-    # Invalidate Dashboards (always, as they show pending requests)
+    # Invalidate Dashboards cache
     LibraryCacheService.invalidate_admin_kpis()
     LibraryCacheService.invalidate_librarian_kpis()
+    LibraryCacheService.invalidate_admin_analytics()

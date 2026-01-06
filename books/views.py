@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Book
 from .forms import BookForm
 from accounts.models import UserRoles
+from caching.services import LibraryCacheService
 
 
 # Create your views here.
@@ -54,8 +55,6 @@ class BookDetailView(DetailView):
         context["genres"] = [g.name for g in genres]
 
         if genres:
-            from caching.services import LibraryCacheService
-
             context["related_books"] = LibraryCacheService.get_related_books(
                 book.book_id, [g.id for g in genres]
             )

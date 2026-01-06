@@ -282,8 +282,14 @@ class LibraryCacheService:
         cache.delete(keys.DASHBOARD_ADMIN_KPIS)
         logger.info("🧹 Cache Cleared: Admin KPIs")
 
+    @staticmethod
     def invalidate_admin_analytics():
         cache.delete(keys.DASHBOARD_ADMIN_ANALYTICS)
+        logger.info("🧹 Cache Cleared: Admin Analytics")
+
+    @staticmethod
+    def invalidate_related_books():
+        cache.delete(keys.RELATED_BOOKS)
         logger.info("🧹 Cache Cleared: Admin Analytics")
 
     @staticmethod

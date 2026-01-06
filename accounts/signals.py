@@ -11,6 +11,5 @@ def invalidate_user_cache_stats(sender, instance, **kwargs):
     """
     Clear user related cache when user is created, updated, or deleted
     """
-    # NB: pages.views for stats consumptions
     LibraryCacheService.invalidate_total_users()
     LibraryCacheService.invalidate_admin_kpis()
