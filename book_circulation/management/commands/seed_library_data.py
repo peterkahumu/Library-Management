@@ -15,6 +15,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write("Seeding data...")
+        Transaction.objects.all().delete()
 
         # 1. Create Users
         self.create_users()
@@ -28,19 +29,6 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Successfully seeded database!"))
 
     def create_users(self):
-        # Admin
-        if not User.objects.filter(username="admin").exists():
-            User.objects.create_superuser(
-                email="admin@library.com",
-                username="admin",
-                password="password123",
-                first_name="Admin",
-                last_name="User",
-                role=UserRoles.ADMIN,
-            )
-            self.stdout.write("Created Admin: admin@library.com / password123")
-        else:
-            self.stdout.write("Admin user already exists. Skipping.")
 
         # Librarian
         if not User.objects.filter(username="librarian").exists():
