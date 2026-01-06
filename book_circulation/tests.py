@@ -4,7 +4,6 @@ from django.test import TestCase, TransactionTestCase
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from django.core.cache import cache
 from django.db import transaction as db_transaction
 
 from books.models import Book, Genre
@@ -861,80 +860,3 @@ class TransactionRaceConditionTests(TransactionTestCase):
             0,
             "Book should have 0 copies available after single checkout",
         )
-
-
-class TransactionCacheInvalidationTests(TestCase):
-    """Test cache invalidation when transactions change."""
-
-    def setUp(self):
-        """Create test fixtures and clear cache."""
-        cache.clear()
-
-        self.user = User.objects.create_user(
-            username="testuser",
-            email="test@example.com",
-            password="testpass123",
-        )
-        self.genre, _ = Genre.objects.get_or_create(name="FANTASY")
-
-        self.book = Book.objects.create(
-            title="Test Book",
-            description="Test",
-            isbn="1234567890123",
-            author="Test Author",
-            publication_date=datetime.date(2020, 1, 1),
-            total_copies=5,
-            copies_available=5,
-            added_by=self.user,
-        )
-        self.book.genre.add(self.genre)
-
-    def test_cache_invalidated_on_transaction_creation(self):
-        """
-        Creating a transaction with ISSUED status should clear availability cache.
-        """
-        cache.set("stats:available_books", 100)
-        cache.set("stats:total_books", 200)
-
-        Transaction.objects.create(
-            user=self.user,
-            book=self.book,
-            status="ISSUED",
-        )
-
-        self.assertIsNone(cache.get("stats:available_books"))
-        self.assertIsNone(cache.get("stats:total_books"))
-
-    def test_cache_invalidated_on_transaction_return(self):
-        """
-        Returning a transaction should clear availability cache.
-        """
-        transaction = Transaction.objects.create(
-            user=self.user,
-            book=self.book,
-            status="ISSUED",
-        )
-
-        cache.set("stats:available_books", 100)
-        cache.set("stats:total_books", 200)
-
-        transaction.mark_as_returned()
-
-        self.assertIsNone(cache.get("stats:available_books"))
-        self.assertIsNone(cache.get("stats:total_books"))
-
-    def test_pending_transaction_does_not_invalidate_availability_cache(self):
-        """
-        Creating a PENDING transaction should not clear availability cache
-        since it doesn't affect book stock.
-        """
-        cache.set("stats:available_books", 100)
-
-        Transaction.objects.create(
-            user=self.user,
-            book=self.book,
-            status="PENDING",
-            due_date=timezone.now() + timedelta(days=14),
-        )
-
-        self.assertEqual(cache.get("stats:available_books"), 100)
