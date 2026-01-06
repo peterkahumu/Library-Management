@@ -5,7 +5,7 @@
         <span class="d-block small">Home</span>
     </a>
     <a href="{% url 'book_list' %}"
-        class="bottom-nav-item text-decoration-none text-center {% if 'book' in request.resolver_match.url_name %}active{% endif %}">
+        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name in 'book_list book_detail book_edit' %}active{% endif %}">
         <i class="fas fa-book fa-lg mb-1"></i>
         <span class="d-block small">Books</span>
     </a>

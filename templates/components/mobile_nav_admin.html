@@ -8,7 +8,7 @@
 
     <!-- Books -->
     <a href="{% url 'book_list' %}"
-        class="bottom-nav-item text-decoration-none text-center {% if 'book' in request.resolver_match.url_name %}active{% endif %}">
+        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name in 'book_list book_detail book_edit' %}active{% endif %}">
         <i class="fas fa-book fa-lg mb-1"></i>
         <span class="d-block small">Books</span>
     </a>
@@ -37,8 +37,9 @@
 
     <!-- Menu -->
     <div class="dropup">
-        <a href="#" class="bottom-nav-item text-decoration-none text-center" data-bs-toggle="dropdown"
-            aria-expanded="false">
+        <a href="#"
+            class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name in 'transaction_logs my_books book_create password_change' %}active{% endif %}"
+            data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-bars fa-lg mb-1"></i>
             <span class="d-block small">Menu</span>
         </a>

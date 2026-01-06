@@ -51,7 +51,7 @@
         </nav>
 
         <!-- Mobile Bottom Navigation -->
-        <nav class="navbar fixed-bottom navbar-light bg-white border-top d-lg-none bottom-nav">
+        <nav class="navbar fixed-bottom bg-primary-custom border-top d-lg-none bottom-nav">
             {% if user.is_authenticated %}
             {% if user.role == 'admin' %}
             {% include 'components/mobile_nav_admin.html' %}

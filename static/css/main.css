@@ -7,6 +7,12 @@ form label {
     font-weight: 500;
 }
 
+/* Prevent scroll bounce on mobile */
+html,
+body {
+    overscroll-behavior-y: none;
+}
+
 h2 {
     color: #007BFF;
 }
@@ -60,16 +66,18 @@ h2 {
 
 /* Bottom Navigation */
 .bottom-nav {
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
     z-index: 1040;
     padding-bottom: env(safe-area-inset-bottom);
     height: 80px;
-    /* Increased height to preventing overlap */
     padding-top: 10px;
+    background-color: #4e73df !important;
+    /* Brighter Blue Background */
 }
 
 .bottom-nav-item {
-    color: #9ca3af;
+    color: rgba(255, 255, 255, 0.7);
+    /* Light white for inactive */
     padding: 0.5rem;
     transition: all 0.3s ease;
     border-radius: 12px;
@@ -80,19 +88,19 @@ h2 {
 }
 
 .bottom-nav-item:hover {
-    color: #0d6efd;
-    background-color: rgba(13, 110, 253, 0.05);
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .bottom-nav-item.active {
-    color: #0d6efd;
-    font-weight: 600;
+    color: #ffc107;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
 }
 
 .bottom-nav-item i {
     display: block;
     margin-bottom: 8px;
-    /* More defined spacing */
     font-size: 1.5rem;
     line-height: 1;
 }
