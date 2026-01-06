@@ -1,4 +1,4 @@
-"""Create global context related to books.""
+"""Create global context related to books.
 """
 
 from caching.services import LibraryCacheService

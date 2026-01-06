@@ -17,13 +17,10 @@ class UserCacheInvalidationTests(TestCase):
 
     def setUp(self):
         """Clear cache before each test."""
-        from django.core.cache import cache
-
         cache.clear()
 
     def test_cache_invalidated_on_user_creation(self):
         """Creating a user should clear stats:total_users cache."""
-        from django.core.cache import cache
 
         cache.set("stats:total_users", 100)
         self.assertEqual(cache.get("stats:total_users"), 100)
@@ -40,7 +37,6 @@ class UserCacheInvalidationTests(TestCase):
 
     def test_cache_invalidated_on_user_update(self):
         """Updating a user should clear stats:total_users cache."""
-        from django.core.cache import cache
 
         user = User.objects.create_user(
             username="updateuser",
@@ -60,7 +56,6 @@ class UserCacheInvalidationTests(TestCase):
 
     def test_cache_invalidated_on_user_deletion(self):
         """Deleting a user should clear stats:total_users cache."""
-        from django.core.cache import cache
 
         user = User.objects.create_user(
             username="deleteuser",
@@ -79,7 +74,6 @@ class UserCacheInvalidationTests(TestCase):
 
     def test_cache_not_affected_by_other_operations(self):
         """Cache should only be invalidated by user save/delete, not reads."""
-        from django.core.cache import cache
 
         User.objects.create_user(
             username="readuser", email="read@example.com", password="testpass123"
@@ -101,8 +95,6 @@ class BookCacheInvalidationTests(TestCase):
 
     def setUp(self):
         """Clear cache and create test fixtures."""
-        from django.core.cache import cache
-
         cache.clear()
 
         self.user = User.objects.create_user(
@@ -114,7 +106,6 @@ class BookCacheInvalidationTests(TestCase):
 
     def test_cache_invalidated_on_book_creation(self):
         """Creating a book should clear book-related cache."""
-        from django.core.cache import cache
 
         cache.set("stats:total_books", 100)
         cache.set("stats:available_books", 50)
@@ -138,7 +129,6 @@ class BookCacheInvalidationTests(TestCase):
 
     def test_cache_invalidated_on_book_update(self):
         """Updating a book should clear book-related cache."""
-        from django.core.cache import cache
 
         book = Book.objects.create(
             title="Update Book",
@@ -165,8 +155,6 @@ class BookCacheInvalidationTests(TestCase):
 
     def test_cache_invalidated_on_book_deletion(self):
         """Deleting a book should clear book-related cache."""
-        from django.core.cache import cache
-
         book = Book.objects.create(
             title="Delete Book",
             description="Test",
@@ -191,8 +179,6 @@ class BookCacheInvalidationTests(TestCase):
 
     def test_cache_invalidated_on_availability_change(self):
         """Changing book availability should clear available_books cache."""
-        from django.core.cache import cache
-
         book = Book.objects.create(
             title="Borrow Book",
             description="Test",
@@ -215,7 +201,6 @@ class BookCacheInvalidationTests(TestCase):
 
     def test_user_cache_not_affected_by_book_changes(self):
         """Book changes should not affect user cache."""
-        from django.core.cache import cache
 
         cache.set("stats:total_users", 200)
 

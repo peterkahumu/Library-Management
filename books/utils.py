@@ -8,3 +8,4 @@ def invalidate_cache():
     LibraryCacheService.invalidate_available_books()
     LibraryCacheService.invalidate_admin_kpis()
     LibraryCacheService.invalidate_genres()
+    LibraryCacheService.invalidate_admin_analytics()

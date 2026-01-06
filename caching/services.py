@@ -41,14 +41,6 @@ class LibraryCacheService:
     @classmethod
     def get_homepage_stats(cls):
         """Consumption: pages/views.py"""
-
-        def fetch():
-            return {
-                "total_books": Book.objects.count(),
-                "total_users": LibraryUser.objects.filter(is_active=True).count(),
-                "available_books": Book.objects.filter(copies_available__gt=0).count(),
-            }
-
         total_books = cls._get_or_set(
             keys.STATS_TOTAL_BOOKS, lambda: Book.objects.count()
         )
@@ -289,6 +281,10 @@ class LibraryCacheService:
     def invalidate_admin_kpis():
         cache.delete(keys.DASHBOARD_ADMIN_KPIS)
         logger.info("🧹 Cache Cleared: Admin KPIs")
+
+    def invalidate_admin_analytics():
+        cache.delete(keys.DASHBOARD_ADMIN_ANALYTICS)
+        logger.info("🧹 Cache Cleared: Admin Analytics")
 
     @staticmethod
     def invalidate_librarian_kpis():

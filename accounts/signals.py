@@ -9,7 +9,7 @@ from .models import LibraryUser
 @receiver([post_save, post_delete], sender=LibraryUser)
 def invalidate_user_cache_stats(sender, instance, **kwargs):
     """
-    Clear user related cache when user are created, updated, or deleted
+    Clear user related cache when user is created, updated, or deleted
     """
     # NB: pages.views for stats consumptions
     LibraryCacheService.invalidate_total_users()
