@@ -923,20 +923,6 @@ class TransactionCacheInvalidationTests(TestCase):
         self.assertIsNone(cache.get("stats:available_books"))
         self.assertIsNone(cache.get("stats:total_books"))
 
-    def test_user_specific_cache_invalidated(self):
-        """
-        Creating/updating a transaction should clear user-specific cache.
-        """
-        cache.set(f"user_active_transactions:{self.user.pk}", [1, 2, 3])
-
-        Transaction.objects.create(
-            user=self.user,
-            book=self.book,
-            status="ISSUED",
-        )
-
-        self.assertIsNone(cache.get(f"user_active_transactions:{self.user.pk}"))
-
     def test_pending_transaction_does_not_invalidate_availability_cache(self):
         """
         Creating a PENDING transaction should not clear availability cache

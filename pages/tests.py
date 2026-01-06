@@ -5,7 +5,7 @@ from django.core.cache import cache
 from django.contrib.auth import get_user_model
 
 from books.models import Book, Genre
-from .utils import get_cached_stats
+from caching.services import LibraryCacheService
 
 User = get_user_model()
 
@@ -130,7 +130,7 @@ class GetCachedStatsTests(TestCase):
             password="pass",
         )
 
-        stats = get_cached_stats()
+        stats = LibraryCacheService.get_homepage_stats()
 
         self.assertEqual(stats["total_books"], 5)
         self.assertEqual(stats["total_users"], 2)  # 2 active users
@@ -139,7 +139,7 @@ class GetCachedStatsTests(TestCase):
     def test_get_cached_stats_caches_results(self):
         """get_cached_stats should cache results in configured cache backend."""
         # First call - should query DB and cache
-        stats = get_cached_stats()
+        stats = LibraryCacheService.get_homepage_stats()
 
         # Check cache was set
         self.assertIsNotNone(cache.get("stats:total_books"))
@@ -154,7 +154,7 @@ class GetCachedStatsTests(TestCase):
     def test_get_cached_stats_uses_cache_on_second_call(self):
         """Second call to get_cached_stats should use cached data."""
         # First call
-        stats1 = get_cached_stats()
+        stats1 = LibraryCacheService.get_homepage_stats()
 
         # Create new book (should not affect cached stats)
         Book.objects.create(
@@ -175,14 +175,14 @@ class GetCachedStatsTests(TestCase):
         cache.set("stats:available_books", stats1["available_books"], timeout=60)
 
         # Second call - should use cache (old value)
-        stats2 = get_cached_stats()
+        stats2 = LibraryCacheService.get_homepage_stats()
 
         # Should return cached value (not the new count)
         self.assertEqual(stats2["total_books"], stats1["total_books"])
 
     def test_get_cached_stats_handles_zero_books(self):
         """get_cached_stats should handle zero books gracefully."""
-        stats = get_cached_stats()
+        stats = LibraryCacheService.get_homepage_stats()
 
         self.assertEqual(stats["total_books"], 0)
         self.assertEqual(stats["available_books"], 0)
@@ -204,7 +204,7 @@ class GetCachedStatsTests(TestCase):
             is_active=False,
         )
 
-        stats = get_cached_stats()
+        stats = LibraryCacheService.get_homepage_stats()
 
         # Should count 2 active users (testuser from setUp + active_user)
         # Should NOT count inactive_user
@@ -235,7 +235,7 @@ class GetCachedStatsTests(TestCase):
             added_by=self.user,
         )
 
-        stats = get_cached_stats()
+        stats = LibraryCacheService.get_homepage_stats()
 
         # Should count 2 total books but only 1 available
         self.assertEqual(stats["total_books"], 2)
@@ -259,7 +259,7 @@ class PagesCacheIntegrationTests(TestCase):
     def test_creating_book_invalidates_home_page_cache(self):
         """Creating a book should invalidate relevant cache keys."""
         # Get initial stats (caches them)
-        stats1 = get_cached_stats()
+        stats1 = LibraryCacheService.get_homepage_stats()
         initial_books = stats1["total_books"]
 
         # Verify cache is set
@@ -281,13 +281,13 @@ class PagesCacheIntegrationTests(TestCase):
         self.assertIsNone(cache.get("stats:total_books"))
 
         # Getting stats again should fetch fresh data
-        stats2 = get_cached_stats()
+        stats2 = LibraryCacheService.get_homepage_stats()
         self.assertEqual(stats2["total_books"], initial_books + 1)
 
     def test_creating_user_invalidates_home_page_cache(self):
         """Creating a user should invalidate user stats cache."""
         # Get initial stats
-        stats1 = get_cached_stats()
+        stats1 = LibraryCacheService.get_homepage_stats()
         initial_users = stats1["total_users"]
 
         # Verify cache is set
@@ -304,5 +304,5 @@ class PagesCacheIntegrationTests(TestCase):
         self.assertIsNone(cache.get("stats:total_users"))
 
         # Getting stats again should fetch fresh data
-        stats2 = get_cached_stats()
+        stats2 = LibraryCacheService.get_homepage_stats()
         self.assertEqual(stats2["total_users"], initial_users + 1)

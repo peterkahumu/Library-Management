@@ -1,8 +1,8 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from django.core.cache import cache
 
 
+from caching.services import LibraryCacheService
 from .models import LibraryUser
 
 
@@ -11,5 +11,6 @@ def invalidate_user_cache_stats(sender, instance, **kwargs):
     """
     Clear user related cache when user are created, updated, or deleted
     """
-    # NB: Check pages.utils and pages.views for stats consumptions
-    cache.delete("stats:total_users")
+    # NB: pages.views for stats consumptions
+    LibraryCacheService.invalidate_total_users()
+    LibraryCacheService.invalidate_admin_kpis()
