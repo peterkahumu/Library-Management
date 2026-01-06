@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    image: app
     command: bash -c "./wait-for-it.sh db:5432 -t 60 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./:/app
@@ -10,7 +11,7 @@ services:
       - db
       - redis
     ports:
-      - 8000:8000
+      - "8000:8000"
 
   db:
     image: postgres:latest

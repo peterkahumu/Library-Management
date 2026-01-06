@@ -1,3 +1,4 @@
+# Production ready Dockerfile
 FROM python:3.13-slim
 
 WORKDIR /app
@@ -5,16 +6,26 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-RUN apt-get update && apt-get install -y\
-    build-essential\
-    libpq-dev\
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Install python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY wait-for-it.sh ./wait-for-it.sh
+# Create a non-root user
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+
+COPY --chown=appuser:appuser . .
+RUN python manage.py collectstatic --noinput
+
 RUN chmod +x ./wait-for-it.sh
 
-COPY . .
-CMD ["bash", "-c", "python manage.py migrate && python manage.py runserver"]
+EXPOSE 8000
+
+CMD sh -c "python manage.py migrate && python manage.py seed_library_data && gunicorn --bind 0.0.0.0:8000 LibraryManagement.wsgi:application"
