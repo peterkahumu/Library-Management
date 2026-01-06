@@ -26,10 +26,7 @@
                     {% endif %}
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu"
-                    aria-controls="mobileMenu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+
 
                 <div class="collapse navbar-collapse d-none d-lg-flex" id="desktopNav">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
@@ -53,61 +50,36 @@
             </div>
         </nav>
 
-        <!-- Offcanvas Mobile Menu -->
-        <div class="offcanvas offcanvas-end bg-primary-custom text-white" tabindex="-1" id="mobileMenu"
-            aria-labelledby="mobileMenuLabel">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="mobileMenuLabel">Menu</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
-                    aria-label="Close"></button>
+        <!-- Mobile Bottom Navigation -->
+        <nav class="navbar fixed-bottom navbar-light bg-white border-top d-lg-none bottom-nav">
+            {% if user.is_authenticated %}
+            {% if user.role == 'admin' %}
+            {% include 'components/mobile_nav_admin.html' %}
+            {% elif user.role == 'librarian' %}
+            {% include 'components/mobile_nav_librarian.html' %}
+            {% else %}
+            {% include 'components/mobile_nav_student.html' %}
+            {% endif %}
+            {% else %}
+            {% include 'components/mobile_nav_guest.html' %}
+            {% endif %}
+        </nav>
+
+        <main class="container py-4">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm"
+                role="alert">
+                <i class="fas fa-info-circle me-2"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <div class="offcanvas-body">
-                <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item mb-2">
-                        <span class="text-white-50 small">Logged in as:</span>
-                        <div class="d-flex align-items-center mt-1">
-                            <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32"
-                                height="32">
-                            <span>{{ user.get_full_name }}</span>
-                        </div>
-                    </li>
-                    <hr class="dropdown-divider bg-white">
+            {% endfor %}
+            {% endif %}
 
-                    {% if user.role == 'admin' %}
-                    {% include 'components/nav_admin.html' %}
-                    {% elif user.role == 'librarian' %}
-                    {% include 'components/nav_librarian.html' %}
-                    {% elif user.role == 'student' %}
-                    {% include 'components/nav_student.html' %}
-                    {% endif %}
-
-                    {% else %}
-                    <li class="nav-item"><a class="nav-link text-white" href="{% url 'home' %}">Home</a></li>
-                    <li class="nav-item mt-2"><a class="btn btn-outline-light w-100" href="{% url 'login' %}">Login</a>
-                    </li>
-                    <li class="nav-item mt-2"><a class="btn btn-warning w-100" href="{% url 'register' %}">Sign Up</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </header>
-
-    <main class="container py-4">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
-            <i class="fas fa-info-circle me-2"></i> {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
-        {% endif %}
-
-        {% block content %} {% endblock content %}
-    </main>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+            {% block content %} {% endblock content %}
+        </main>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{% static 'js/main.js' %}"></script>
 </body>
 
 </html>

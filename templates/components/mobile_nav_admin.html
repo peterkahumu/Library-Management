@@ -1,0 +1,75 @@
+<div class="container-fluid d-flex justify-content-around align-items-center">
+    <!-- Home -->
+    <a href="{% url 'home' %}"
+        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="fas fa-home fa-lg mb-1"></i>
+        <span class="d-block small">Home</span>
+    </a>
+
+    <!-- Books -->
+    <a href="{% url 'book_list' %}"
+        class="bottom-nav-item text-decoration-none text-center {% if 'book' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="fas fa-book fa-lg mb-1"></i>
+        <span class="d-block small">Books</span>
+    </a>
+
+    <!-- Dashboards Dropup -->
+    <div class="dropup">
+        <a href="#"
+            class="bottom-nav-item text-decoration-none text-center {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}"
+            data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-tachometer-alt fa-lg mb-1"></i>
+            <span class="d-block small">Dashboards</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-center shadow border-0 rounded-4 p-2 mb-3">
+            <li>
+                <h6 class="dropdown-header text-uppercase small text-muted">Select View</h6>
+            </li>
+            <!-- Admin Panel Link Implicitly available via Menu or Home if needed, but removed from list as per request -->
+            <li><a class="dropdown-item rounded-2 py-2" href="{% url 'admin_dashboard' %}"><i
+                        class="fas fa-chart-pie w-25 text-primary"></i>Admin Panel</a></li>
+            <li><a class="dropdown-item rounded-2 py-2" href="{% url 'librarian_dashboard' %}"><i
+                        class="fas fa-tachometer-alt w-25 text-warning"></i>Librarian Panel</a></li>
+            <li><a class="dropdown-item rounded-2 py-2" href="{% url 'student_dashboard' %}"><i
+                        class="fas fa-user-graduate w-25 text-info"></i>Student View</a></li>
+        </ul>
+    </div>
+
+    <!-- Menu -->
+    <div class="dropup">
+        <a href="#" class="bottom-nav-item text-decoration-none text-center" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            <i class="fas fa-bars fa-lg mb-1"></i>
+            <span class="d-block small">Menu</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-3 mb-2">
+            <li class="d-flex align-items-center mb-3">
+                <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-3 border" width="40"
+                    height="40">
+                <div>
+                    <p class="mb-0 fw-bold">{{ user.get_full_name }}</p>
+                    <small class="text-muted">{{ user.email }}</small>
+                </div>
+            </li>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
+            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'transaction_logs' %}"><i
+                        class="fas fa-list me-2 text-primary"></i>Logs</a></li>
+            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'book_create' %}"><i
+                        class="fas fa-plus me-2 text-success"></i>Add Book</a></li>
+            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'my_books' %}"><i
+                        class="fas fa-book-open me-2 text-primary"></i>My Books</a></li>
+            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'password_change' %}"><i
+                        class="fas fa-key me-2 text-warning"></i>Change Password</a></li>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
+            <form action="{% url 'logout' %}" method="post" class="d-grid">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item text-danger py-2 rounded-2"><i
+                        class="fas fa-sign-out-alt me-2"></i>Log Out</button>
+            </form>
+        </ul>
+    </div>
+</div>
