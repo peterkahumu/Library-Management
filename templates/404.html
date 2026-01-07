@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lost in Digital Space | Library Management{% endblock title %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center min-vh-75 py-5">
+    <div class="text-center card-custom p-5 bg-white" style="max-width: 600px; width: 100%;">
+        <div class="mb-4">
+            <i class="fas fa-rocket fa-6x text-primary-custom"></i>
+        </div>
+
+        <h1 class="display-4 fw-bold text-primary-custom mb-3">Lost in Digital Space 🪐</h1>
+
+        <p class="lead text-secondary mb-4">
+            The page requested is unavailable. It might be:
+        </p>
+
+        <ul class="list-unstyled text-muted mb-5 text-start d-inline-block mx-auto">
+            <li class="mb-2"><i class="fas fa-coffee text-warning-custom me-2"></i> On a coffee break ☕</li>
+            <li class="mb-2"><i class="fas fa-sync fa-spin text-info-custom me-2"></i> Getting a software update</li>
+            <li><i class="fas fa-ghost text-secondary me-2"></i> Simply shy</li>
+        </ul>
+
+        <h5 class="text-muted mb-4">Let's find something else:</h5>
+
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+            <a href="{% url 'home' %}"
+                class="btn btn-primary bg-primary-custom border-primary-custom btn-lg px-4 gap-3">
+                <i class="fas fa-home me-2"></i>Home
+            </a>
+            <a href="{% url 'book_list' %}" class="btn btn-outline-primary btn-lg px-4">
+                <i class="fas fa-book-open me-2"></i>Browse Books
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock content %}
