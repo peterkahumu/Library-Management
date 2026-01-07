@@ -1,0 +1,48 @@
+<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
+    <!-- Dashboards -->
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="manageBooksDropdown" role="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            Dashboards
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="manageBooksDropdown">
+            <li><a class="dropdown-item" href="{% url 'librarian_dashboard' %}"><i
+                        class="text-warning fas fa-tachometer me-2"></i>Librarian</a></li>
+            <li><a class="dropdown-item" href="{% url 'student_dashboard' %}"><i
+                        class="text-info fas fa-user-graduate me-2"></i>Student
+                </a></li>
+
+        </ul>
+    </li>
+
+    <!-- Manage books -->
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="manageBooksDropdown" role="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            Manage Books
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="manageBooksDropdown">
+            <li><a class="dropdown-item" href="{% url 'book_create' %}"><i class="fa-solid fa-plus me-2"></i>Add
+                    Book</a></li>
+            <li><a class="dropdown-item" href="{% url 'book_list' %}">All Books</a></li>
+        </ul>
+    </li>
+
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+            <img src="{{user.profile_image.url}}" alt="User" class="rounded-circle me-2" width="32" height="32">
+            <span>{{ user.get_full_name }}</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item text-danger">Log out</button>
+            </form>
+        </ul>
+    </li>
+</ul>

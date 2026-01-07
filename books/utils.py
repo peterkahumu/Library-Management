@@ -2,7 +2,11 @@ def invalidate_cache():
     """
     Clear all cache related to books on books creation, update and/or deletion
     """
-    from django.core.cache import cache
+    from caching.services import LibraryCacheService
 
-    cache.delete("stats:total_books")
-    cache.delete("stats:available_books")
+    LibraryCacheService.invalidate_total_books()
+    LibraryCacheService.invalidate_available_books()
+    LibraryCacheService.invalidate_admin_kpis()
+    LibraryCacheService.invalidate_genres()
+    LibraryCacheService.invalidate_admin_analytics()
+    LibraryCacheService.invalidate_related_books()

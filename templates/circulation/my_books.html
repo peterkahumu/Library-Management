@@ -2,62 +2,400 @@
 
 {% block content %}
 <h2 class="mb-4">My Books</h2>
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Book</th>
-                <th>Status</th>
-                <th>Due Date</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for txn in transactions %}
-            <tr>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <img src="{{ txn.book.cover_image.url }}" width="40" class="me-2 rounded">
-                        {{ txn.book.title }}
-                    </div>
-                </td>
-                <td>
-                    {% if txn.status == 'ISSUED' %}
-                    <span class="badge bg-success">Issued</span>
-                    {% elif txn.status == 'PENDING' %}
-                    <span class="badge bg-warning text-dark">Pending Approval</span>
-                    {% elif txn.status == 'RETURN_REQUESTED' %}
-                    <span class="badge bg-info text-dark">Return Requested</span>
-                    {% else %}
-                    <span class="badge bg-secondary">Returned</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if not txn.status == 'PENDING' %}
-                    <span class="{% if txn.is_overdue %}text-danger fw-bold{% endif %}">
-                        {{ txn.due_date|date:"M d, Y" }}
-                    </span>
-                    {% else %}
-                    -
-                    {% endif %}
-                </td>
-                <td>
-                    {% if txn.status == 'ISSUED' and not txn.is_ebook %}
-                    <form action="{% url 'request_return' txn.pk %}" method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Return Book</button>
-                    </form>
-                    {% elif txn.is_ebook and txn.status == 'ISSUED' %}
-                    <a href="#" class="btn btn-sm btn-outline-primary">Download</a>
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4" class="text-center py-4">No active book transactions.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active rounded-pill px-4" id="pills-pending-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-pending" type="button" role="tab">
+            Pending Requests
+            {% if pending_requests %}
+            <span class="badge bg-primary ms-2">{{ pending_requests|length }}</span>
+            {% endif %}
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="pills-current-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-current" type="button" role="tab">
+            Current Loans
+            {% if current_loans %}
+            <span class="badge bg-warning text-dark ms-2">{{ current_loans|length }}</span>
+            {% endif %}
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="pills-overdue-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-overdue" type="button" role="tab">
+            Overdue Books
+            {% if overdue_books %}
+            <span class="badge bg-danger ms-2">{{ overdue_books|length }}</span>
+            {% endif %}
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="pills-digital-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-digital" type="button" role="tab">
+            Digital Shelf
+            {% if digital_books %}
+            <span class="badge bg-info text-dark ms-2">{{ digital_books|length }}</span>
+            {% endif %}
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill px-4" id="pills-history-tab" data-bs-toggle="pill"
+            data-bs-target="#pills-history" type="button" role="tab">
+            Borrowing History
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="pills-tabContent">
+    <!-- 2. Pending Requests Tab (PENDING) - Now First and Active -->
+    <div class="tab-pane fade show active" id="pills-pending" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Book</th>
+                                <th>Requested On</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in pending_requests %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if txn.book.cover_image %}
+                                        <img src="{{ txn.book.cover_image.url }}" width="40"
+                                            class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ txn.book.title }}</div>
+                                            <small class="text-muted">{{ txn.book.author }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ txn.checkout_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if txn.status == 'PENDING' %}
+                                    <span class="badge bg-primary">Borrow Pending</span>
+                                    {% elif txn.status == 'RETURN_REQUESTED' %}
+                                    <span class="badge bg-warning text-dark">Return Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    {% if txn.status == 'PENDING' %}
+                                    <small class="text-muted">Visit library to collect</small>
+                                    {% elif txn.status == 'RETURN_REQUESTED' %}
+                                    <small class="text-muted">Hand over book to librarian</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="text-muted opacity-50 mb-3">
+                                        <i class="fas fa-clipboard-list fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-muted">No pending requests</h6>
+                                    <p class="small text-muted mb-0">Books you request will appear here.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Current Loans Tab (ISSUED, RETURN_REQUESTED) - Now Second -->
+    <div class="tab-pane fade" id="pills-current" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Book</th>
+                                <th>Status</th>
+                                <th>Timeline</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in current_loans %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if txn.book.cover_image %}
+                                        <img src="{{ txn.book.cover_image.url }}" width="40"
+                                            class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ txn.book.title }}</div>
+                                            <small class="text-muted">{{ txn.book.author }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if txn.status == 'ISSUED' %}
+                                    <span class="badge bg-warning text-dark">Issued</span>
+                                    {% elif txn.status == 'RETURN_REQUESTED' %}
+                                    <span class="badge bg-info">Return Requested</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if txn.is_overdue %}
+                                    <span class="text-danger fw-bold"><i
+                                            class="fas fa-exclamation-circle me-1"></i>Overdue by {{ txn.days_overdue }}
+                                        days</span>
+                                    <div class="small text-danger">Due: {{ txn.due_date|date:"M d" }}</div>
+                                    {% else %}
+                                    <span class="text-success fw-bold"><i class="fas fa-clock me-1"></i>
+                                        {{ txn.due_date|timeuntil }} remaining
+                                    </span>
+                                    <div class="small text-success">Due: {{ txn.due_date|date:"M d" }}</div>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    {% if txn.status == 'ISSUED' %}
+                                    <form action="{% url 'request_return' txn.pk %}" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Return</button>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-light rounded-pill px-3"
+                                        disabled>Processing...</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="text-muted opacity-50 mb-3">
+                                        <i class="fas fa-book-reader fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-muted">No active loans</h6>
+                                    <p class="small text-muted mb-0">Search the catalog to find your next read!</p>
+                                    <a href="{% url 'book_list' %}"
+                                        class="btn btn-sm btn-outline-primary mt-3 rounded-pill">Browse Catalog</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Digital Shelf Tab (DOWNLOADED) -->
+    <div class="tab-pane fade" id="pills-digital" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Book</th>
+                                <th>Downloaded On</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in digital_books %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if txn.book.cover_image %}
+                                        <img src="{{ txn.book.cover_image.url }}" width="40"
+                                            class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ txn.book.title }}</div>
+                                            <small class="text-muted">{{ txn.book.author }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ txn.checkout_date|date:"M d, Y" }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="#" class="btn btn-sm btn-outline-primary rounded-pill">Read Now</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-5">
+                                    <div class="text-muted opacity-50 mb-3">
+                                        <i class="fas fa-tablet-alt fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-muted">Your digital shelf is empty</h6>
+                                    <p class="small text-muted mb-0">E-books you borrow will appear here.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Borrowing History Tab (RETURNED) -->
+    <div class="tab-pane fade" id="pills-history" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Book</th>
+                                <th>Returned On</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in transactions %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if txn.book.cover_image %}
+                                        <img src="{{ txn.book.cover_image.url }}" width="40"
+                                            class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ txn.book.title }}</div>
+                                            <small class="text-muted">{{ txn.book.author }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {{ txn.returned_date|date:"M d, Y" }}
+                                    {% if txn.returned_date > txn.due_date %}
+                                    <div class="text-danger small fw-bold"> <i class="fas fa-exclamation-circle"></i>
+                                        Late Return</div>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-secondary">Returned</span></td>
+                                <td class="text-end pe-4">
+                                    <a href="{{ txn.book.get_absolute_url }}"
+                                        class="btn btn-sm btn-outline-secondary rounded-pill">View Book</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No history found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 5. Overdue Books Tab (ISSUED + Overdue) -->
+    <div class="tab-pane fade" id="pills-overdue" role="tabpanel">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Book</th>
+                                <th>Status</th>
+                                <th>Timeline</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in overdue_books %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if txn.book.cover_image %}
+                                        <img src="{{ txn.book.cover_image.url }}" width="40"
+                                            class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ txn.book.title }}</div>
+                                            <small class="text-muted">{{ txn.book.author }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-danger">Overdue</span></td>
+                                <td>
+                                    <span class="text-danger fw-bold"><i
+                                            class="fas fa-exclamation-circle me-1"></i>Overdue by {{ txn.days_overdue }}
+                                        days</span>
+                                    <div class="small text-danger">Due: {{ txn.due_date|date:"M d" }}</div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <form action="{% url 'request_return' txn.pk %}" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">Return</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="text-success opacity-50 mb-3">
+                                        <i class="fas fa-check-circle fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-success">Good job!</h6>
+                                    <p class="small text-muted mb-0">You have no overdue books.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabName = urlParams.get('tab');
+        if (tabName) {
+            const tabEl = document.querySelector(`#pills-${tabName}-tab`);
+            if (tabEl) {
+                const tab = new bootstrap.Tab(tabEl);
+                tab.show();
+            }
+        }
+    });
+</script>
 {% endblock %}

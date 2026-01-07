@@ -1,0 +1,7 @@
+Dear {{ user }},
+
+This email confirms that the book "{{ book_title }}" has been successfully returned.
+Thank you for returning it in good condition. We look forward to serving you again.
+
+Sincerely,
+The Library Team

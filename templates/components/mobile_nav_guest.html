@@ -1,0 +1,22 @@
+<div class="container-fluid d-flex justify-content-around align-items-center">
+    <a href="{% url 'home' %}"
+        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="fas fa-home fa-lg mb-1"></i>
+        <span class="d-block small">Home</span>
+    </a>
+    <a href="{% url 'book_list' %}"
+        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name in 'book_list book_detail book_edit' %}active{% endif %}">
+        <i class="fas fa-book fa-lg mb-1"></i>
+        <span class="d-block small">Books</span>
+    </a>
+    <a href="{% url 'login' %}"
+        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+        <i class="fas fa-sign-in-alt fa-lg mb-1"></i>
+        <span class="d-block small">Login</span>
+    </a>
+    <a href="{% url 'register' %}"
+        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
+        <i class="fas fa-user-plus fa-lg mb-1"></i>
+        <span class="d-block small">Sign Up</span>
+    </a>
+</div>

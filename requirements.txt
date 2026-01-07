@@ -27,3 +27,5 @@ PyYAML==6.0.3
 redis==7.1.0
 sqlparse==0.5.3
 virtualenv==20.35.4
+gunicorn==23.0.0
+whitenoise==6.11.0

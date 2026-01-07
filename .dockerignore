@@ -16,7 +16,7 @@ venv/
 # Docker
 .dockerignore
 Dockerfile
-docker-compose.yml  # Optional: exclude if not needed in image
+docker-compose.yml
 
 # Environment and config
 .env

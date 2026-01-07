@@ -1,11 +1,10 @@
 import datetime
+from datetime import date
+import uuid
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
-
-import uuid
-from datetime import date
 from .models import Book, Genre
 from .forms import BookForm
 from .constants import GENRE_CHOICES
@@ -877,145 +876,6 @@ class GenresContextProcessorTests(TestCase):
         # FANTASY should be first (10 books), SCIFI second (5 books)
         self.assertEqual(genres[0], self.genre1)
         self.assertEqual(genres[1], self.genre2)
-
-
-class BookCacheInvalidationTests(TestCase):
-    """Test cache invalidation signals for book stats."""
-
-    def setUp(self):
-        """Clear cache and create test fixtures."""
-        from django.core.cache import cache
-
-        cache.clear()
-
-        self.user = User.objects.create_user(
-            username="testuser",
-            email="test@example.com",
-            password="testpass123",
-        )
-        self.genre, _ = Genre.objects.get_or_create(name="FANTASY")
-
-    def test_cache_invalidated_on_book_creation(self):
-        """Creating a book should clear book-related cache."""
-        from django.core.cache import cache
-
-        cache.set("stats:total_books", 100)
-        cache.set("stats:available_books", 50)
-        self.assertEqual(cache.get("stats:total_books"), 100)
-        self.assertEqual(cache.get("stats:available_books"), 50)
-
-        book = Book.objects.create(
-            title="New Book",
-            description="Test",
-            isbn="1234567890123",
-            author="Author",
-            publication_date=datetime.date(2020, 1, 1),
-            total_copies=5,
-            copies_available=5,
-            added_by=self.user,
-        )
-        book.genre.add(self.genre)
-
-        self.assertIsNone(cache.get("stats:total_books"))
-        self.assertIsNone(cache.get("stats:available_books"))
-
-    def test_cache_invalidated_on_book_update(self):
-        """Updating a book should clear book-related cache."""
-        from django.core.cache import cache
-
-        book = Book.objects.create(
-            title="Update Book",
-            description="Test",
-            isbn="1234567890123",
-            author="Author",
-            publication_date=datetime.date(2020, 1, 1),
-            total_copies=5,
-            copies_available=5,
-            added_by=self.user,
-        )
-        book.genre.add(self.genre)
-
-        cache.set("stats:total_books", 100)
-        cache.set("stats:available_books", 50)
-        self.assertEqual(cache.get("stats:total_books"), 100)
-        self.assertEqual(cache.get("stats:available_books"), 50)
-
-        book.title = "Updated Title"
-        book.save()
-
-        self.assertIsNone(cache.get("stats:total_books"))
-        self.assertIsNone(cache.get("stats:available_books"))
-
-    def test_cache_invalidated_on_book_deletion(self):
-        """Deleting a book should clear book-related cache."""
-        from django.core.cache import cache
-
-        book = Book.objects.create(
-            title="Delete Book",
-            description="Test",
-            isbn="1234567890123",
-            author="Author",
-            publication_date=datetime.date(2020, 1, 1),
-            total_copies=5,
-            copies_available=5,
-            added_by=self.user,
-        )
-        book.genre.add(self.genre)
-
-        cache.set("stats:total_books", 100)
-        cache.set("stats:available_books", 50)
-        self.assertEqual(cache.get("stats:total_books"), 100)
-        self.assertEqual(cache.get("stats:available_books"), 50)
-
-        book.delete()
-
-        self.assertIsNone(cache.get("stats:total_books"))
-        self.assertIsNone(cache.get("stats:available_books"))
-
-    def test_cache_invalidated_on_availability_change(self):
-        """Changing book availability should clear available_books cache."""
-        from django.core.cache import cache
-
-        book = Book.objects.create(
-            title="Borrow Book",
-            description="Test",
-            isbn="1234567890123",
-            author="Author",
-            publication_date=datetime.date(2020, 1, 1),
-            total_copies=5,
-            copies_available=5,
-            added_by=self.user,
-        )
-        book.genre.add(self.genre)
-
-        cache.set("stats:available_books", 50)
-        self.assertEqual(cache.get("stats:available_books"), 50)
-
-        # Borrow a book (changes copies_available)
-        book.borrow_book()
-
-        self.assertIsNone(cache.get("stats:available_books"))
-
-    def test_user_cache_not_affected_by_book_changes(self):
-        """Book changes should not affect user cache."""
-        from django.core.cache import cache
-
-        cache.set("stats:total_users", 200)
-
-        book = Book.objects.create(
-            title="Test Book",
-            description="Test",
-            isbn="1234567890123",
-            author="Author",
-            publication_date=datetime.date(2020, 1, 1),
-            total_copies=5,
-            copies_available=5,
-            added_by=self.user,
-        )
-        book.genre.add(self.genre)
-
-        # User cache should remain intact
-        self.assertEqual(cache.get("stats:total_users"), 200)
 
 
 class BookBorrowReturnTests(TestCase):

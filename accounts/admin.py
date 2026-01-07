@@ -18,7 +18,7 @@ class CustomerUserAdmin(admin.ModelAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     fieldsets = UserAdmin.fieldsets + (
-        (None, {"fields": ("role", "date_of_birth", "user_code")}),
+        (None, {"fields": ("role", "date_of_birth", "user_code", "profile_image")}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
         (None, {"fields": ("role", "date_of_birth")}),

@@ -7,6 +7,12 @@ form label {
     font-weight: 500;
 }
 
+/* Prevent scroll bounce on mobile */
+html,
+body {
+    overscroll-behavior-y: none;
+}
+
 h2 {
     color: #007BFF;
 }
@@ -56,4 +62,91 @@ h2 {
 
 .book-card:hover {
     transform: translateY(-5px);
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1040;
+    padding-bottom: env(safe-area-inset-bottom);
+    height: 80px;
+    padding-top: 10px;
+    background-color: #4e73df !important;
+    /* Brighter Blue Background */
+}
+
+.bottom-nav-item {
+    color: rgba(255, 255, 255, 0.7);
+    /* Light white for inactive */
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.bottom-nav-item:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.bottom-nav-item.active {
+    color: #ffc107;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+}
+
+.bottom-nav-item i {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.bottom-nav-item span {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: normal;
+}
+
+/* Floating Menu (Dropup) Refinements */
+.dropdown-menu {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom class to center dropdown/dropup relative to trigger */
+.dropdown-menu-center {
+    left: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, 0) !important;
+    min-width: 200px;
+}
+
+.dropdown-item {
+    transition: background-color 0.2s;
+    font-weight: 500;
+    padding: 10px 16px;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+
+.dropdown-item i {
+    width: 20px;
+    /* align icons */
+}
+
+/* Add padding to body to prevent content being hidden behind bottom nav on mobile */
+@media (max-width: 991.98px) {
+    body {
+        padding-bottom: 90px;
+        /* Increased to account for taller nav + spacing */
+    }
 }

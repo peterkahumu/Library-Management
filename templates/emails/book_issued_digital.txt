@@ -1,0 +1,11 @@
+Dear {{ user }},
+
+We are pleased to inform you that your request to borrow the digital copy of "{{ book_title }}" has been approved.
+You can download your copy using the link below:
+
+{{ download_link }}
+
+We hope you enjoy the book.
+
+Sincerely,
+The Library Team

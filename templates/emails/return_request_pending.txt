@@ -1,0 +1,7 @@
+Dear {{ user }},
+
+We have received your request to return "{{ book_title }}".
+Please bring the physical copy to the library desk to complete the return process.
+
+Sincerely,
+The Library Team

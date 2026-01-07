@@ -1,0 +1,7 @@
+Dear {{ user }},
+
+We are pleased to inform you that your request to borrow the physical copy of "{{ book_title }}" has been approved.
+Please visit the library circulation desk to collect your book.
+
+Sincerely,
+The Library Team

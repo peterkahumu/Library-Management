@@ -9,6 +9,7 @@ from django.views import View
 
 from books.models import Book
 from accounts.models import UserRoles
+from communications.email import LibraryEmailService
 from .models import Transaction
 from .forms import BorrowForm
 
@@ -33,11 +34,16 @@ class BorrowBookView(LoginRequiredMixin, FormView):
 
         # Check for active transactions
         if Transaction.objects.filter(
-            user=request.user, book=self.book, status__in=["ISSUED", "PENDING"]
+            user=request.user,
+            book=self.book,
+            status__in=["ISSUED", "PENDING", "RETURN_REQUESTED"],
         ).exists():
             messages.warning(
                 request, "You already have an active request or loan for this book."
             )
+            return redirect("book_detail", pk=self.book.pk)
+        if not self.book.is_available:
+            messages.error(request, "Book out of stock at the moment. Try again later.")
             return redirect("book_detail", pk=self.book.pk)
 
         return super().dispatch(request, *args, **kwargs)
@@ -50,19 +56,22 @@ class BorrowBookView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         """Handle the business logic once the form is submitted and valid."""
-        # Use .get() with a default or safety net as discussed
         duration = form.cleaned_data.get("duration_days") or 7
         due_date = timezone.now() + timedelta(days=duration)
 
         try:
             if self.book.is_digital:
                 # E-Book Flow
-                Transaction.objects.create(
+                transaction = Transaction.objects.create(
                     user=self.request.user,
                     book=self.book,
                     due_date=due_date,
-                    status="ISSUED",
+                    status="DOWNLOADED",
                     is_ebook=True,
+                )
+                LibraryEmailService.send_book_issued_notification(
+                    transaction,
+                    download_link="https://library.example.com/download/...",
                 )
                 messages.success(self.request, "E-Book downloaded successfully!")
             else:
@@ -71,13 +80,14 @@ class BorrowBookView(LoginRequiredMixin, FormView):
                     messages.error(self.request, "This book is currently out of stock.")
                     return redirect("book_detail", pk=self.book.pk)
 
-                Transaction.objects.create(
+                transaction = Transaction.objects.create(
                     user=self.request.user,
                     book=self.book,
                     due_date=due_date,
                     status="PENDING",
                     is_ebook=False,
                 )
+                LibraryEmailService.send_borrow_request_confirmation(transaction)
                 messages.success(
                     self.request,
                     "Request submitted. Please visit the librarian to complete checkout.",  # noqa
@@ -101,17 +111,62 @@ class MyBooksListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        """Filter transactions to show only the current user's history."""
+        """
+        Main queryset for pagination: Only 'History' (Returned items).
+        Active/Pending/Digital items are loaded separately in context
+        to avoid being hidden by pagination.
+        """
         return (
-            Transaction.objects.filter(user=self.request.user)
+            Transaction.objects.filter(user=self.request.user, status="RETURNED")
+            .select_related("book")
+            .order_by("-returned_date", "-checkout_date")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # 1. Pending Requests (Includes Return Requests)
+        context["pending_requests"] = (
+            Transaction.objects.filter(
+                user=user, status__in=["PENDING", "RETURN_REQUESTED"]
+            )
             .select_related("book")
             .order_by("-checkout_date")
         )
 
+        # 2. Current Loans (Issued and Return Requested)
+        context["current_loans"] = (
+            Transaction.objects.filter(
+                user=user, status__in=["ISSUED", "RETURN_REQUESTED"]
+            )
+            .select_related("book")
+            .order_by("due_date")
+        )
+
+        # 3. Overdue Books (Issued & Late)
+        # Note: Return requested in pending tab
+        context["overdue_books"] = (
+            Transaction.objects.filter(
+                user=user, status="ISSUED", due_date__lt=timezone.now()
+            )
+            .select_related("book")
+            .order_by("due_date")
+        )
+
+        # 4. Digital Shelf
+        context["digital_books"] = (
+            Transaction.objects.filter(user=user, status="DOWNLOADED")
+            .select_related("book")
+            .order_by("-checkout_date")
+        )
+
+        return context
+
 
 class RequestReturnView(LoginRequiredMixin, View):
     """
-    Allow student to reqeust a return for an issued book."""
+    Allow student to request a return for an issued book."""
 
     def post(self, request, pk):
         transaction = get_object_or_404(Transaction, pk=pk, user=request.user)
@@ -120,6 +175,7 @@ class RequestReturnView(LoginRequiredMixin, View):
             transaction.status = "RETURN_REQUESTED"
             try:
                 transaction.save()
+                LibraryEmailService.send_return_confirmation(transaction)
                 messages.success(
                     request,
                     "Return request submitted. "
@@ -137,29 +193,91 @@ class RequestReturnView(LoginRequiredMixin, View):
 
 
 # --- Librarian Views ---
-
-
-class LibrarianDashboardView(UserPassesTestMixin, ListView):
+class LibrarianBorrowRequestsView(UserPassesTestMixin, ListView):
     model = Transaction
-    template_name = "circulation/librarian_dashboard.html"
+    template_name = "circulation/librarian_borrow_requests.html"
     context_object_name = "borrow_requests"
+    paginate_by = 10
 
     def test_func(self):
-        """Ensure only staff/librarians can access this view."""
         return is_librarian_or_staff(self.request.user)
 
     def get_queryset(self):
-        """Show only pending requests."""
-        return Transaction.objects.filter(status="PENDING").select_related(
-            "book", "user"
+        return (
+            Transaction.objects.filter(status="PENDING")
+            .select_related("book", "user")
+            .order_by("checkout_date")
         )
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["return_requests"] = Transaction.objects.filter(
-            status="RETURN_REQUESTED"
-        ).select_related("book", "user")
-        return context
+
+class LibrarianReturnRequestsView(UserPassesTestMixin, ListView):
+    model = Transaction
+    template_name = "circulation/librarian_return_requests.html"
+    context_object_name = "return_requests"
+    paginate_by = 10
+
+    def test_func(self):
+        return is_librarian_or_staff(self.request.user)
+
+    def get_queryset(self):
+        return (
+            Transaction.objects.filter(status="RETURN_REQUESTED")
+            .select_related("book", "user")
+            .order_by("returned_date")
+        )
+
+
+class RejectBorrowView(UserPassesTestMixin, View):
+    """Reject a borrow request."""
+
+    def test_func(self):
+        return is_librarian_or_staff(self.request.user)
+
+    def post(self, request, pk):
+        transaction = get_object_or_404(Transaction, pk=pk)
+        reason = request.POST.get(
+            "reason", "Item not available or other library policy."
+        )
+        custom_note = request.POST.get("custom_note", "")
+
+        if transaction.status == "PENDING":
+            try:
+                LibraryEmailService.send_book_request_denied(
+                    reason, custom_note, transaction
+                )
+                transaction.delete()
+                messages.warning(
+                    request,
+                    f"Borrow request for {transaction.book.title} rejected. User notified",  # noqa
+                )
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+        return redirect("librarian_borrow_requests")
+
+
+class RejectReturnView(UserPassesTestMixin, View):
+    """Reject a return request (e.g., book damaged or not received)."""
+
+    def test_func(self):
+        return is_librarian_or_staff(self.request.user)
+
+    def post(self, request, pk):
+        transaction = get_object_or_404(Transaction, pk=pk)
+        reason = request.POST.get("reason", "Book damaged or not received.")
+        custom_note = request.POST.get("custom_note", "")
+
+        if transaction.status == "RETURN_REQUESTED":
+            try:
+                # Revert to ISSUED status so it stays as borrowed
+                transaction.status = "ISSUED"
+                transaction.save()
+                LibraryEmailService.send_return_denied(reason, custom_note, transaction)
+                messages.warning(
+                    request, "Return request rejected. Book marked as still ISSUED."
+                )
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+        return redirect("librarian_return_requests")
 
 
 class ApproveBorrowView(UserPassesTestMixin, View):
@@ -174,10 +292,13 @@ class ApproveBorrowView(UserPassesTestMixin, View):
             try:
                 transaction.status = "ISSUED"
                 transaction.save()
-                messages.success(request, f"Book issued to {transaction.user.username}")
+                LibraryEmailService.send_book_issued_notification(transaction)
+                messages.success(
+                    request, f"Book issued to {transaction.user.get_full_name()}"
+                )
             except Exception as e:
                 messages.error(request, f"Error: {e}")
-        return redirect("librarian_dashboard")
+        return redirect("librarian_borrow_requests")
 
 
 class ApproveReturnView(UserPassesTestMixin, View):
@@ -192,6 +313,7 @@ class ApproveReturnView(UserPassesTestMixin, View):
         transaction = get_object_or_404(Transaction, pk=pk)
         try:
             if transaction.mark_as_returned():
+                LibraryEmailService.send_return_approval(transaction)
                 messages.success(
                     request, f"{transaction.book.title} returned successfully."
                 )
@@ -199,4 +321,4 @@ class ApproveReturnView(UserPassesTestMixin, View):
                 messages.warning(request, "Book is already returned.")
         except Exception as e:
             messages.error(request, f"Error: {e}")
-        return redirect("librarian_dashboard")
+        return redirect("librarian_return_requests")

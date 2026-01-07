@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    image: app
     command: bash -c "./wait-for-it.sh db:5432 -t 60 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./:/app
@@ -10,12 +11,14 @@ services:
       - db
       - redis
     ports:
-      - 8000:8000
+      - "8000:8000"
 
   db:
-    image: postgres:18
+    image: postgres:latest
     volumes:
       - postgres_data:/var/lib/postgresql
+    env_file:
+      - .env_d
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}

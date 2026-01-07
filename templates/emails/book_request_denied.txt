@@ -1,0 +1,12 @@
+Dear {{ user }},
+
+We regret to inform you that your request for the book "{{ book_title }}" could not be approved at this time.
+Reason: {{ reason }}
+{% if additional_info %}
+Additional Information: {{ additional_info }}
+{% endif %}
+
+Please contact us or visit the library if you have any questions.
+
+Sincerely,
+The Library Team

@@ -1,0 +1,10 @@
+Dear {{ user }},
+
+We regret to inform you that your return request for the book "{{ book_title }}" was declined.
+Reason: {{ reason }}
+Additional Information: {{ additional_info }}
+
+Please contact the library administration for further assistance.
+
+Sincerely,
+The Library Team
