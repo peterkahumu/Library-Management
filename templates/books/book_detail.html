@@ -21,9 +21,12 @@
             <a class="btn btn-primary btn-lg rounded-pill" href="{% url 'borrow_book' book.pk %}">
                 <i class="fas fa-book-reader me-2"></i>Borrow Now
             </a>
+            <!-- Edit button is only visible to admin and librarian -->
+            {% if request.user.is_authenticated and request.user.role != 'student' %}
             <a class="btn btn-outline-primary btn-lg rounded-pill" href="{% url 'book_edit' book.pk %}">
                 <i class="fas fa-edit me-2"></i>Edit book
             </a>
+            {% endif %}
         </div>
     </div>
 
