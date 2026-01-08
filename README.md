@@ -39,7 +39,7 @@ Comprehensive documentation is available:
 ### Option 1: Docker (Recommended)
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/peterkahumu/Library-Management.git
 cd library_management
 cp .env_example .env  # Configure your environment variables
 docker compose up --build
@@ -50,7 +50,7 @@ Visit `http://localhost:8000`
 ### Option 2: Local Development
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/peterkahumu/Library-Management.git
 cd library_management
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt

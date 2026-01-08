@@ -9,8 +9,8 @@ We take the security of the Library Management System seriously. If you discover
 **Email**: [muhumukip@gmail.com](mailto:muhumukip@gmail.com)
 **Security.txt**: https://library-management-muf9.onrender.com/.well-known/security.txt
 
-> [!WARNING]
-> **Action Required**: Update the placeholder email `security@yourdomain.com` in both this file and `static/.well-known/security.txt` before deploying to production.
+> [! Note]
+> **Action Required**: Ensure the email listed above matches the email in `static/.well-known/security.txt` before deploying to production.
 
 ### What to Include
 

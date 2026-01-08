@@ -1,7 +1,7 @@
 # Security Policy
 
 Contact: mailto:muhumukip@gmail.com
-Expires: 2027-12-31T23:59:59Z
+Expires: 2026-12-31T23:59:59Z
 Preferred-Languages: en
 Canonical: https://library-management-muf9.onrender.com/.well-known/security.txt
 
