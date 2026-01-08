@@ -29,3 +29,4 @@ sqlparse==0.5.3
 virtualenv==20.35.4
 gunicorn==23.0.0
 whitenoise==6.11.0
+django-csp==3.8

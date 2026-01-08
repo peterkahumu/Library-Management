@@ -295,7 +295,6 @@ class LibraryCacheService:
         cache.delete(keys.DASHBOARD_LIBRARIAN_KPIS)
         logger.info("🧹 Cache Cleared: Librarian KPIs")
 
-
     @staticmethod
     def invalidate_genres():
         """Invalidation: books/signals.py (Genre model)"""
