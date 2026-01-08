@@ -10,9 +10,6 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -50,6 +47,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "csp.middleware.CSPMiddleware",  # Content Security Policy
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -183,3 +181,61 @@ MESSAGE_TAGS = {
     messages.WARNING: "warning",
     messages.ERROR: "danger",
 }
+
+# ==============================================================================
+# SECURITY SETTINGS
+# ==============================================================================
+# These settings enhance security by adding proper cookie flags and headers.
+# They are environment-aware and only apply in production (when DEBUG=False).
+
+# Cookie Security Settings
+# Only set secure cookie flags in production (HTTPS required)
+if not DEBUG:
+    # Session cookie security
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+
+    # CSRF cookie security
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True
+
+    # HTTP Strict Transport Security (HSTS)
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Additional security headers
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+
+    # Content Security Policy (CSP)
+    CSP_DEFAULT_SRC = ("'self'",)
+    CSP_SCRIPT_SRC = (
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://cdnjs.cloudflare.com",
+    )
+    CSP_STYLE_SRC = (
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",  # jsDelivr CDN
+        "https://cdnjs.cloudflare.com",  # Cloudflare CDN
+        "https://fonts.googleapis.com",  # Google Fonts
+    )
+    CSP_FONT_SRC = (
+        "'self'",
+        "https://cdn.jsdelivr.net",
+        "https://cdnjs.cloudflare.com",
+        "https://fonts.gstatic.com",  # Google Fonts
+    )
+    CSP_IMG_SRC = (
+        "'self'",
+        "data:",  # Allow data URIs for images
+    )
+    CSP_CONNECT_SRC = ("'self'",)
+else:
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False

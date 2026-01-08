@@ -29,7 +29,6 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Successfully seeded database!"))
 
     def create_users(self):
-
         # Librarian
         if not User.objects.filter(username="librarian").exists():
             User.objects.create_user(
@@ -147,7 +146,8 @@ class Command(BaseCommand):
                         book=book,
                         status="ISSUED",
                         checkout_date=timezone.now() - timedelta(days=20),
-                        due_date=timezone.now() - timedelta(days=5),  # Overdue by 5 days
+                        due_date=timezone.now()
+                        - timedelta(days=5),  # Overdue by 5 days
                         is_ebook=False,
                     )
 
