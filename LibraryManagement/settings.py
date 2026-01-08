@@ -9,12 +9,11 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", False)
+DEBUG = os.getenv("DEBUG", "False") == "true"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
@@ -207,35 +206,36 @@ if not DEBUG:
     # Additional security headers
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
-
-    # Content Security Policy (CSP)
-    CSP_DEFAULT_SRC = ("'self'",)
-    CSP_SCRIPT_SRC = (
-        "'self'",
-        "'unsafe-inline'",
-        "https://cdn.jsdelivr.net",
-        "https://cdnjs.cloudflare.com",
-    )
-    CSP_STYLE_SRC = (
-        "'self'",
-        "'unsafe-inline'",
-        "https://cdn.jsdelivr.net",  # jsDelivr CDN
-        "https://cdnjs.cloudflare.com",  # Cloudflare CDN
-        "https://fonts.googleapis.com",  # Google Fonts
-    )
-    CSP_FONT_SRC = (
-        "'self'",
-        "https://cdn.jsdelivr.net",
-        "https://cdnjs.cloudflare.com",
-        "https://fonts.gstatic.com",  # Google Fonts
-    )
-    CSP_IMG_SRC = (
-        "'self'",
-        "data:",  # Allow data URIs for images
-    )
-    CSP_CONNECT_SRC = ("'self'",)
 else:
     SESSION_COOKIE_HTTPONLY = True
     CSRF_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
+
+
+# Content Security Policy (CSP)
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    "https://cdn.jsdelivr.net",
+    "https://cdnjs.cloudflare.com",
+)
+CSP_STYLE_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    "https://cdn.jsdelivr.net",  # jsDelivr CDN
+    "https://cdnjs.cloudflare.com",  # Cloudflare CDN
+    "https://fonts.googleapis.com",  # Google Fonts
+)
+CSP_FONT_SRC = (
+    "'self'",
+    "https://cdn.jsdelivr.net",
+    "https://cdnjs.cloudflare.com",
+    "https://fonts.gstatic.com",  # Google Fonts
+)
+CSP_IMG_SRC = (
+    "'self'",
+    "data:",  # Allow data URIs for images
+)
+CSP_CONNECT_SRC = ("'self'", "https://cdn.jsdelivr.net")
