@@ -78,7 +78,7 @@ class BookDetailView(DetailView):
 class BookCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Book
     form_class = BookForm
-    template_name = "books/book_create.html"
+    template_name = "books/book_form.html"
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -94,7 +94,7 @@ class BookCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 class BookEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Book
     form_class = BookForm
-    template_name = "books/book_edit.html"
+    template_name = "books/book_form.html"
 
     def test_func(self):
         return (
@@ -289,7 +289,7 @@ class GoogleBooksAddView(LoginRequiredMixin, UserPassesTestMixin, FormView):
     Only accessible to admins and librarians.
     """
 
-    template_name = "books/google_books_add.html"
+    template_name = "books/book_form.html"
     form_class = GoogleBookImportForm
 
     def test_func(self):
