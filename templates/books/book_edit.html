@@ -1,16 +1,1 @@
-{% extends 'base.html' %}
-{% load crispy_forms_tags %}
-
-{% block title %} Edit: {{book.title}} {% endblock title %}
-{% block content %}
-<h2 class="row justify-content-center my-3">Update Book</h2>
-<div class="row justify-content-center">
-    <div class="col-md-5 col-lg-7">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{form|crispy}}
-            <input type="submit" value="Update Details" class="btn btn-primary w-100 my-3">
-        </form>
-    </div>
-</div>
-{% endblock content %}
+{% include 'books/book_form.html' %}

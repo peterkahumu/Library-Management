@@ -1,0 +1,112 @@
+{% load crispy_forms_tags %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-pen-nib me-2"></i>Book Details</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <!-- SECTION 1: Basic Info -->
+            <div class="mb-4">
+                <h6 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="fas fa-info-circle me-2"></i>Basic Information
+                </h6>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        {{ form.title|as_crispy_field }}
+                    </div>
+                    <div class="col-12 mb-3">
+                        {{ form.author|as_crispy_field }}
+                    </div>
+                    <div class="col-12 mb-3">
+                        {{ form.description|as_crispy_field }}
+                    </div>
+                    {% if form.google_volume_id %}
+                    {{ form.google_volume_id }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- SECTION 2: Publication & Physical -->
+            <div class="mb-4">
+                <h6 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="fas fa-book me-2"></i>Publication Details
+                </h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.isbn|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.publication_date|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.publisher|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.edition|as_crispy_field }}
+                    </div>
+                    {% if 'dimensions' in form.fields %}
+                    <div class="col-md-4 mb-3">
+                        {{ form.dimensions|as_crispy_field }}
+                    </div>
+                    {% endif %}
+                    {% if 'weight' in form.fields %}
+                    <div class="col-md-4 mb-3">
+                        {{ form.weight|as_crispy_field }}
+                    </div>
+                    {% endif %}
+                    {% if 'dewey_decimal' in form.fields %}
+                    <div class="col-md-4 mb-3">
+                        {{ form.dewey_decimal|as_crispy_field }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- SECTION 3: Inventory & Category -->
+            <div class="mb-4">
+                <h6 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="fas fa-boxes me-2"></i>Inventory & Classification
+                </h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.total_copies|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.copies_available|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.language|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.format|as_crispy_field }}
+                    </div>
+                    {% if not volume %}
+                    <!-- Only show image upload for standard add/edit -->
+                    <div class="col-12 mb-3">
+                        {{ form.cover_image|as_crispy_field }}
+                    </div>
+                    {% endif %}
+                    <div class="col-12 mb-3">
+                        {{ form.genre|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="fas fa-save me-2"></i>Save Book
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

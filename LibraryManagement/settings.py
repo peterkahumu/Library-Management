@@ -144,6 +144,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.LibraryUser"
 
+# Google Books API Configuration
+GOOGLE_BOOKS_API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY", "")
+
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
 
@@ -237,5 +240,10 @@ CSP_FONT_SRC = (
 CSP_IMG_SRC = (
     "'self'",
     "data:",  # Allow data URIs for images
+    "https://books.google.com",  # Google Books cover images
 )
-CSP_CONNECT_SRC = ("'self'", "https://cdn.jsdelivr.net")
+CSP_CONNECT_SRC = (
+    "'self'",
+    "https://cdn.jsdelivr.net",
+    "https://www.googleapis.com",  # Google Books API
+)

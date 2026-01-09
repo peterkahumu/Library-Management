@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Search Google Books - Library Management{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="text-center py-4 mb-4">
+    <h1 class="display-5 fw-bold text-primary mb-2">
+        <i class="fab fa-google me-2"></i>Search Google Books
+    </h1>
+    <p class="text-muted">Find and import books from Google's extensive catalog</p>
+</div>
+
+<!-- Search Form -->
+<form method="get" class="mb-4">
+    <div class="row mb-4">
+        <div class="col-md-10 mx-auto">
+            <div class="input-group input-group-lg shadow-sm">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <select class="form-select border-start-0 bg-light" name="filter" style="max-width: 150px;">
+                    <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All Fields</option>
+                    <option value="title" {% if filter_type == 'title' %}selected{% endif %}>Title</option>
+                    <option value="author" {% if filter_type == 'author' %}selected{% endif %}>Author</option>
+                    <option value="isbn" {% if filter_type == 'isbn' %}selected{% endif %}>ISBN</option>
+                    <option value="publisher" {% if filter_type == 'publisher' %}selected{% endif %}>Publisher</option>
+                </select>
+                <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="Search books..."
+                    required autofocus>
+                <button class="btn btn-primary px-4" type="submit">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Navigation Links -->
+<div class="mb-4">
+    <a href="{% url 'book_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Library Catalog
+    </a>
+</div>
+
+{% if query %}
+{% if error %}
+<!-- Error Message -->
+<div class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+</div>
+{% elif results %}
+<!-- Results Count -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">
+        Found <span class="fw-bold text-primary">{{ total_items }}</span> results
+    </p>
+</div>
+
+<!-- Results Grid -->
+<div class="row g-4 mb-4">
+    {% for item in results %}
+    {% with volume_info=item.volumeInfo %}
+    <div class="col-md-6 col-lg-4 col-xl-3">
+        <div class="card h-100 shadow-sm hover-card">
+            <!-- Book Cover -->
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                style="height: 250px; overflow: hidden;">
+                {% if volume_info.imageLinks.thumbnail %}
+                <img src="{{ volume_info.imageLinks.thumbnail }}" alt="{{ volume_info.title }}" class="img-fluid"
+                    style="max-height: 100%; object-fit: cover;">
+                {% else %}
+                <div class="text-center p-3">
+                    <i class="fas fa-book fa-4x text-muted"></i>
+                    <p class="text-muted mt-2 small">No cover available</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                <h6 class="card-title fw-bold text-truncate" title="{{ volume_info.title }}">
+                    {{ volume_info.title|truncatewords:8 }}
+                </h6>
+                <p class="card-text text-muted small mb-2">
+                    <i class="fas fa-user me-1"></i>
+                    {% if volume_info.authors %}
+                    {{ volume_info.authors|join:", "|truncatewords:3 }}
+                    {% else %}
+                    Unknown Author
+                    {% endif %}
+                </p>
+                <p class="card-text text-muted small mb-2">
+                    <i class="fas fa-calendar me-1"></i>
+                    {{ volume_info.publishedDate|default:"Date Unknown" }}
+                </p>
+                {% if volume_info.description %}
+                <p class="card-text small text-secondary">
+                    {{ volume_info.description|truncatewords:15 }}
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="card-footer bg-white border-top-0">
+                <a href="{% url 'google_books_detail' volume_id=item.id %}" class="btn btn-sm btn-primary w-100">
+                    <i class="fas fa-eye me-1"></i>View Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% include 'components/pagination.html' %}
+
+{% else %}
+<!-- No Results -->
+<div class="text-center py-5">
+    <i class="fas fa-search fa-4x text-muted mb-3"></i>
+    <h4 class="text-muted">No books found</h4>
+    <p class="text-secondary">Try adjusting your search query</p>
+</div>
+{% endif %}
+{% else %}
+<!-- Initial State -->
+<div class="text-center py-5">
+    <i class="fab fa-google fa-4x text-primary mb-3"></i>
+    <h4 class="text-muted">Start by entering a search query</h4>
+    <p class="text-secondary">Search by title, author, ISBN, or subject to find books</p>
+</div>
+{% endif %}
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+
+{% endblock content %}
