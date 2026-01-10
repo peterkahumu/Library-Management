@@ -106,7 +106,7 @@ class BookEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 # ============================================================================
 # Google Books API Views
 # ============================================================================
-class GoogleBooksSearchView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+class GoogleBooksSearchView(LoginRequiredMixin, TemplateView):
     """
     Search for books using the Google Books API.
 
@@ -114,10 +114,6 @@ class GoogleBooksSearchView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
     """
 
     template_name = "books/google_books_search.html"
-
-    def test_func(self):
-        """Only allow admins and librarians."""
-        return self.request.user.role in [UserRoles.ADMIN, UserRoles.LIBRARIAN]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -224,7 +220,7 @@ class GoogleBooksSearchView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
         return context
 
 
-class GoogleBooksDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+class GoogleBooksDetailView(LoginRequiredMixin, TemplateView):
     """
     Display detailed information about a book from Google Books.
 
@@ -232,10 +228,6 @@ class GoogleBooksDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
     """
 
     template_name = "books/google_books_detail.html"
-
-    def test_func(self):
-        """Only allow admins and librarians."""
-        return self.request.user.role in [UserRoles.ADMIN, UserRoles.LIBRARIAN]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
