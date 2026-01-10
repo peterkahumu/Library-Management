@@ -28,4 +28,4 @@ RUN chmod +x ./wait-for-it.sh
 
 EXPOSE 8000
 
-CMD sh -c "python manage.py migrate && python manage.py seed_library_data && gunicorn --bind 0.0.0.0:8000 LibraryManagement.wsgi:application"
+CMD sh -c "python manage.py migrate && python manage.py seed_superuser && gunicorn --bind 0.0.0.0:8000 LibraryManagement.wsgi:application"
