@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     # third party
     "crispy_forms",
     "crispy_bootstrap5",
+    "storages",
     # local apps
     "accounts",
     "pages",
@@ -225,6 +226,14 @@ if not DEBUG:
     # Additional security headers
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
+
+    # PRODUCTION MEDIA UPLOAD
+    CLOUDINARY_STORAGE = {
+        "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
+        "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
+        "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
+    }
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
     SESSION_COOKIE_HTTPONLY = True
     CSRF_COOKIE_HTTPONLY = True
@@ -255,11 +264,12 @@ CSP_FONT_SRC = (
 )
 CSP_IMG_SRC = (
     "'self'",
-    "data:",  # Allow data URIs for images
-    "https://books.google.com",  # Google Books cover images
+    "data:",
+    "https://books.google.com",
+    "https://res.cloudinary.com",
 )
 CSP_CONNECT_SRC = (
     "'self'",
     "https://cdn.jsdelivr.net",
-    "https://www.googleapis.com",  # Google Books API
+    "https://www.googleapis.com",
 )
