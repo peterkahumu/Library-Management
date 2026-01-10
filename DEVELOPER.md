@@ -64,6 +64,9 @@ DB_PORT=5432
 
 # Redis Cache
 REDIS_URL=redis://localhost:6379
+
+# Google Books API
+GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 ```
 
 **Security Note**: Never commit `.env` files to version control. The `.gitignore` is configured to exclude them.
