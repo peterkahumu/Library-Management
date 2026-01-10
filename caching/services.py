@@ -1,5 +1,3 @@
-# caching/services.py
-
 import logging
 from django.core.cache import cache
 from django.db.models import Count
@@ -263,40 +261,32 @@ class LibraryCacheService:
     @staticmethod
     def invalidate_total_books():
         cache.delete(keys.STATS_TOTAL_BOOKS)
-        logger.info("🧹 Cache Cleared: Total Books")
 
     @staticmethod
     def invalidate_total_users():
         cache.delete(keys.STATS_TOTAL_USERS)
-        logger.info("🧹 Cache Cleared: Total Users")
 
     @staticmethod
     def invalidate_available_books():
         cache.delete(keys.STATS_AVAILABLE_BOOKS)
-        logger.info("🧹 Cache Cleared: Available Books")
 
     @staticmethod
     def invalidate_admin_kpis():
         cache.delete(keys.DASHBOARD_ADMIN_KPIS)
-        logger.info("🧹 Cache Cleared: Admin KPIs")
 
     @staticmethod
     def invalidate_admin_analytics():
         cache.delete(keys.DASHBOARD_ADMIN_ANALYTICS)
-        logger.info("🧹 Cache Cleared: Admin Analytics")
 
     @staticmethod
     def invalidate_related_books():
         cache.delete(keys.RELATED_BOOKS)
-        logger.info("🧹 Cache Cleared: Admin Analytics")
 
     @staticmethod
     def invalidate_librarian_kpis():
         cache.delete(keys.DASHBOARD_LIBRARIAN_KPIS)
-        logger.info("🧹 Cache Cleared: Librarian KPIs")
 
     @staticmethod
     def invalidate_genres():
         """Invalidation: books/signals.py (Genre model)"""
         cache.delete_many([keys.GENRES_TOP_5, keys.GENRES_ALL])
-        logger.info("🧹 Cache Cleared: Genre Context")

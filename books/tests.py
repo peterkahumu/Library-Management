@@ -614,7 +614,7 @@ class BookCreateViewTests(TestCase):
         """Book create view should use correct template."""
         self.client.login(username="admin", password="adminpass123")
         response = self.client.get(reverse("book_create"))
-        self.assertTemplateUsed(response, "books/book_create.html")
+        self.assertTemplateUsed(response, "books/book_form.html")
 
     def test_book_create_view_creates_book(self):
         """Book create view should create a new book."""
@@ -764,7 +764,7 @@ class BookEditViewTests(TestCase):
         response = self.client.get(
             reverse("book_edit", kwargs={"pk": self.book.book_id})
         )
-        self.assertTemplateUsed(response, "books/book_edit.html")
+        self.assertTemplateUsed(response, "books/book_form.html")
 
     def test_book_edit_view_updates_book(self):
         """Book edit view should update book data."""
