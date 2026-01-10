@@ -15,6 +15,10 @@ A modular, robust, and aesthetically pleasing Django-based Library Management Sy
     - Support for **Hardcopy**, **E-books**, and **Audiobooks**.
 - **Inventory Management**: Automated stock tracking (decrements on borrow, increments on return).
 - **Dashboards**: Dedicated dashboards for each user role with relevant KPIs and charts.
+- **Google Books Integration**:
+    -   **Search**: Integrated search with Google Books API to explore external book databases.
+    -   **Seamless Import**: Admins and Librarians can instantly import book details into the local system.
+    -   **Smart Duplication Check**: Automatically detects if a book already exists in the library.
 - **Notifications**: Automated email notifications for overdue books and status updates.
 - **🔒 Security**: Enterprise-grade security with HSTS, CSP, secure cookies, and more. See [DEVELOPER.md#security-configuration](DEVELOPER.md#security-configuration) for details.
 

@@ -64,6 +64,15 @@ Manages the library inventory, including book details, genres, and availability.
 | `books/new/` | `BookCreateView` | `book_create` | Add a new book (Admin/Librarian). |
 | `books/<uuid:pk>/edit/` | `BookEditView` | `book_edit` | Edit an existing book. |
 
+### Google Books Integration
+Integrated via `google_books.py` utility class `GoogleBooksAPI`.
+
+| Path | View | Name | Description | Permissions |
+| :--- | :--- | :--- | :--- | :--- |
+| `books/google-books/search/` | `GoogleBooksSearchView` | `google_books_search` | Search external Google Books database. | **Logged-in Users** |
+| `books/google-books/detail/<vol_id>/` | `GoogleBooksDetailView` | `google_books_detail` | View detailed Google Book metadata. | **Logged-in Users** |
+| `books/google-books/add/<vol_id>/` | `GoogleBooksAddView` | `google_books_add` | Import Google Book to local inventory. | **Admin/Librarian Only** |
+
 ---
 
 ## Book Circulation
