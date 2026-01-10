@@ -110,7 +110,7 @@ class GoogleBooksSearchView(LoginRequiredMixin, TemplateView):
     """
     Search for books using the Google Books API.
 
-    Only accessible to admins and librarians.
+    Accessible to all logged in members
     """
 
     template_name = "books/google_books_search.html"
@@ -224,7 +224,7 @@ class GoogleBooksDetailView(LoginRequiredMixin, TemplateView):
     """
     Display detailed information about a book from Google Books.
 
-    Only accessible to admins and librarians.
+    Accessible to all  logged in members.
     """
 
     template_name = "books/google_books_detail.html"
