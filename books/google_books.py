@@ -61,7 +61,7 @@ class GoogleBooksAPI:
             raise GoogleBooksAPIError("Request timed out. Please try again.")
         except requests.exceptions.HTTPError as e:
             logger.error(f"Google Books API HTTP error: {e}")
-            if response.status_code == 429:
+            if e.response is not None and e.response.status_code == 429:
                 raise GoogleBooksAPIError(
                     "Rate limit exceeded. Please try again later."
                 )

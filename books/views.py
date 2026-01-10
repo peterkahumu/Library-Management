@@ -355,9 +355,7 @@ class GoogleBooksAddView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                                 book.cover_image.save(
                                     filename, ContentFile(response.content), save=False
                                 )
-                        except Exception as e:
-                            # Log error but proceed without cover
-                            print(f"Failed to download cover image: {e}")
+                        except Exception:
                             pass
 
                 except Exception:

@@ -61,7 +61,7 @@ class BorrowingWorkflowTests(TestCase):
 
         # 1. Student requests book
         self.client.login(username="student", password="password")
-        response = self.client.post(
+        self.client.post(
             reverse("borrow_book", kwargs={"book_id": self.book.pk}),
             {"duration_days": 7},
         )
