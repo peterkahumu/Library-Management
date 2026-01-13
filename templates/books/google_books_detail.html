@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book Details - Google Books{% endblock title %}
+
+{% block content %}
+{% if volume %}
+<div class="mb-4">
+    <a href="{% url 'google_books_search' %}?q={{ request.GET.q }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Search
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                {% if volume.volumeInfo.imageLinks %}
+                {% with images=volume.volumeInfo.imageLinks %}
+                {% if images.large %}
+                <img src="{{ images.large }}" alt="{{ volume.volumeInfo.title }}"
+                    class="img-fluid rounded mb-3 book-cover-lg">
+                {% elif images.medium %}
+                <img src="{{ images.medium }}" alt="{{ volume.volumeInfo.title }}"
+                    class="img-fluid rounded mb-3 book-cover-lg">
+                {% else %}
+                <img src="{{ images.thumbnail|default:images.smallThumbnail }}" alt="{{ volume.volumeInfo.title }}"
+                    class="img-fluid rounded mb-3 book-cover-lg">
+                {% endif %}
+                {% endwith %}
+                {% else %}
+                <div class="p-5 bg-light rounded">
+                    <i class="fas fa-book fa-5x text-muted"></i>
+                    <p class="text-muted mt-3">No cover available</p>
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                    {% if isbn_exists %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> This book already exists in the library
+                    </div>
+                    <a href="{% url 'book_list' %}?query={{ isbn }}" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-search me-2"></i>View in Library
+                    </a>
+                    {% else %}
+                    {% if request.user.role != 'student' %}
+                    <a href="{% url 'google_books_add' volume_id=volume.id %}" class="btn btn-success w-100 mb-2">
+                        <i class="fas fa-plus me-2"></i>Add to Library
+                    </a>
+                    {% endif %}
+                    {% endif %}
+
+                    {% if volume.volumeInfo.previewLink %}
+                    <a href="{{ volume.volumeInfo.previewLink }}" target="_blank" class="btn btn-outline-primary w-100">
+                        <i class="fab fa-google me-2"></i>Preview on Google Books
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">{{ volume.volumeInfo.title }}</h3>
+                {% if volume.volumeInfo.subtitle %}<p class="mb-0 mt-2 opacity-75">{{ volume.volumeInfo.subtitle }}</p>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5 class="text-muted"><i class="fas fa-user me-2"></i>Author(s)</h5>
+                    <p>{% if volume.volumeInfo.authors %}{{ volume.volumeInfo.authors|join:", " }}{% else %}Unknown
+                        Author{% endif %}</p>
+                </div>
+
+                {% if volume.volumeInfo.description %}
+                <div class="mb-3">
+                    <h5 class="text-muted"><i class="fas fa-info-circle me-2"></i>Description</h5>
+                    <p>{{ volume.volumeInfo.description|safe }}</p>
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted">Publisher</h6>
+                        <p>{{ volume.volumeInfo.publisher|default:"Unknown" }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted">Published Date</h6>
+                        <p>{{ volume.volumeInfo.publishedDate|default:"Unknown" }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted">ISBN</h6>
+                        <p>
+                            {% for identifier in volume.volumeInfo.industryIdentifiers %}
+                            {{ identifier.type }}: {{ identifier.identifier }}<br>
+                            {% empty %}
+                            Not available
+                            {% endfor %}
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted">Page Count</h6>
+                        <p>{{ volume.volumeInfo.pageCount|default:"Unknown" }} pages</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# Fixed: Logical check for error handling #}
+{% if error %}
+<div class="alert alert-danger mt-4">
+    <i class="fas fa-exclamation-triangle me-2"></i> {{ error }}
+</div>
+{% elif not volume %}
+<div class="text-center py-5">
+    <i class="fas fa-book fa-4x text-muted mb-3"></i>
+    <h4 class="text-muted">Book not found</h4>
+    <a href="{% url 'google_books_search' %}" class="btn btn-primary">Back to Search</a>
+</div>
+{% endif %}
+
+{% endblock content %}

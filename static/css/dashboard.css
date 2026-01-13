@@ -14,12 +14,18 @@
     /* Muted Red */
     --info-color: #16a085;
     /* Teal */
+    --purple-color: #6f42c1;
+    /* Purple */
     --light-bg: #f8f9fa;
     --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .bg-primary-custom {
     background-color: var(--primary-color) !important;
+}
+
+.bg-purple-custom {
+    background-color: var(--purple-color) !important;
 }
 
 .bg-secondary-custom {

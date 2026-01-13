@@ -1,24 +1,34 @@
 <div class="container-fluid d-flex justify-content-around align-items-center">
-    <!-- Home -->
-    <a href="{% url 'home' %}"
-        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-        <i class="fas fa-home fa-lg mb-1"></i>
-        <span class="d-block small">Home</span>
+    <!-- Google Books -->
+    <a href="{% url 'google_books_search' %}"
+        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name == 'google_books_search' %}active{% endif %}">
+        <i class="fab fa-google fa-lg mb-1"></i>
+        <span class="d-block small">Google Books</span>
     </a>
 
     <!-- Books -->
     <a href="{% url 'book_list' %}"
         class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name in 'book_list book_detail book_edit' %}active{% endif %}">
         <i class="fas fa-book fa-lg mb-1"></i>
-        <span class="d-block small">Books</span>
+        <span class="d-block small">Browse Catalogue</span>
     </a>
 
-    <!-- Dashboard (Student) -->
-    <a href="{% url 'student_dashboard' %}"
-        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}">
-        <i class="fas fa-tachometer-alt fa-lg mb-1"></i>
-        <span class="d-block small">Dashboard</span>
-    </a>
+    <!-- Dashboards Dropup -->
+    <div class="dropup">
+        <a href="#"
+            class="bottom-nav-item text-decoration-none text-center {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}"
+            data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-tachometer-alt fa-lg mb-1"></i>
+            <span class="d-block small">Dashboards</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-center shadow border-0 rounded-4 p-2 mb-3">
+            <li>
+                <h6 class="dropdown-header text-uppercase small text-muted">Select View</h6>
+            </li>
+            <li><a class="dropdown-item rounded-2 py-2" href="{% url 'student_dashboard' %}"><i
+                        class="fas fa-user-graduate w-25 text-info"></i>My Dashboard</a></li>
+        </ul>
+    </div>
 
     <!-- Menu -->
     <div class="dropup">
@@ -34,7 +44,8 @@
                     height="40">
                 <div>
                     <p class="mb-0 fw-bold">{{ user.get_full_name }}</p>
-                    <small class="text-muted">{{ user.email }}</small>
+                    <small class="text-muted d-block">{{ user.email }}</small>
+                    <small class="text-uppercase fw-bold text-primary">{{ user.role }}</small>
                 </div>
             </li>
             <li>

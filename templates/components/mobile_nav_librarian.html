@@ -1,16 +1,16 @@
 <div class="container-fluid d-flex justify-content-around align-items-center">
-    <!-- Home (Redirects to Dashboard usually, but keeping Home icon as requested) -->
-    <a href="{% url 'home' %}"
-        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-        <i class="fas fa-home fa-lg mb-1"></i>
-        <span class="d-block small">Home</span>
+    <!-- Google Books -->
+    <a href="{% url 'google_books_search' %}"
+        class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name == 'google_books_search' %}active{% endif %}">
+        <i class="fab fa-google fa-lg mb-1"></i>
+        <span class="d-block small">Google Books</span>
     </a>
 
     <!-- Books -->
     <a href="{% url 'book_list' %}"
         class="bottom-nav-item text-decoration-none text-center {% if request.resolver_match.url_name in 'book_list book_detail book_edit' %}active{% endif %}">
         <i class="fas fa-book fa-lg mb-1"></i>
-        <span class="d-block small">Books</span>
+        <span class="d-block small">Catalogue</span>
     </a>
 
     <!-- Student View (Instead of generic Dashboard) -->
@@ -34,7 +34,8 @@
                     height="40">
                 <div>
                     <p class="mb-0 fw-bold">{{ user.get_full_name }}</p>
-                    <small class="text-muted">{{ user.email }}</small>
+                    <small class="text-muted d-block">{{ user.email }}</small>
+                    <small class="text-uppercase fw-bold text-primary">{{ user.role }}</small>
                 </div>
             </li>
             <li>

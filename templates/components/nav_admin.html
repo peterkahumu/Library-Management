@@ -1,19 +1,11 @@
 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
-
-    <li class="nav-item">
-        <a class="nav-link active" href="{% url 'transaction_logs' %}">
-            <i class="fas fa-list me-1"></i>Logs
-        </a>
-    </li>
-
     <!-- Dashboards -->
     <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="manageBooksDropdown" role="button" data-bs-toggle="dropdown"
+        <a class="nav-link dropdown-toggle" href="#" id="dashboardsDropdown" role="button" data-bs-toggle="dropdown"
             aria-expanded="false">
             Dashboards
         </a>
-        <ul class="dropdown-menu" aria-labelledby="manageBooksDropdown">
+        <ul class="dropdown-menu" aria-labelledby="dashboardsDropdown">
             <li><a class="custom dropdown-item" href="{% url 'admin_dashboard' %}"><i
                         class="text-success-custom fas fa-chart-pie me-2"></i>Admin
                 </a></li>
@@ -25,17 +17,30 @@
 
         </ul>
     </li>
-    <!-- Manage books -->
-    <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="manageBooksDropdown" role="button" data-bs-toggle="dropdown"
-            aria-expanded="false">
-            Manage Books
+
+    <li class="nav-item">
+        <a class="nav-link active" href="{% url 'transaction_logs' %}">
+            <i class="fas fa-list me-1"></i>Logs
         </a>
-        <ul class="dropdown-menu" aria-labelledby="manageBooksDropdown">
-            <li><a class="dropdown-item" href="{% url 'book_create' %}"><i class="fa-solid fa-plus me-2"></i>Add
-                    Book</a></li>
-            <li><a class="dropdown-item" href="{% url 'book_list' %}">All Books</a></li>
-        </ul>
+    </li>
+
+    <!-- Books Standalone -->
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'book_list' %}">Catalogue</a>
+    </li>
+
+    <!-- Google Books Standalone -->
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'google_books_search' %}">
+            <i class="fab fa-google me-1"></i>Google Books
+        </a>
+    </li>
+
+    <!-- Manage (Add Book only now) -->
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'book_create' %}">
+            <i class="fa-solid fa-plus me-1"></i>Add Book
+        </a>
     </li>
 
     <li class="nav-item dropdown">

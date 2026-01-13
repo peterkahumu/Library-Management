@@ -150,3 +150,66 @@ h2 {
         /* Increased to account for taller nav + spacing */
     }
 }
+
+/* Utility Classes for CSP Compliance */
+
+/* Home Page Icons */
+.icon-circle-lg {
+    width: 100px;
+    height: 100px;
+}
+
+/* Book Covers */
+.book-cover-container {
+    height: 250px;
+    overflow: hidden;
+}
+
+.book-cover-img {
+    max-height: 100%;
+    object-fit: cover;
+}
+
+.book-cover-md {
+    max-height: 250px;
+}
+
+.book-cover-lg {
+    max-height: 400px;
+}
+
+/* Book Thumbnails */
+.book-thumb-sm {
+    width: 40px;
+    height: 60px;
+}
+
+.book-thumb-md {
+    width: 80px;
+}
+
+/* Error Pages */
+.error-card {
+    max-width: 600px;
+    width: 100%;
+}
+
+/* Form Styles */
+.sticky-top-20 {
+    top: 20px;
+}
+
+/* Search Types */
+.filter-select {
+    max-width: 150px;
+}
+
+/* Hover Card Effect */
+.hover-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}

@@ -9,13 +9,18 @@ A modular, robust, and aesthetically pleasing Django-based Library Management Sy
 - **Role-Based Access Control**:
     - **Admins**: Full system oversight, user role management, and analytics.
     - **Librarians**: Manage book circulation, approve/reject requests, and track inventory.
-    - **Students**: Browse catalog, borrow books, and view personal transaction history.
+    - **Students**: Browse catalogue, borrow books, and view personal transaction history.
 - **Book Circulation**:
     - Complete workflow: Borrow Request -> Approval -> Issue -> Return Request -> Return Confirmation.
     - Support for **Hardcopy**, **E-books**, and **Audiobooks**.
 - **Inventory Management**: Automated stock tracking (decrements on borrow, increments on return).
 - **Dashboards**: Dedicated dashboards for each user role with relevant KPIs and charts.
+- **Google Books Integration**:
+    -   **Search**: Integrated search with Google Books API to explore external book databases.
+    -   **Seamless Import**: Admins and Librarians can instantly import book details into the local system.
+    -   **Smart Duplication Check**: Automatically detects if a book already exists in the library.
 - **Notifications**: Automated email notifications for overdue books and status updates.
+- **🔒 Security**: Enterprise-grade security with HSTS, CSP, secure cookies, and more. See [DEVELOPER.md#security-configuration](DEVELOPER.md#security-configuration) for details.
 
 ## 🛠 Technology Stack
 
@@ -27,77 +32,39 @@ A modular, robust, and aesthetically pleasing Django-based Library Management Sy
 
 ## 📚 Documentation
 
-Detailed documentation for the project's architecture and components can be found in the `docs/` directory:
+Comprehensive documentation is available:
 
-- [**Application Documentation**](docs/APPS.md): In-depth look at Models, URLs, and Views for each app.
+- [**DEVELOPER.md**](DEVELOPER.md): Complete developer guide including setup, Docker, security configuration, and troubleshooting
+- [**Application Documentation**](docs/APPS.md): Detailed breakdown of Models, URLs, and Views for each app
+- [**Security Policy**](docs/SECURITY.md): Vulnerability reporting and security features
 
-## 💻 Setup Instructions
+## 💻 Quick Start
 
-### Prerequisites
-- Python 3.10+
-- PostgreSQL
-- Redis
-- Git
+### Option 1: Docker (Recommended)
 
-### Local Development
+```bash
+git clone https://github.com/peterkahumu/Library-Management.git
+cd library_management
+cp .env_example .env  # Configure your environment variables
+docker compose up --build
+```
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <repository-url>
-    cd library_management
-    ```
+Visit `http://localhost:8000`
 
-2.  **Create and activate a virtual environment**:
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-    ```
+### Option 2: Local Development
 
-3.  **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
+```bash
+git clone https://github.com/peterkahumu/Library-Management.git
+cd library_management
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env_example .env  # Configure your environment variables
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
 
-4.  **Configure Environment Variables**:
-    Create a `.env` file in the root directory (use `.env_example` as a template):
-    ```env
-    SECRET_KEY=your_secret_key
-    DEBUG=True
-    ALLOWED_HOSTS=localhost,127.0.0.1
-    DB_NAME=your_db_name
-    DB_USER=your_db_user
-    DB_PASSWORD=your_db_password
-    DB_HOST=localhost
-    DB_PORT=5432
-    REDIS_URL=redis://localhost:6379
-    ```
-
-5.  **Run Migrations**:
-    ```bash
-    python manage.py migrate
-    ```
-
-6.  **Create Superuser**:
-    ```bash
-    python manage.py createsuperuser
-    ```
-
-7.  **Run the Server**:
-    ```bash
-    python manage.py runserver
-    ```
-
-### 🐳 Docker Setup
-
-The application is fully containerized. To run using Docker:
-
-1.  **Ensure Docker and Docker Compose are installed.**
-2.  **Update `.env`**: Set `DB_HOST=db` and `REDIS_URL=redis://redis:6379` in your `.env` file.
-3.  **Build and Run**:
-    ```bash
-    docker-compose up --build
-    ```
-    The application will be accessible at `http://localhost:8000`.
+**📖 For detailed setup, configuration, testing, and troubleshooting, see [DEVELOPER.md](DEVELOPER.md)**
 
 ## 🚀 Deployment
 
