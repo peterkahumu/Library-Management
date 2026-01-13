@@ -17,14 +17,14 @@
                 {% if volume.volumeInfo.imageLinks %}
                 {% with images=volume.volumeInfo.imageLinks %}
                 {% if images.large %}
-                <img src="{{ images.large }}" alt="{{ volume.volumeInfo.title }}" class="img-fluid rounded mb-3"
-                    style="max-height: 400px;">
+                <img src="{{ images.large }}" alt="{{ volume.volumeInfo.title }}"
+                    class="img-fluid rounded mb-3 book-cover-lg">
                 {% elif images.medium %}
-                <img src="{{ images.medium }}" alt="{{ volume.volumeInfo.title }}" class="img-fluid rounded mb-3"
-                    style="max-height: 400px;">
+                <img src="{{ images.medium }}" alt="{{ volume.volumeInfo.title }}"
+                    class="img-fluid rounded mb-3 book-cover-lg">
                 {% else %}
                 <img src="{{ images.thumbnail|default:images.smallThumbnail }}" alt="{{ volume.volumeInfo.title }}"
-                    class="img-fluid rounded mb-3" style="max-height: 400px;">
+                    class="img-fluid rounded mb-3 book-cover-lg">
                 {% endif %}
                 {% endwith %}
                 {% else %}

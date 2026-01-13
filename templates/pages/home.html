@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 
@@ -14,16 +15,16 @@
 <!-- Feature Highlights -->
 <div class="row text-center g-4 mb-5">
     <div class="col-md-4">
-        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3"
-            style="width: 100px; height: 100px;">
+        <div
+            class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3 icon-circle-lg">
             <i class="fas fa-book fa-3x text-primary"></i>
         </div>
         <h5 class="fw-bold">Vast Collection</h5>
         <p class="text-muted">Access thousands of books, journals, and digital resources across every discipline.</p>
     </div>
     <div class="col-md-4">
-        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3"
-            style="width: 100px; height: 100px;">
+        <div
+            class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3 icon-circle-lg">
             <i class="fas fa-user-graduate fa-3x text-primary"></i>
         </div>
         <h5 class="fw-bold">Student Friendly</h5>
@@ -31,8 +32,8 @@
         </p>
     </div>
     <div class="col-md-4">
-        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3"
-            style="width: 100px; height: 100px;">
+        <div
+            class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3 icon-circle-lg">
             <i class="fas fa-globe fa-3x text-primary"></i>
         </div>
         <h5 class="fw-bold">Global Access</h5>
@@ -104,24 +105,7 @@
 </div>
 
 <!-- Counter Animation Script -->
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const counters = document.querySelectorAll("[data-count]");
-        counters.forEach(counter => {
-            const updateCount = () => {
-                const target = +counter.getAttribute("data-count");
-                const count = +counter.innerText;
-                const increment = target / 100;
-                if (count < target) {
-                    counter.innerText = Math.ceil(count + increment);
-                    setTimeout(updateCount, 30);
-                } else {
-                    counter.innerText = target.toLocaleString();
-                }
-            };
-            updateCount();
-        });
-    });
-</script>
+<!-- Counter Animation Script -->
+<script src="{% static 'js/home_counters.js' %}"></script>
 
 {% endblock content %}
