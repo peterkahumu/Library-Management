@@ -9,7 +9,7 @@ A modular, robust, and aesthetically pleasing Django-based Library Management Sy
 - **Role-Based Access Control**:
     - **Admins**: Full system oversight, user role management, and analytics.
     - **Librarians**: Manage book circulation, approve/reject requests, and track inventory.
-    - **Students**: Browse catalog, borrow books, and view personal transaction history.
+    - **Students**: Browse catalogue, borrow books, and view personal transaction history.
 - **Book Circulation**:
     - Complete workflow: Borrow Request -> Approval -> Issue -> Return Request -> Return Confirmation.
     - Support for **Hardcopy**, **E-books**, and **Audiobooks**.

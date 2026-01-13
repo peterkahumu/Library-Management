@@ -37,11 +37,35 @@ class BookForm(forms.ModelForm):
 
     def clean_isbn(self):
         isbn = self.cleaned_data.get("isbn")
+        if not isbn:
+            return None
         if not isbn.isdigit():
             raise ValidationError("ISBN must be numeric.")
         if len(isbn) not in [10, 13]:
             raise ValidationError("ISBN must be 10 or 13 digits.")
         return isbn
+
+    def clean(self):
+        cleaned_data = super().clean()
+        isbn = cleaned_data.get("isbn")
+        title = cleaned_data.get("title")
+        author = cleaned_data.get("author")
+
+        # If no ISBN, check for duplicate by Title + Author
+        if not isbn and title and author:
+            # Case insensitive check
+            potential_duplicates = Book.objects.filter(
+                title__iexact=title, author__iexact=author
+            )
+            if self.instance.pk:
+                potential_duplicates = potential_duplicates.exclude(pk=self.instance.pk)
+
+            if potential_duplicates.exists():
+                raise ValidationError(
+                    "A book with this Title and Author already exists. "
+                    "Since no ISBN was provided, this is flagged as a duplicate."
+                )
+        return cleaned_data
 
     def clean_publication_date(self):
         today = datetime.date.today()
@@ -117,15 +141,28 @@ class GoogleBookImportForm(forms.ModelForm):
             if "title" in volume_info:
                 self.initial["title"] = volume_info["title"]
 
-            if "description" in volume_info:
-                description = volume_info["description"]
+            # Description Handling
+            description = volume_info.get("description", "")
+            if description:
                 # Convert logic breaks to newlines
                 description = re.sub(
                     r"<br\s*/?>", "\n", description, flags=re.IGNORECASE
                 )
                 description = re.sub(r"</p>", "\n\n", description, flags=re.IGNORECASE)
-                # Strip remaining tags
-                self.initial["description"] = strip_tags(description).strip()
+                # Strip remaining tags and enforce model field max_length
+                cleaned_description = strip_tags(description).strip()
+                try:
+                    desc_field = Book._meta.get_field("description")
+                    max_length = getattr(desc_field, "max_length", None)
+                except Exception:
+                    max_length = None
+                if max_length is not None and len(cleaned_description) > max_length:
+                    cleaned_description = cleaned_description[:max_length]
+                self.initial["description"] = (
+                    cleaned_description if cleaned_description else "Not Provided"
+                )
+            else:
+                self.initial["description"] = "Not Provided"
 
             # Extract authors
             authors = volume_info.get("authors", [])
@@ -155,7 +192,7 @@ class GoogleBookImportForm(forms.ModelForm):
         isbn = self.cleaned_data.get("isbn")
 
         if not isbn:
-            raise ValidationError("ISBN is required for importing books.")
+            return None
 
         if not isbn.replace("-", "").replace(" ", "").isdigit():
             raise ValidationError("ISBN must contain only digits.")
@@ -174,7 +211,7 @@ class GoogleBookImportForm(forms.ModelForm):
         if existing.exists():
             raise ValidationError(
                 f"A book with ISBN {isbn_clean} already exists in the library. "
-                "Please check the catalog before importing."
+                "Please check the catalogue before importing."
             )
 
         return isbn_clean
@@ -204,5 +241,24 @@ class GoogleBookImportForm(forms.ModelForm):
         if total_copies and copies_available:
             if copies_available > total_copies:
                 raise ValidationError("Available copies cannot exceed total copies.")
+
+        # If no ISBN, check for duplicate by Title + Author
+        isbn = cleaned_data.get("isbn")
+        title = cleaned_data.get("title")
+        author = cleaned_data.get("author")
+
+        if not isbn and title and author:
+            # Case insensitive check
+            potential_duplicates = Book.objects.filter(
+                title__iexact=title, author__iexact=author
+            )
+            if self.instance.pk:
+                potential_duplicates = potential_duplicates.exclude(pk=self.instance.pk)
+
+            if potential_duplicates.exists():
+                raise ValidationError(
+                    "A book with this Title and Author already exists. "
+                    "Since no ISBN was provided, this is flagged as a duplicate."
+                )
 
         return cleaned_data

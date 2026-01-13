@@ -344,8 +344,6 @@ class GoogleBooksAddView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                     volume = api.get_book_details(volume_id)
                     volume_info = volume.get("volumeInfo", {})
 
-                    # We'll use the default cover for now
-                    # In production, you might want to download and save the image
                     cover_url = api.extract_cover_url(volume_info)
                     if cover_url:
                         try:
@@ -356,14 +354,21 @@ class GoogleBooksAddView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                                     filename, ContentFile(response.content), save=False
                                 )
                         except Exception:
-                            pass
+                            messages.warning(
+                                self.request,
+                                "There was an error in processing the image for this book."  # noqa
+                                "We shall use a default image instead for now.",
+                            )
 
                 except Exception:
-                    pass  # Use default cover
-
+                    messages.error(
+                        self.request,
+                        "Book details not fully downloaded from Google books."
+                        "We shall use a default image instead.",
+                    )
             # Save the book
             book.save()
-            form.save_m2m()  # Save many-to-many relationships (genres)
+            form.save_m2m()
 
             messages.success(
                 self.request, f'Successfully added "{book.title}" to the library!'

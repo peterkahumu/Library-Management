@@ -2,7 +2,7 @@ services:
   app:
     build: .
     image: app
-    command: bash -c "./wait-for-it.sh db:5432 -t 60 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "./wait-for-it.sh db:5432 -t 60 -- python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./:/app
     env_file:

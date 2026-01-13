@@ -30,7 +30,7 @@ class Book(models.Model):
     book_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=150)
     description = models.TextField()
-    isbn = models.CharField(unique=True, max_length=13)
+    isbn = models.CharField(unique=True, max_length=13, null=True, blank=True)
     author = models.CharField(max_length=200)
     publication_date = models.DateField()  # cannot be null, user must provide.
     edition = models.CharField(max_length=10, blank=True, null=True)

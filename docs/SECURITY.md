@@ -55,9 +55,10 @@ Recent security scan showed **zero critical or high-risk vulnerabilities**:
 |---------|--------|
 | Missing HttpOnly flag on cookies | ✅ Fixed |
 | Missing Secure flag on cookies | ✅ Fixed |
-| Missing Content-Security-Policy | ✅ Fixed |
+| Missing Content-Security-Policy | ✅ Fixed (Inline scripts/styles removed) |
 | Missing Strict-Transport-Security | ✅ Fixed |
 | Missing security.txt file | ✅ Fixed |
+| Favicon 404 Error (Information Leak) | ✅ Fixed |
 
 **Overall Risk Level**: Low
 

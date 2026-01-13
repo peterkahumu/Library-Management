@@ -14,6 +14,7 @@ def create_genres(sender, **kwargs):
 
 
 @receiver([post_save, post_delete], sender=Book)
+@receiver([post_save, post_delete], sender=Genre)
 def invalidate_book_cache_stats(sender, instance, **kwargs):
     "Clear book related cache when a book is created, updated, or deleted"
     # NB: Check pages.utils and pages.views for stats consumptions

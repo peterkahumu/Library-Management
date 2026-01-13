@@ -219,7 +219,6 @@ class BookModelTests(TestCase):
         errors = cm.exception.message_dict
         self.assertIn("title", errors)
         self.assertIn("description", errors)
-        self.assertIn("isbn", errors)
         self.assertIn("author", errors)
         self.assertIn("publication_date", errors)
         self.assertIn("added_by", errors)

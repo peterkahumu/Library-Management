@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "storages",
+    "cloudinary_storage",
+    "cloudinary",
     # local apps
     "accounts",
     "pages",
@@ -133,9 +135,25 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = "/media/"
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
+}
+
+if not DEBUG: # production
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+
+MEDIA_URL = "LibraryManagement/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
@@ -227,13 +245,6 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
 
-    # PRODUCTION MEDIA UPLOAD
-    CLOUDINARY_STORAGE = {
-        "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
-        "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
-        "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
-    }
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
     SESSION_COOKIE_HTTPONLY = True
     CSRF_COOKIE_HTTPONLY = True
@@ -245,13 +256,11 @@ else:
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = (
     "'self'",
-    "'unsafe-inline'",
     "https://cdn.jsdelivr.net",
     "https://cdnjs.cloudflare.com",
 )
 CSP_STYLE_SRC = (
     "'self'",
-    "'unsafe-inline'",
     "https://cdn.jsdelivr.net",  # jsDelivr CDN
     "https://cdnjs.cloudflare.com",  # Cloudflare CDN
     "https://fonts.googleapis.com",  # Google Fonts
@@ -273,3 +282,6 @@ CSP_CONNECT_SRC = (
     "https://cdn.jsdelivr.net",
     "https://www.googleapis.com",
 )
+
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
