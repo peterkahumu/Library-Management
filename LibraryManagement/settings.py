@@ -254,13 +254,11 @@ else:
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = (
     "'self'",
-    "'unsafe-inline'",
     "https://cdn.jsdelivr.net",
     "https://cdnjs.cloudflare.com",
 )
 CSP_STYLE_SRC = (
     "'self'",
-    "'unsafe-inline'",
     "https://cdn.jsdelivr.net",  # jsDelivr CDN
     "https://cdnjs.cloudflare.com",  # Cloudflare CDN
     "https://fonts.googleapis.com",  # Google Fonts
