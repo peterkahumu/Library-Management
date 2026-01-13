@@ -357,7 +357,7 @@ class GoogleBooksAddView(LoginRequiredMixin, UserPassesTestMixin, FormView):
                             messages.warning(
                                 self.request,
                                 "There was an error in processing the image for this book."  # noqa
-                                "We shall use a defaul image instead for now.",
+                                "We shall use a default image instead for now.",
                             )
 
                 except Exception:

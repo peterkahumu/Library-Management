@@ -182,7 +182,7 @@ class GoogleBookImportForm(forms.ModelForm):
         if existing.exists():
             raise ValidationError(
                 f"A book with ISBN {isbn_clean} already exists in the library. "
-                "Please check the catalog before importing."
+                "Please check the catalogue before importing."
             )
 
         return isbn_clean
