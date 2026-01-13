@@ -48,7 +48,8 @@ Manages the library inventory, including book details, genres, and availability.
 **`Book`**
 - **Fields**:
     - `book_id`: UUID.
-    - `title`, `author`, `isbn`, `description`.
+    - `title`, `author`, `description`.
+    - `isbn` (Optional - allows missing/null).
     - `total_copies`, `copies_available`.
     - `format` (`HARDCOPY`, `EBOOK`, `AUDIOBOOK`).
     - `language`, `publication_date`.

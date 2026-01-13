@@ -303,7 +303,8 @@ For detailed information about application models, see:
 - [Application Documentation](docs/APPS.md) - Complete models breakdown
 - Individual model files:
   - `accounts/models.py` - User and authentication
-  - `books/models.py` - Book inventory
+  - `books/models.py` - Book inventory.
+    - **Update (v1.0.1)**: `Book.isbn` is now nullable. Duplicate detection falls back to `Title + Author` if ISBN is missing.
   - `book_circulation/models.py` - Borrowing and returns
   - `dashboards/models.py` - Analytics
 
