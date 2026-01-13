@@ -124,8 +124,16 @@ class GoogleBookImportForm(forms.ModelForm):
                     r"<br\s*/?>", "\n", description, flags=re.IGNORECASE
                 )
                 description = re.sub(r"</p>", "\n\n", description, flags=re.IGNORECASE)
-                # Strip remaining tags
-                self.initial["description"] = strip_tags(description).strip()
+                # Strip remaining tags and enforce model field max_length
+                cleaned_description = strip_tags(description).strip()
+                try:
+                    desc_field = Book._meta.get_field("description")
+                    max_length = getattr(desc_field, "max_length", None)
+                except Exception:
+                    max_length = None
+                if max_length is not None and len(cleaned_description) > max_length:
+                    cleaned_description = cleaned_description[:max_length]
+                self.initial["description"] = cleaned_description
 
             # Extract authors
             authors = volume_info.get("authors", [])
