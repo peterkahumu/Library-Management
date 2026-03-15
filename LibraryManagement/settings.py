@@ -281,6 +281,7 @@ CSP_CONNECT_SRC = (
     "'self'",
     "https://cdn.jsdelivr.net",
     "https://www.googleapis.com",
+    "http://localhost:8001",  # AI Microservice
 )
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")

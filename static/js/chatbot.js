@@ -1,103 +1,11 @@
 /**
  * Library Management Chatbot
- * Pre-determined response engine with keyword matching.
- * Ready to be swapped out for a live AI API.
  */
 
 (function () {
   'use strict';
 
-  /* ── Knowledge Base ──────────────────────────────────────── */
-  const RESPONSES = [
-    {
-      patterns: [/\b(hi|hello|hey|good\s*(morning|afternoon|evening)|greetings)\b/i],
-      replies: [
-        "Hello! 👋 I'm LibraBot, your library assistant. How can I help you today?",
-        "Hi there! 📚 Welcome to the Library Management System. What can I help you with?",
-      ],
-    },
-    {
-      patterns: [/\bborrow(ing)?\b|\bcheck\s*out\b|\bhow\s*(do\s*i|to)\s*(get|borrow|take)\b/i],
-      replies: [
-        "To borrow a book:\n1. Browse the <b>Catalogue</b> and open the book you want.\n2. Click <b>Borrow Book</b>.\n3. The librarian will process your request and update the status.\n\nEach student can borrow up to <b>5 books</b> at a time.",
-      ],
-    },
-    {
-      patterns: [/\breturn(ing)?\b|\bdue\s*date\b|\boverdue\b/i],
-      replies: [
-        "To return a book, bring it to the library desk. The librarian will mark it as returned in the system.\n\n⚠️ Books not returned by the due date attract a daily fine — check <b>My Books</b> for your current due dates.",
-      ],
-    },
-    {
-      patterns: [/\bfine(s)?\b|\bfee(s)?\b|\bpenalt(y|ies)\b|\bpay(ment)?\b/i],
-      replies: [
-        "Fines are charged for overdue books. You can view any outstanding fines in your <b>Dashboard</b> under the fines section.\n\nContact the librarian to settle a fine in person.",
-      ],
-    },
-    {
-      patterns: [/\bcatalogue\b|\bsearch\b|\bfind\s*(a\s*)?book\b|\bavailab(le|ility)\b/i],
-      replies: [
-        "You can browse all available books in the <b>Catalogue</b> section. Use the search bar and genre filters to narrow your results.\n\nBooks showing <span class='text-success fw-bold'>Available</span> can be borrowed right away!",
-      ],
-    },
-    {
-      patterns: [/\bgoogle\s*books\b|\bexternal\b|\bonline\s*book\b/i],
-      replies: [
-        "The <b>Google Books</b> section lets you search millions of books online. You can view details and previews directly within the system.",
-      ],
-    },
-    {
-      patterns: [/\bmy\s*books?\b|\bborrowed\b|\bcurrent(ly)?\s*(reading|borrow)\b/i],
-      replies: [
-        "Head to <b>My Books</b> in the navigation to see all books you've borrowed, their due dates, and return status.",
-      ],
-    },
-    {
-      patterns: [/\brenew\b|\bextension\b|\bmore\s*time\b/i],
-      replies: [
-        "Book renewals must be requested through the librarian at the desk. You can reach out before your due date to avoid fines.",
-      ],
-    },
-    {
-      patterns: [/\baccount\b|\bprofile\b|\bpassword\b|\blogin\b|\bsign\s*(in|up)\b/i],
-      replies: [
-        "You can manage your account from the <b>profile menu</b> (top-right on desktop, or the Menu tab on mobile). Options include changing your password and viewing your role.",
-      ],
-    },
-    {
-      patterns: [/\bhour(s)?\b|\bopen(ing)?\b|\bwhen\b.*\bopen\b|\bschedule\b|\btiming\b/i],
-      replies: [
-        "📅 Library hours:\n• Monday – Friday: 8:00 AM – 6:00 PM\n• Saturday: 9:00 AM – 1:00 PM\n• Sunday & Public Holidays: Closed\n\nFor holiday-specific changes, check the notice board.",
-      ],
-    },
-    {
-      patterns: [/\badmin\b|\blibrarian\b|\bstaff\b|\bcontact\b|\bhelp\b|\bsupport\b/i],
-      replies: [
-        "For assistance, you can visit the library desk during opening hours or ask any staff member. Admins and Librarians can manage your account directly from their dashboards.",
-      ],
-    },
-    {
-      patterns: [/\bthank(s|you)?\b|\bawesome\b|\bgreat\b|\bperfect\b|\bcheers\b/i],
-      replies: [
-        "You're welcome! 😊 Let me know if there's anything else I can help with.",
-        "Happy to help! 📚 Feel free to ask anytime.",
-      ],
-    },
-    {
-      patterns: [/\bbye\b|\bgoodbye\b|\bsee\s*you\b|\btake\s*care\b/i],
-      replies: [
-        "Goodbye! 👋 Happy reading!",
-        "See you! Come back anytime you need help. 📖",
-      ],
-    },
-  ];
-
-  const FALLBACK = [
-    "I'm not sure about that one. Try asking about borrowing, returns, fines, the catalogue, or your account.",
-    "Hmm, I didn't quite catch that. You can ask me about borrowing books, due dates, fines, or opening hours.",
-    "That's outside my knowledge for now. 😅 Try <b>How do I borrow a book?</b> or <b>What are the library hours?</b>",
-  ];
-
+  /* ── Basic user suggestions. ──────────────────────────────────────── */
   const SUGGESTIONS = [
     "How do I borrow a book?",
     "Library hours",
@@ -109,6 +17,7 @@
   /* ── State ───────────────────────────────────────────────── */
   let isOpen = false;
   let isTyping = false;
+  let conversationHistory = []; // Keeps track of messages for API context
 
   /* ── DOM refs ────────────────────────────────────────────── */
   const fab = document.getElementById('chatbot-fab');
@@ -143,7 +52,9 @@
 
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
-    bubble.innerHTML = text.replace(/\n/g, '<br>');
+
+    // Convert markdown line returns to <br> to handle markdown lists
+    bubble.innerHTML = text.replace(/\n((?!(<br>)))/g, '<br>');
 
     wrap.appendChild(icon);
     wrap.appendChild(bubble);
@@ -194,7 +105,8 @@
 
   function buildSuggestions() {
     if (!suggestBox) return;
-    suggestBox.innerHTML = '';
+    // Don't rebuild if already built to save DOM ops
+    if (suggestBox.children.length > 0) return;
     SUGGESTIONS.forEach(s => {
       const chip = document.createElement('button');
       chip.className = 'chat-suggestion-chip';
@@ -208,34 +120,105 @@
   }
 
   /* ── Send Logic ──────────────────────────────────────────── */
-  function sendMessage(text) {
+  async function sendMessage(text) {
     text = (text || input.value).trim();
     if (!text || isTyping) return;
 
     if (suggestBox) suggestBox.style.display = 'none';
     addMessage(text, 'user');
+    conversationHistory.push({ role: "user", content: text });
+
     input.value = '';
     input.style.height = 'auto';
     sendBtn.disabled = true;
     isTyping = true;
 
-    const typingEl = showTyping();
+    showTyping();
 
-    // Simulate "thinking" delay
-    const delay = 700 + Math.random() * 600;
-    setTimeout(() => {
+    try {
+      // Connect to the FastAPI AI microservice
+      const response = await fetch('http://localhost:8001/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: conversationHistory })
+      });
+
       hideTyping();
-      const reply = getReply(text);
-      addMessage(reply, 'bot');
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      // Create an empty bot bubble to stream into
+      const botBubbleWrap = createBubble('', 'bot');
+      messages.appendChild(botBubbleWrap);
+      const botBubbleContent = botBubbleWrap.querySelector('.chat-bubble');
+
+      // Read the SSE stream
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let botFullResponse = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunkStr = decoder.decode(value, { stream: true });
+
+        // SSE messages are split by double newline
+        const events = chunkStr.split('\n\n');
+        for (const event of events) {
+          if (!event.trim()) continue;
+
+          if (event.startsWith('event: message') || event.startsWith('event: done') || event.startsWith('event: error')) {
+            // Find the data line for this event
+            const dataMatch = event.match(/data:\s+(.+)$/m);
+            if (dataMatch) {
+              const dataStr = dataMatch[1];
+              try {
+                const dataObj = JSON.parse(dataStr);
+                const content = dataObj.content || '';
+
+                if (content === '[DONE]') {
+                  break; // Stream complete
+                }
+
+                // Append chunk and update UI
+                botFullResponse += content;
+
+                // Extremely basic markdown formatting for stream chunks
+                // converts **bold** to <b>bold</b> and \n to <br>
+                let htmlOut = botFullResponse
+                  .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                  .replace(/\n/g, '<br>');
+
+                botBubbleContent.innerHTML = htmlOut;
+                scrollToBottom();
+
+              } catch (e) { /* ignore parse error on partial chunks if any */ }
+            }
+          }
+        }
+      }
+
+      // Save the bot's final answer to history
+      conversationHistory.push({ role: "assistant", content: botFullResponse });
+
+    } catch (error) {
+      console.error('Chat error:', error);
+      hideTyping();
+      addMessage("⚠️ Sorry, I'm having trouble connecting to my brain right now. Please try again later.", 'bot');
+    } finally {
       isTyping = false;
       sendBtn.disabled = false;
-    }, delay);
+    }
   }
 
   /* ── Panel Toggle ────────────────────────────────────────── */
   function openPanel() {
     isOpen = true;
     panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false'); // Fix ARIA hidden focus error
     fab.classList.add('active');
     fab.querySelector('i').className = 'fas fa-times';
     if (badge) badge.classList.remove('visible');
@@ -245,6 +228,7 @@
   function closePanel() {
     isOpen = false;
     panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true'); // Hide from ARIA when closed
     fab.classList.remove('active');
     fab.querySelector('i').className = 'fas fa-comments';
   }

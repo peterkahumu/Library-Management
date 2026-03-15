@@ -1,21 +1,20 @@
 import os
 import json
-import asyncio
-from typing import List, Optional
-from fastapi import FastAPI, Request
+from typing import List
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import AsyncOpenAI
 from sse_starlette.sse import EventSourceResponse
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 
-# Initialize FastAPI App
+load_dotenv()
+
 app = FastAPI(title="Library Management AI Service")
 
-# Setup CORS for the Django frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],  # Note: Production url here. 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,17 +22,12 @@ app.add_middleware(
 
 # Helper to get the client at request time so dotenv has time to load
 def get_client() -> AsyncOpenAI:
-    # Uvicorn workers sometimes strip environment variables passed via docker env_file.
-    # Fallback to reading the .env file directly from the disk.
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    env_vars = dotenv_values(env_path) if os.path.exists(env_path) else {}
+    """
+    Get the DeepSeek client.
+    """
+    api_key = os.getenv("DEEPSEEK_API_KEY")
+    base_url = os.getenv("DEEPSEEK_BASE_URL")
     
-    api_key = os.environ.get("DEEPSEEK_API_KEY") or env_vars.get("DEEPSEEK_API_KEY", "")
-    base_url = os.environ.get("DEEPSEEK_BASE_URL") or env_vars.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
-    
-    print(f"DEBUG - Resolving API Key... Found: {bool(api_key)}")
-    print(f"DEBUG - Resolving Base URL... Found: {base_url}")
-
     if not api_key:
         print("Warning: DEEPSEEK_API_KEY is missing from environment Variables and .env file!")
         api_key = "DUMMY_KEY_TO_PREVENT_CRASH"
