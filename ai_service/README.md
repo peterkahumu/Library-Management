@@ -26,8 +26,8 @@ The service provides streaming chat responses for library-related questions.
 
 ## Environment Variables
 
-- `DEEPSEEK_API_KEY` (required for real responses)
-- `DEEPSEEK_BASE_URL` (optional, for OpenAI-compatible endpoint override)
+- `OPENAI_API_KEY` (required for real responses)
+- `SYSTEM_PROMPT` (optional, for OpenAI-compatible system prompt override)
 
 Copy and edit:
 

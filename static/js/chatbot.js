@@ -143,36 +143,46 @@
         body: JSON.stringify({ messages: conversationHistory })
       });
 
-      hideTyping();
-
       if (!response.ok) {
+        hideTyping();
         throw new Error(`Server returned ${response.status}`);
       }
 
       // Create an empty bot bubble to stream into
       const botBubbleWrap = createBubble('', 'bot');
-      messages.appendChild(botBubbleWrap);
       const botBubbleContent = botBubbleWrap.querySelector('.chat-bubble');
+      let hasStartedStreaming = false;
 
       // Read the SSE stream
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let botFullResponse = '';
+      let streamBuffer = '';
 
       while (true) {
         const { value, done } = await reader.read();
-        if (done) break;
+        if (done) {
+          if (!hasStartedStreaming) {
+            hideTyping();
+            messages.appendChild(botBubbleWrap);
+          }
+          break;
+        }
 
-        const chunkStr = decoder.decode(value, { stream: true });
+        // Normalize CRLF to LF so indexOf('\n\n') correctly detects SSE event boundaries
+        streamBuffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
 
         // SSE messages are split by double newline
-        const events = chunkStr.split('\n\n');
-        for (const event of events) {
+        let boundaryIndex;
+        while ((boundaryIndex = streamBuffer.indexOf('\n\n')) >= 0) {
+          const event = streamBuffer.substring(0, boundaryIndex);
+          streamBuffer = streamBuffer.substring(boundaryIndex + 2);
+          
           if (!event.trim()) continue;
 
           if (event.startsWith('event: message') || event.startsWith('event: done') || event.startsWith('event: error')) {
             // Find the data line for this event
-            const dataMatch = event.match(/data:\s+(.+)$/m);
+            const dataMatch = event.match(/data:\s+(.*)$/m);
             if (dataMatch) {
               const dataStr = dataMatch[1];
               try {
@@ -180,7 +190,17 @@
                 const content = dataObj.content || '';
 
                 if (content === '[DONE]') {
+                  if (!hasStartedStreaming) {
+                    hideTyping();
+                    messages.appendChild(botBubbleWrap);
+                  }
                   break; // Stream complete
+                }
+
+                if (!hasStartedStreaming) {
+                  hideTyping();
+                  messages.appendChild(botBubbleWrap);
+                  hasStartedStreaming = true;
                 }
 
                 // Append chunk and update UI
@@ -190,12 +210,15 @@
                 // converts **bold** to <b>bold</b> and \n to <br>
                 let htmlOut = botFullResponse
                   .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                  .replace(/\n\n/g, '<br><br>')
                   .replace(/\n/g, '<br>');
 
                 botBubbleContent.innerHTML = htmlOut;
                 scrollToBottom();
 
-              } catch (e) { /* ignore parse error on partial chunks if any */ }
+              } catch (e) { 
+                console.warn('Failed to parse SSE data chunk:', dataStr, e);
+              }
             }
           }
         }

@@ -8,3 +8,4 @@ staticfiles/
 *.sqlite3
 .env_d
 *.coverage
+seed_dummy_data.py

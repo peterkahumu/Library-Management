@@ -29,7 +29,7 @@ The project includes:
 ## Tech Stack
 
 - Backend: Django 5.2
-- AI Service: FastAPI + OpenAI-compatible client (DeepSeek)
+- AI Service: FastAPI + OpenAI-compatible client (ChatGPT)
 - Database: PostgreSQL (SQLite automatically used for tests)
 - Cache: Redis (`django-redis`), LocMemCache in tests
 - Media/Static: Cloudinary (production media), WhiteNoise (static)

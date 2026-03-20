@@ -24,18 +24,17 @@ app.add_middleware(
 # Helper to get the client at request time so dotenv has time to load
 def get_client() -> AsyncOpenAI:
     """
-    Get the DeepSeek client.
+    Get the OpenAI client.
     """
-    api_key = os.getenv("DEEPSEEK_API_KEY")
-    base_url = os.getenv("DEEPSEEK_BASE_URL")
+    api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
         print(
-            "Warning: DEEPSEEK_API_KEY is missing from environment Variables and .env file!"
+            "Warning: OPENAI_API_KEY is missing from environment Variables and .env file!"
         )
         api_key = "DUMMY_KEY_TO_PREVENT_CRASH"
 
-    return AsyncOpenAI(api_key=api_key, base_url=base_url)
+    return AsyncOpenAI(api_key=api_key)
 
 
 # Define request models
@@ -48,31 +47,35 @@ class ChatRequest(BaseModel):
     messages: List[Message]
 
 
-# System prompt defining bot behaviour
-SYSTEM_PROMPT = """You are LibraBot, a helpful assistant for a Library Management System. 
+# Default system prompt
+DEFAULT_SYSTEM_PROMPT = """You are LibraBot, a helpful assistant for a Library Management System. 
 You help users with information about borrowing books, returning books, fines, finding books in the catalogue, and library opening hours.
 Keep your answers concise, friendly, and formatted nicely in HTML-compatible markdown. 
 If a user asks something unrelated to the library or books, politely steer them back to library topics."""
+
+def get_system_prompt() -> str:
+    # Allows the user to override the prompt easily via the .env file
+    return os.getenv("SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
 
 
 @app.post("/chat/stream")
 async def chat_stream(request: ChatRequest):
     """
     Endpoint that accepts a chat history array and streams back the
-    DeepSeek response using Server-Sent Events (SSE).
+    response using Server-Sent Events (SSE).
     """
 
     # Prepare messages payload
-    api_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    api_messages = [{"role": "system", "content": get_system_prompt()}]
     for msg in request.messages:
         api_messages.append({"role": msg.role, "content": msg.content})
 
     async def event_generator():
         client = get_client()
         try:
-            # Create a streaming response from the DeepSeek model
+            # Create a streaming response from the OpenAI model
             stream = await client.chat.completions.create(
-                model="deepseek-chat", messages=api_messages, stream=True
+                model="gpt-4o-mini", messages=api_messages, stream=True
             )
 
             async for chunk in stream:
@@ -84,11 +87,10 @@ async def chat_stream(request: ChatRequest):
 
         except Exception as e:
             # Handle API errors gracefully in the stream
-            error_msg = f"Sorry, I encountered an error: {str(e)}"
-            yield {"event": "error", "data": json.dumps({"content": error_msg})}
+            yield {"event": "error", "data": "Sorry, I encountered an error. Please try again later."}
 
         finally:
-            yield {"event": "done", "data": json.dumps({"content": "[DONE]"})}
+            yield {"event": "done", "data": "DONE"}
 
     return EventSourceResponse(event_generator())
 
@@ -96,3 +98,23 @@ async def chat_stream(request: ChatRequest):
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+class RecommendationRequest(BaseModel):
+    user_id: int
+    history: List[str] = []
+
+@app.post("/recommend")
+async def recommend_books(request: RecommendationRequest):
+    """
+    Basic Recommendation System Endpoint.
+    To be expanded in the future.
+    """
+    # Dummy data until full implementation
+    return {
+        "status": "success",
+        "recommendations": [
+            {"title": "The Great Gatsby", "reason": "Classic literature"},
+            {"title": "1984", "reason": "Dystopian classic"},
+            {"title": "To Kill a Mockingbird", "reason": "Highly rated"}
+        ]
+    }
