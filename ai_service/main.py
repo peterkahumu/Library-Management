@@ -3,10 +3,14 @@ import json
 from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import Field
 from pydantic import BaseModel
 from openai import AsyncOpenAI
 from sse_starlette.sse import EventSourceResponse
 from dotenv import load_dotenv
+import logging
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -51,11 +55,15 @@ class ChatRequest(BaseModel):
 DEFAULT_SYSTEM_PROMPT = """You are LibraBot, a helpful assistant for a Library Management System. 
 You help users with information about borrowing books, returning books, fines, finding books in the catalogue, and library opening hours.
 Keep your answers concise, friendly, and formatted nicely in HTML-compatible markdown. 
-If a user asks something unrelated to the library or books, politely steer them back to library topics."""
+If a user asks something unrelated to the library or books, politely steer them back to library topics.
+On questions on who created you, respectfully deflect.
+"""
 
 def get_system_prompt() -> str:
     # Allows the user to override the prompt easily via the .env file
-    return os.getenv("SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
+    env_sys_prompt = os.getenv("SYSTEM_PROMPT")
+    SYSTEM_PROMPT = env_sys_prompt if env_sys_prompt else DEFAULT_SYSTEM_PROMPT
+    return SYSTEM_PROMPT
 
 
 @app.post("/chat/stream")
@@ -64,7 +72,7 @@ async def chat_stream(request: ChatRequest):
     Endpoint that accepts a chat history array and streams back the
     response using Server-Sent Events (SSE).
     """
-
+    print("The current system prompt is:", get_system_prompt())
     # Prepare messages payload
     api_messages = [{"role": "system", "content": get_system_prompt()}]
     for msg in request.messages:
@@ -87,10 +95,10 @@ async def chat_stream(request: ChatRequest):
 
         except Exception as e:
             # Handle API errors gracefully in the stream
-            yield {"event": "error", "data": "Sorry, I encountered an error. Please try again later."}
+            yield {"event": "error", "data": json.dumps({"error": "Sorry, I encountered an error. Please try again later."})}
 
         finally:
-            yield {"event": "done", "data": "DONE"}
+            yield {"event": "done", "data": json.dumps({"done": True})}
 
     return EventSourceResponse(event_generator())
 
@@ -101,7 +109,7 @@ def health_check():
 
 class RecommendationRequest(BaseModel):
     user_id: int
-    history: List[str] = []
+    history: List[str] = Field(default_factory=list)
 
 @app.post("/recommend")
 async def recommend_books(request: RecommendationRequest):

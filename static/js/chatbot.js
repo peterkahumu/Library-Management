@@ -40,12 +40,77 @@
     messages.scrollTop = messages.scrollHeight;
   }
 
+  function renderMarkdownSafeHTML(text) {
+    // Split text by markdown bold patterns and newlines while preserving formatting info
+    const parts = [];
+    let lastIndex = 0;
+
+    // Process **bold** patterns
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    let match;
+    const boldMatches = [];
+    while ((match = boldRegex.exec(text)) !== null) {
+      boldMatches.push({ start: match.index, end: match.index + match[0].length, content: match[1] });
+    }
+
+    // Build fragment: text with safe bold markup and line breaks
+    const frag = document.createDocumentFragment();
+    let currentIdx = 0;
+    const lines = text.split('\n');
+
+    lines.forEach((line, lineIdx) => {
+      // Process bold patterns in this line
+      let lineStart = 0;
+      let inBold = false;
+      let boldIdx = 0;
+
+      // Simple bold replacement: find ** pairs in this line only
+      const lineBoldRegex = /\*\*(.*?)\*\*/g;
+      let lineMatch;
+      let lastLineIdx = 0;
+      const fragments = [];
+
+      while ((lineMatch = lineBoldRegex.exec(line)) !== null) {
+        // Add text before bold
+        if (lineMatch.index > lastLineIdx) {
+          fragments.push({ type: 'text', content: line.substring(lastLineIdx, lineMatch.index) });
+        }
+        // Add bold text
+        fragments.push({ type: 'bold', content: lineMatch[1] });
+        lastLineIdx = lineMatch.index + lineMatch[0].length;
+      }
+      // Add remaining text
+      if (lastLineIdx < line.length) {
+        fragments.push({ type: 'text', content: line.substring(lastLineIdx) });
+      }
+
+      // Create DOM nodes for this line
+      fragments.forEach(frag_item => {
+        if (frag_item.type === 'text') {
+          frag.appendChild(document.createTextNode(frag_item.content));
+        } else if (frag_item.type === 'bold') {
+          const bold = document.createElement('b');
+          bold.textContent = frag_item.content;
+          frag.appendChild(bold);
+        }
+      });
+
+      // Add line break between lines (but not after last line)
+      if (lineIdx < lines.length - 1) {
+        frag.appendChild(document.createElement('br'));
+      }
+    });
+
+    return frag;
+  }
+
   function createBubble(text, sender) {
     const wrap = document.createElement('div');
     wrap.className = `chat-bubble-wrap ${sender}`;
 
     const icon = document.createElement('div');
     icon.className = 'chat-bubble-icon';
+    // Hardcoded content is safe
     icon.innerHTML = sender === 'bot'
       ? '<i class="fas fa-robot"></i>'
       : '<i class="fas fa-user"></i>';
@@ -53,8 +118,8 @@
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
 
-    // Convert markdown line returns to <br> to handle markdown lists
-    bubble.innerHTML = text.replace(/\n((?!(<br>)))/g, '<br>');
+    // Safely render text with markdown formatting using DOM methods (prevents XSS)
+    bubble.appendChild(renderMarkdownSafeHTML(text));
 
     wrap.appendChild(icon);
     wrap.appendChild(bubble);
@@ -92,17 +157,6 @@
     scrollToBottom();
   }
 
-  function getReply(text) {
-    for (const entry of RESPONSES) {
-      for (const pattern of entry.patterns) {
-        if (pattern.test(text)) {
-          return rand(entry.replies);
-        }
-      }
-    }
-    return rand(FALLBACK);
-  }
-
   function buildSuggestions() {
     if (!suggestBox) return;
     // Don't rebuild if already built to save DOM ops
@@ -136,13 +190,17 @@
     showTyping();
 
     try {
+      // Get AI service URL from data-attribute (configurable per deployment)
+      const aiServiceUrl = panel.dataset.aiServiceUrl;
+
       // Connect to the FastAPI AI microservice
-      const response = await fetch('http://localhost:8001/chat/stream', {
+      const response = await fetch(aiServiceUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: conversationHistory })
       });
 
+      console.log("AI service url at: ", aiServiceUrl)
       if (!response.ok) {
         hideTyping();
         throw new Error(`Server returned ${response.status}`);
@@ -177,7 +235,6 @@
         while ((boundaryIndex = streamBuffer.indexOf('\n\n')) >= 0) {
           const event = streamBuffer.substring(0, boundaryIndex);
           streamBuffer = streamBuffer.substring(boundaryIndex + 2);
-          
           if (!event.trim()) continue;
 
           if (event.startsWith('event: message') || event.startsWith('event: done') || event.startsWith('event: error')) {
@@ -187,15 +244,31 @@
               const dataStr = dataMatch[1];
               try {
                 const dataObj = JSON.parse(dataStr);
-                const content = dataObj.content || '';
 
-                if (content === '[DONE]') {
+                // Handle done event
+                if (event.startsWith('event: done')) {
                   if (!hasStartedStreaming) {
                     hideTyping();
                     messages.appendChild(botBubbleWrap);
                   }
                   break; // Stream complete
                 }
+
+                // Handle error event
+                if (event.startsWith('event: error')) {
+                  if (!hasStartedStreaming) {
+                    hideTyping();
+                  }
+                  const errorMsg = dataObj.error || 'An error occurred while processing your request.';
+                  console.error('AI Service error:', errorMsg);
+                  if (!hasStartedStreaming) {
+                    messages.appendChild(botBubbleWrap);
+                  }
+                  break;
+                }
+
+                // Handle message event
+                const content = dataObj.content || '';
 
                 if (!hasStartedStreaming) {
                   hideTyping();
@@ -206,17 +279,12 @@
                 // Append chunk and update UI
                 botFullResponse += content;
 
-                // Extremely basic markdown formatting for stream chunks
-                // converts **bold** to <b>bold</b> and \n to <br>
-                let htmlOut = botFullResponse
-                  .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                  .replace(/\n\n/g, '<br><br>')
-                  .replace(/\n/g, '<br>');
-
-                botBubbleContent.innerHTML = htmlOut;
+                // Safely update bubble with formatted content (prevents XSS)
+                botBubbleContent.innerHTML = ''; // Clear previous content
+                botBubbleContent.appendChild(renderMarkdownSafeHTML(botFullResponse));
                 scrollToBottom();
 
-              } catch (e) { 
+              } catch (e) {
                 console.warn('Failed to parse SSE data chunk:', dataStr, e);
               }
             }
@@ -230,10 +298,11 @@
     } catch (error) {
       console.error('Chat error:', error);
       hideTyping();
-      addMessage("⚠️ Sorry, I'm having trouble connecting to my brain right now. Please try again later.", 'bot');
+      addMessage("Sorry, I'm unable to reach the AI service. Please try again in a moment.", 'bot');
     } finally {
       isTyping = false;
-      sendBtn.disabled = false;
+      // Recompute button state: disabled if input is empty, enabled if input has text
+      sendBtn.disabled = input.value.trim().length === 0;
     }
   }
 

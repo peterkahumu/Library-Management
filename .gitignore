@@ -10,3 +10,4 @@ staticfiles/
 *.coverage
 seed_dummy_data.py
 .vscode/
+staticfiles/
