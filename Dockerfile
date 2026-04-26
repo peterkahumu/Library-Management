@@ -22,8 +22,6 @@ RUN useradd -m appuser && chown -R appuser /app
 USER appuser
 
 COPY --chown=appuser:appuser . .
-RUN python manage.py collectstatic --noinput
-
 RUN chmod +x ./wait-for-it.sh
 
 EXPOSE 8000

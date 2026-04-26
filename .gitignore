@@ -9,3 +9,4 @@ staticfiles/
 .env_d
 *.coverage
 seed_dummy_data.py
+.vscode/
