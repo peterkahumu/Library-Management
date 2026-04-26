@@ -33,9 +33,7 @@ def get_client() -> AsyncOpenAI:
     api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
-        print(
-            "Warning: OPENAI_API_KEY is missing from environment Variables and .env file!"
-        )
+        logger.warning("API key missing. Please consider adding one.")
         api_key = "DUMMY_KEY_TO_PREVENT_CRASH"
 
     return AsyncOpenAI(api_key=api_key)
@@ -72,7 +70,6 @@ async def chat_stream(request: ChatRequest):
     Endpoint that accepts a chat history array and streams back the
     response using Server-Sent Events (SSE).
     """
-    print("The current system prompt is:", get_system_prompt())
     # Prepare messages payload
     api_messages = [{"role": "system", "content": get_system_prompt()}]
     for msg in request.messages:
