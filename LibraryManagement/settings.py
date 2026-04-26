@@ -74,6 +74,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 # custom context processors
                 "books.context_processors.genres_context",
+                "LibraryManagement.custom_context.ai_service_context",
             ],
         },
     },
@@ -143,7 +144,7 @@ CLOUDINARY_STORAGE = {
     "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
 }
 
-if not DEBUG: # production
+if not DEBUG:  # production
     STORAGES = {
         "default": {
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -169,6 +170,7 @@ GOOGLE_BOOKS_API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY", "")
 
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
+AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://localhost:8001/")
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -281,6 +283,7 @@ CSP_CONNECT_SRC = (
     "'self'",
     "https://cdn.jsdelivr.net",
     "https://www.googleapis.com",
+    AI_SERVICE_URL,
 )
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")

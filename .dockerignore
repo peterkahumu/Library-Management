@@ -36,3 +36,6 @@ Thumbs.db
 .idea/
 
 .env_d
+
+# Other services
+ai_service/

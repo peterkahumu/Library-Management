@@ -1,140 +1,122 @@
 # Application Documentation
 
-This document provides detailed information about the Django applications within the Library Management System.
+This document summarizes the responsibilities of each module in the project.
 
-## Table of Contents
-- [Accounts](#accounts)
-- [Books](#books)
-- [Book Circulation](#book-circulation)
-- [Dashboards](#dashboards)
-- [Pages](#pages)
+## Django Apps
 
----
+### Accounts
+Path: `accounts/`
 
-## Accounts
-**Path**: `accounts/`
+Responsibilities:
+- Custom user model (`LibraryUser`) with UUID primary key.
+- Role support (`admin`, `librarian`, `student`).
+- User registration flow.
 
-Handles user authentication, registration, and profile management. It uses a custom user model `LibraryUser`.
+URLs:
+- `accounts/register/` -> `RegisterUserView` (`register`)
+- Auth routes from Django are also mounted under `accounts/` (`login`, `logout`, password flows).
 
-### Models
-**`LibraryUser`**
-- Extends `AbstractUser`.
-- **Fields**:
-    - `user_id`: UUID, primary key.
-    - `role`: Enum (`ADMIN`, `LIBRARIAN`, `STUDENT`).
-    - `user_code`: Unique 10-char code (auto-generated).
-    - `date_of_birth`: Date field.
-    - `profile_image`: Image field.
-    - `age`: Computed property.
+Management commands:
+- `python manage.py seed_superuser`
 
-### URLs
-| Path | View | Name | Description |
-| :--- | :--- | :--- | :--- |
-| `accounts/register/` | `RegisterUserView` | `register` | User registration page. |
-| `accounts/login/` | `LoginView` | `login` | *(Django Auth)* User login. |
-| `accounts/logout/` | `LogoutView` | `logout` | *(Django Auth)* User logout. |
+### Books
+Path: `books/`
 
----
+Responsibilities:
+- Book and genre catalog management.
+- Inventory validation and stock operations.
+- Google Books search/detail/import integration.
 
-## Books
-**Path**: `books/`
+Key models:
+- `Genre`
+- `Book`
 
-Manages the library inventory, including book details, genres, and availability.
+URLs:
+- `books/` -> `BookListView` (`book_list`)
+- `books/<uuid:pk>/` -> `BookDetailView` (`book_detail`)
+- `books/new/` -> `BookCreateView` (`book_create`)
+- `books/<uuid:pk>/edit/` -> `BookEditView` (`book_edit`)
+- `books/google-books/search/` -> `GoogleBooksSearchView` (`google_books_search`)
+- `books/google-books/detail/<str:volume_id>/` -> `GoogleBooksDetailView` (`google_books_detail`)
+- `books/google-books/add/<str:volume_id>/` -> `GoogleBooksAddView` (`google_books_add`)
 
-### Models
-**`Genre`**
-- **Fields**: `name` (Choice field).
+Management commands:
+- `python manage.py seed_genres`
+- `python manage.py clear_cache`
 
-**`Book`**
-- **Fields**:
-    - `book_id`: UUID.
-    - `title`, `author`, `description`.
-    - `isbn` (Optional - allows missing/null).
-    - `total_copies`, `copies_available`.
-    - `format` (`HARDCOPY`, `EBOOK`, `AUDIOBOOK`).
-    - `language`, `publication_date`.
-- **Key Methods**:
-    - `borrow_book()`: Decrements available copies.
-    - `return_book()`: Increments available copies.
+### Book Circulation
+Path: `book_circulation/`
 
-### URLs
-| Path | View | Name | Description |
-| :--- | :--- | :--- | :--- |
-| `books/` | `BookListView` | `book_list` | List of all books with filters. |
-| `books/<uuid:pk>/` | `BookDetailView` | `book_detail` | Detailed view of a specific book. |
-| `books/new/` | `BookCreateView` | `book_create` | Add a new book (Admin/Librarian). |
-| `books/<uuid:pk>/edit/` | `BookEditView` | `book_edit` | Edit an existing book. |
+Responsibilities:
+- Borrowing and return lifecycle management.
+- Transaction state validation and transitions.
+- Physical and digital checkout flows.
 
-### Google Books Integration
-Integrated via `google_books.py` utility class `GoogleBooksAPI`.
+Key model:
+- `Transaction` with statuses:
+  - `PENDING`
+  - `ISSUED`
+  - `DOWNLOADED`
+  - `RETURN_REQUESTED`
+  - `RETURNED`
 
-| Path | View | Name | Description | Permissions |
-| :--- | :--- | :--- | :--- | :--- |
-| `books/google-books/search/` | `GoogleBooksSearchView` | `google_books_search` | Search external Google Books database. | **Logged-in Users** |
-| `books/google-books/detail/<vol_id>/` | `GoogleBooksDetailView` | `google_books_detail` | View detailed Google Book metadata. | **Logged-in Users** |
-| `books/google-books/add/<vol_id>/` | `GoogleBooksAddView` | `google_books_add` | Import Google Book to local inventory. | **Admin/Librarian Only** |
+URLs:
+- `circulation/borrow/<uuid:book_id>/` -> `BorrowBookView` (`borrow_book`)
+- `circulation/my-books/` -> `MyBooksListView` (`my_books`)
+- `circulation/return-request/<uuid:pk>/` -> `RequestReturnView` (`request_return`)
+- `circulation/librarian/borrow-requests/` -> `LibrarianBorrowRequestsView` (`librarian_borrow_requests`)
+- `circulation/librarian/return-requests/` -> `LibrarianReturnRequestsView` (`librarian_return_requests`)
+- `circulation/approve-borrow/<uuid:pk>/` -> `ApproveBorrowView` (`approve_borrow`)
+- `circulation/reject-borrow/<uuid:pk>/` -> `RejectBorrowView` (`reject_borrow`)
+- `circulation/approve-return/<uuid:pk>/` -> `ApproveReturnView` (`approve_return`)
+- `circulation/reject-return/<uuid:pk>/` -> `RejectReturnView` (`reject_return`)
 
----
+### Dashboards
+Path: `dashboards/`
 
-## Book Circulation
-**Path**: `book_circulation/`
+Responsibilities:
+- Role-specific dashboards.
+- KPI/analytics views and transaction log filtering.
+- Admin user role updates.
 
-Handles the core business logic of borrowing and returning books.
+URLs:
+- `dashboard/admin/` -> `AdminDashboardView` (`admin_dashboard`)
+- `dashboard/librarian/` -> `LibrarianDashboardView` (`librarian_dashboard`)
+- `dashboard/student/` -> `StudentDashboardView` (`student_dashboard`)
+- `dashboard/logs/` -> `TransactionLogsView` (`transaction_logs`)
+- `dashboard/role-update/` -> `UserRoleUpdateView` (`user_role_update`)
 
-### Models
-**`Transaction`**
-- Tracks the lifecycle of a book loan.
-- **Fields**:
-    - `status`: `PENDING`, `ISSUED`, `RETURN_REQUESTED`, `RETURNED`, `DOWNLOADED`.
-    - `user`: ForeignKey to `LibraryUser`.
-    - `book`: ForeignKey to `Book`.
-    - `checkout_date`, `due_date`, `returned_date`.
-- **Logic**:
-    - Enforces valid status transitions.
-    - Updates book inventory on specific transitions (e.g., `ISSUED` -> `RETURNED`).
+### Pages
+Path: `pages/`
 
-### URLs
-#### Student Actions
-| Path | View | Name | Description |
-| :--- | :--- | :--- | :--- |
-| `circulation/borrow/<uuid:book_id>/` | `BorrowBookView` | `borrow_book` | Request to borrow a book. |
-| `circulation/my-books/` | `MyBooksListView` | `my_books` | List of user's active/past loans. |
-| `circulation/return-request/<uuid:pk>/` | `RequestReturnView` | `request_return` | Initiate return process. |
+Responsibilities:
+- Public home page for anonymous users.
+- Role-based redirect for authenticated users.
 
-#### Librarian Actions
-| Path | View | Name | Description |
-| :--- | :--- | :--- | :--- |
-| `circulation/librarian/borrow-requests/` | `LibrarianBorrowRequestsView` | `librarian_borrow_requests` | Manage pending borrow requests. |
-| `circulation/librarian/return-requests/` | `LibrarianReturnRequestsView` | `librarian_return_requests` | Manage pending return requests. |
-| `circulation/approve-borrow/<uuid:pk>/` | `ApproveBorrowView` | `approve_borrow` | Approve a borrow request. |
-| `circulation/reject-borrow/<uuid:pk>/` | `RejectBorrowView` | `reject_borrow` | Reject a borrow request. |
-| `circulation/approve-return/<uuid:pk>/` | `ApproveReturnView` | `approve_return` | Confirm book return. |
-| `circulation/reject-return/<uuid:pk>/` | `RejectReturnView` | `reject_return` | Reject return (e.g., damaged). |
+URL:
+- `/` -> `HomeView` (`home`)
 
----
+## Supporting Modules
 
-## Dashboards
-**Path**: `dashboards/`
+### Caching
+Path: `caching/`
 
-Provides role-specific landing pages and analytics.
+Responsibilities:
+- Cache key constants and TTL values.
+- Cache-backed retrieval for homepage stats, genres, related books, and dashboard KPIs.
+- Invalidation helpers used by signals and utilities.
 
-### URLs
-| Path | View | Name | Description |
-| :--- | :--- | :--- | :--- |
-| `dashboard/admin/` | `AdminDashboardView` | `admin_dashboard` | KPIs, Charts, User Management. |
-| `dashboard/librarian/` | `LibrarianDashboardView` | `librarian_dashboard` | Operational metrics for librarians. |
-| `dashboard/student/` | `StudentDashboardView` | `student_dashboard` | Personal stats for students. |
-| `dashboard/logs/` | `TransactionLogsView` | `transaction_logs` | Detailed transaction history. |
-| `dashboard/role-update/` | `UserRoleUpdateView` | `user_role_update` | Admin tool to change user roles. |
+### Communications
+Path: `communications/`
 
----
+Responsibilities:
+- Centralized email sending for borrowing/return events via `LibraryEmailService`.
 
-## Pages
-**Path**: `pages/`
+### AI Service
+Path: `ai_service/`
 
-Static or semi-static pages.
+Responsibilities:
+- FastAPI chat service for LibraBot.
+- SSE endpoint `POST /chat/stream` and health endpoint `GET /health`.
 
-### URLs
-| Path | View | Name | Description |
-| :--- | :--- | :--- | :--- |
-| `/` | `HomeView` | `home` | Landing page. |
+The Django frontend includes chatbot UI in `templates/components/chatbot.html` and uses `static/js/chatbot.js` to call the AI service.
