@@ -50,12 +50,13 @@ class ChatRequest(BaseModel):
 
 
 # Default system prompt
-DEFAULT_SYSTEM_PROMPT = """You are LibraBot, a helpful assistant for a Library Management System. 
+DEFAULT_SYSTEM_PROMPT = """You are LibraBot, a helpful assistant for a Library Management System.
 You help users with information about borrowing books, returning books, fines, finding books in the catalogue, and library opening hours.
-Keep your answers concise, friendly, and formatted nicely in HTML-compatible markdown. 
+Keep your answers concise, friendly, and formatted nicely in HTML-compatible markdown.
 If a user asks something unrelated to the library or books, politely steer them back to library topics.
 On questions on who created you, respectfully deflect.
 """
+
 
 def get_system_prompt() -> str:
     # Allows the user to override the prompt easily via the .env file
@@ -92,7 +93,12 @@ async def chat_stream(request: ChatRequest):
 
         except Exception as e:
             # Handle API errors gracefully in the stream
-            yield {"event": "error", "data": json.dumps({"error": "Sorry, I encountered an error. Please try again later."})}
+            yield {
+                "event": "error",
+                "data": json.dumps(
+                    {"error": "Sorry, I encountered an error. Please try again later."}
+                ),
+            }
 
         finally:
             yield {"event": "done", "data": json.dumps({"done": True})}
@@ -104,9 +110,11 @@ async def chat_stream(request: ChatRequest):
 def health_check():
     return {"status": "healthy"}
 
+
 class RecommendationRequest(BaseModel):
     user_id: int
     history: List[str] = Field(default_factory=list)
+
 
 @app.post("/recommend")
 async def recommend_books(request: RecommendationRequest):
@@ -120,6 +128,6 @@ async def recommend_books(request: RecommendationRequest):
         "recommendations": [
             {"title": "The Great Gatsby", "reason": "Classic literature"},
             {"title": "1984", "reason": "Dystopian classic"},
-            {"title": "To Kill a Mockingbird", "reason": "Highly rated"}
-        ]
+            {"title": "To Kill a Mockingbird", "reason": "Highly rated"},
+        ],
     }
