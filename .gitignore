@@ -11,3 +11,4 @@ staticfiles/
 seed_dummy_data.py
 .vscode/
 staticfiles/
+*.csv

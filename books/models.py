@@ -43,7 +43,9 @@ class Book(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="books_added"
     )
     cover_image = models.ImageField(
-        upload_to="books/", default="books/default_book.png"
+        max_length=500,
+        upload_to="books/",
+        default="books/default_book.png",
     )
     featured = models.BooleanField(default=False)
 
