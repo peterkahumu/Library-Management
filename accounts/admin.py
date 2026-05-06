@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import LibraryUser
+from .models import LibraryUser, PersonalityProfile
 from .forms import CustomUserChangeForm, CustomUserCreationForm
 
 
@@ -23,3 +23,14 @@ class CustomerUserAdmin(admin.ModelAdmin):
     add_fieldsets = UserAdmin.add_fieldsets + (
         (None, {"fields": ("role", "date_of_birth")}),
     )
+
+@admin.register(PersonalityProfile)
+class PersonalityProfileAdmin(admin.ModelAdmin):
+    list_display = [
+        "user",
+        "openness",
+        "conscientiousness",
+        "extraversion",
+        "agreeableness",
+        "neuroticism",
+    ]

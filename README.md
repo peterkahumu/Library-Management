@@ -84,8 +84,8 @@ python manage.py runserver
 Optional seed commands:
 
 ```bash
+# populate the database with pre-defined genres.
 python manage.py seed_genres
-python manage.py seed_superuser
 ```
 
 ## Environment Variables

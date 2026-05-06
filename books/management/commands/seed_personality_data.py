@@ -18,6 +18,7 @@ Usage:
 """
 
 import random
+import re
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
@@ -394,8 +395,10 @@ class Command(BaseCommand):
         )
 
         for i, (first, last) in enumerate(names):
-            # Guarantee a unique username
-            base_username = f"{first.lower()}.{last.lower()}"
+            # Guarantee a unique username (sanitize to remove apostrophes, etc.)
+            safe_first = re.sub(r'[^a-z0-9]', '', first.lower())
+            safe_last = re.sub(r'[^a-z0-9]', '', last.lower())
+            base_username = f"{safe_first}.{safe_last}"
             username = base_username
             suffix = 1
             while username in used_usernames:
@@ -408,7 +411,7 @@ class Command(BaseCommand):
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password="pass123",
+                password=None, # No login needed for synthetic users
                 first_name=first,
                 last_name=last,
                 role=UserRoles.STUDENT,
@@ -455,7 +458,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.ERROR(
                     "No books found in the database. "
-                    "Run your CSV seeder first (python manage.py seed_dummy_data)."
+                    "Please populate the database with books first."
                 )
             )
             return {}, []
@@ -557,9 +560,7 @@ class Command(BaseCommand):
                 status = "DOWNLOADED"
                 is_ebook = True
 
-            # Skip the Transaction.save() stock logic by using bulk-safe approach.
-            # We use objects.create() but bypass the custom save() validation that
-            # touches copies_available, since this is historical data only.
+            # create the transaction record
             Transaction.objects.create(
                 user=user,
                 book=book,
@@ -579,6 +580,6 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"\n✓ Created {transactions_created} transactions for {len(users)} users." # noqa: E501
+                f"\n✓ Created {transactions_created} transactions for {len(users)} users."  # noqa: E501
             )
         )
