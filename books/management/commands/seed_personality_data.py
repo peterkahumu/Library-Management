@@ -26,7 +26,7 @@ from django.utils import timezone
 
 from accounts.models import PersonalityProfile, UserRoles
 from book_circulation.models import Transaction
-from books.models import Book, Genre
+from books.models import Book
 
 User = get_user_model()
 
@@ -54,7 +54,6 @@ TRAIT_GENRE_MAP = {
         ("CLASSIC", 3),
         ("TRAVEL", 2),
     ],
-
     # High Conscientiousness: goal-oriented, structured, self-improving
     # Source: Furnham (2013)
     "conscientiousness": [
@@ -68,7 +67,6 @@ TRAIT_GENRE_MAP = {
         ("HEALTH", 3),
         ("BIOGRAPHY", 3),
     ],
-
     # High Extraversion: social stimulation, action, adventure
     # Source: Rentfrow & Gosling (2003) — extraversion negatively predicts fiction
     "extraversion": [
@@ -81,7 +79,6 @@ TRAIT_GENRE_MAP = {
         ("THRILLER", 3),
         ("POLITICS", 2),
     ],
-
     # High Agreeableness: social worlds, empathy, relationship narratives
     # Source: Buljan & Mlačić (2024), Adnan (2020)
     "agreeableness": [
@@ -95,7 +92,6 @@ TRAIT_GENRE_MAP = {
         ("HISTORICAL", 3),
         ("YOUNGADULT", 3),
     ],
-
     # High Neuroticism: self-focused, emotionally intense, anxiety-adjacent
     # Source: Simchon et al. (2023) — neuroticism linked to self-centered content
     "neuroticism": [
@@ -108,7 +104,6 @@ TRAIT_GENRE_MAP = {
         ("DRAMA", 3),
         ("CRIME", 3),
     ],
-
     # Low Extraversion (introversion proxy) — not a standalone trait but
     # included as a fallback for users with low extraversion scores.
     # Added to the random pool when extraversion < 0.4.
@@ -127,34 +122,114 @@ TRAIT_GENRE_MAP = {
 # Based on normative data from McCrae & Costa (2003).
 # Scores are normalised to [0, 1] from the standard 1–5 scale.
 BIG_FIVE_POPULATION = {
-    "openness":          {"mean": 0.60, "std": 0.15},
+    "openness": {"mean": 0.60, "std": 0.15},
     "conscientiousness": {"mean": 0.65, "std": 0.15},
-    "extraversion":      {"mean": 0.50, "std": 0.15},
-    "agreeableness":     {"mean": 0.65, "std": 0.13},
-    "neuroticism":       {"mean": 0.45, "std": 0.15},
+    "extraversion": {"mean": 0.50, "std": 0.15},
+    "agreeableness": {"mean": 0.65, "std": 0.13},
+    "neuroticism": {"mean": 0.45, "std": 0.15},
 }
 
 # Realistic first/last names for synthetic users
 FIRST_NAMES = [
-    "Alice", "Brian", "Catherine", "David", "Elena", "Frank", "Grace",
-    "Henry", "Irene", "James", "Karen", "Liam", "Mary", "Nathan",
-    "Olivia", "Patrick", "Quinn", "Rachel", "Samuel", "Tanya",
-    "Umar", "Victoria", "William", "Xena", "Yusuf", "Zara",
-    "Alex", "Blake", "Casey", "Dana", "Emile", "Fiona", "George",
-    "Hana", "Ivan", "Julia", "Kevin", "Laura", "Marcus", "Nina",
-    "Oscar", "Petra", "Rashid", "Sofia", "Thomas", "Uma", "Vera",
-    "Walter", "Xiang", "Yasmin",
+    "Alice",
+    "Brian",
+    "Catherine",
+    "David",
+    "Elena",
+    "Frank",
+    "Grace",
+    "Henry",
+    "Irene",
+    "James",
+    "Karen",
+    "Liam",
+    "Mary",
+    "Nathan",
+    "Olivia",
+    "Patrick",
+    "Quinn",
+    "Rachel",
+    "Samuel",
+    "Tanya",
+    "Umar",
+    "Victoria",
+    "William",
+    "Xena",
+    "Yusuf",
+    "Zara",
+    "Alex",
+    "Blake",
+    "Casey",
+    "Dana",
+    "Emile",
+    "Fiona",
+    "George",
+    "Hana",
+    "Ivan",
+    "Julia",
+    "Kevin",
+    "Laura",
+    "Marcus",
+    "Nina",
+    "Oscar",
+    "Petra",
+    "Rashid",
+    "Sofia",
+    "Thomas",
+    "Uma",
+    "Vera",
+    "Walter",
+    "Xiang",
+    "Yasmin",
 ]
 
 LAST_NAMES = [
-    "Anderson", "Brown", "Campbell", "Davis", "Evans", "Foster", "Garcia",
-    "Harris", "Ibrahim", "Johnson", "Kim", "Lee", "Martinez", "Nguyen",
-    "O'Brien", "Patel", "Quinn", "Rodriguez", "Smith", "Taylor",
-    "Uddin", "Vargas", "Wang", "Xavier", "Young", "Zhang",
-    "Adeyemi", "Bergström", "Chowdhury", "Dubois", "Eriksson",
-    "Fernandez", "González", "Hashimoto", "Ionescu", "Johansson",
-    "Kowalski", "Lindqvist", "Müller", "Nielsen", "Okafor",
-    "Petrov", "Ramos", "Svensson", "Tran", "Ueda",
+    "Anderson",
+    "Brown",
+    "Campbell",
+    "Davis",
+    "Evans",
+    "Foster",
+    "Garcia",
+    "Harris",
+    "Ibrahim",
+    "Johnson",
+    "Kim",
+    "Lee",
+    "Martinez",
+    "Nguyen",
+    "O'Brien",
+    "Patel",
+    "Quinn",
+    "Rodriguez",
+    "Smith",
+    "Taylor",
+    "Uddin",
+    "Vargas",
+    "Wang",
+    "Xavier",
+    "Young",
+    "Zhang",
+    "Adeyemi",
+    "Bergström",
+    "Chowdhury",
+    "Dubois",
+    "Eriksson",
+    "Fernandez",
+    "González",
+    "Hashimoto",
+    "Ionescu",
+    "Johansson",
+    "Kowalski",
+    "Lindqvist",
+    "Müller",
+    "Nielsen",
+    "Okafor",
+    "Petrov",
+    "Ramos",
+    "Svensson",
+    "Tran",
+    "Ueda",
 ]
 
 
@@ -193,7 +268,9 @@ def build_genre_weights(profile: PersonalityProfile) -> dict[str, float]:
     # Introversion bonus
     if profile.extraversion < 0.4:
         for genre_name, w in TRAIT_GENRE_MAP["low_extraversion"]:
-            weights[genre_name] = weights.get(genre_name, 0) + w * (1 - profile.extraversion)
+            weights[genre_name] = weights.get(genre_name, 0) + w * (
+                1 - profile.extraversion
+            )
 
     return weights
 
@@ -223,7 +300,8 @@ def pick_book_for_user(
 
     # Filter to genres that actually exist in the catalogue
     valid_genres = {
-        g: w for g, w in genre_weights.items()
+        g: w
+        for g, w in genre_weights.items()
         if g in available_books_by_genre and available_books_by_genre[g]
     }
 
@@ -260,7 +338,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--clear",
             action="store_true",
-            help="Delete all synthetic users (source=seeded) and their transactions first.",
+            help="Delete all synthetic users and their transactions first.",  
         )
 
     # ------------------------------------------------------------------
@@ -292,15 +370,15 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
     def _clear_synthetic_data(self):
         """Remove all previously seeded synthetic users and their transactions."""
-        synthetic = User.objects.filter(
-            personality_profile__source="seeded"
-        )
+        synthetic = User.objects.filter(personality_profile__source="seeded")
         count = synthetic.count()
         # Transactions cascade-delete via FK
         synthetic.delete()
-        self.stdout.write(self.style.WARNING(
-            f"Cleared {count} synthetic users and their associated data."
-        ))
+        self.stdout.write(
+            self.style.WARNING(
+                f"Cleared {count} synthetic users and their associated data."
+            )
+        )
 
     # ------------------------------------------------------------------
     def _create_users(self, num_users: int) -> list:
@@ -308,10 +386,12 @@ class Command(BaseCommand):
         created_users = []
         used_usernames = set(User.objects.values_list("username", flat=True))
 
-        names = list(zip(
-            random.choices(FIRST_NAMES, k=num_users),
-            random.choices(LAST_NAMES, k=num_users),
-        ))
+        names = list(
+            zip(
+                random.choices(FIRST_NAMES, k=num_users),
+                random.choices(LAST_NAMES, k=num_users),
+            )
+        )
 
         for i, (first, last) in enumerate(names):
             # Guarantee a unique username
@@ -328,7 +408,7 @@ class Command(BaseCommand):
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password="synthetic_password_not_for_login",
+                password="pass123",
                 first_name=first,
                 last_name=last,
                 role=UserRoles.STUDENT,
@@ -372,10 +452,12 @@ class Command(BaseCommand):
         all_books = list(Book.objects.prefetch_related("genre").all())
 
         if not all_books:
-            self.stdout.write(self.style.ERROR(
-                "No books found in the database. "
-                "Run your CSV seeder first (python manage.py seed_dummy_data)."
-            ))
+            self.stdout.write(
+                self.style.ERROR(
+                    "No books found in the database. "
+                    "Run your CSV seeder first (python manage.py seed_dummy_data)."
+                )
+            )
             return {}, []
 
         books_by_genre: dict[str, list] = {}
@@ -386,7 +468,9 @@ class Command(BaseCommand):
         genre_summary = ", ".join(
             f"{g}({len(b)})" for g, b in sorted(books_by_genre.items())
         )
-        self.stdout.write(f"  Catalogue: {len(all_books)} books across {len(books_by_genre)} genres")
+        self.stdout.write(
+            f"  Catalogue: {len(all_books)} books across {len(books_by_genre)} genres"
+        )
         self.stdout.write(f"  Genre breakdown: {genre_summary}")
 
         return books_by_genre, all_books
@@ -411,15 +495,14 @@ class Command(BaseCommand):
         Dates are spread across the past 12 months.
         """
         if not users or not all_books:
-            self.stdout.write(self.style.ERROR("Cannot create transactions — missing users or books."))
+            self.stdout.write(
+                self.style.ERROR("Cannot create transactions — missing users or books.")
+            )
             return
 
         # Weighted status pool
         status_pool = (
-            ["RETURNED"] * 75
-            + ["ISSUED"] * 15
-            + ["PENDING"] * 5
-            + ["DOWNLOADED"] * 5
+            ["RETURNED"] * 75 + ["ISSUED"] * 15 + ["PENDING"] * 5 + ["DOWNLOADED"] * 5
         )
 
         now = timezone.now()
@@ -467,7 +550,10 @@ class Command(BaseCommand):
             )
 
             # PENDING and ISSUED statuses only make sense for physical books
-            if status in ["PENDING", "ISSUED"] and book.format in ["EBOOK", "AUDIOBOOK"]:
+            if status in ["PENDING", "ISSUED"] and book.format in [
+                "EBOOK",
+                "AUDIOBOOK",
+            ]:
                 status = "DOWNLOADED"
                 is_ebook = True
 
@@ -491,6 +577,8 @@ class Command(BaseCommand):
                     f"  {transactions_created}/{num_transactions} transactions created"
                 )
 
-        self.stdout.write(self.style.SUCCESS(
-            f"\n✓ Created {transactions_created} transactions for {len(users)} users."
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"\n✓ Created {transactions_created} transactions for {len(users)} users." # noqa: E501
+            )
+        )

@@ -6,7 +6,7 @@ The project includes:
 - A multi-app Django backend (`accounts`, `books`, `book_circulation`, `dashboards`, `pages`)
 - Redis-backed caching with signal-driven invalidation
 - Google Books search/import support
-- A separate FastAPI AI microservice (`ai_service/`) used by the in-app LibraBot widget
+- A separate [FastAPI AI microservice](https://github.com/peterkahumu/library-ai-service) used by the in-app LibraBot widget
 
 ## Live Site
 
@@ -40,6 +40,8 @@ The project includes:
 
 ### Docker (recommended)
 
+This repository includes a standalone `docker-compose.yml` file to run the library management app and its dependencies (PostgreSQL and Redis).
+
 ```bash
 git clone https://github.com/peterkahumu/Library-Management.git
 cd library-management
@@ -53,7 +55,12 @@ Open `http://localhost:8000`.
 - `app` (Django)
 - `db` (PostgreSQL)
 - `redis`
-- `ai_service` (FastAPI on `http://localhost:8001`)
+
+> [!NOTE]
+> **AI Service Integration**
+> The library management application integrates with a separate AI microservice to power the LibraBot widget.
+> To run the complete stack including the chatbot, please clone the AI service repository:
+> **[AI Service Repository](https://github.com/peterkahumu/library-ai-service.git)**
 
 ### Local development
 
@@ -111,7 +118,6 @@ AI service variables are documented in `ai_service/README.md`.
 
 Available custom commands:
 - `python manage.py seed_genres`
-- `python manage.py seed_superuser`
 - `python manage.py clear_cache`
 
 ## Running Tests
