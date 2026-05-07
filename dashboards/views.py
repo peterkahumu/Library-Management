@@ -419,10 +419,11 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
                     if s_resp.status_code == 200:
                         similarity_recs = s_resp.json().get("recommendations", [])
         except Exception as e:
-            print(f"Error fetching recommendations: {e}")  # Temporary debug
+            logger.info(f"Recommendation service is unavailable: {e}")
 
         context["personality_recommendations"] = personality_recs
         context["similarity_recommendations"] = similarity_recs
+        context["similarity_basis"] = recent_txn.book if recent_txn else ""
 
         return context
 

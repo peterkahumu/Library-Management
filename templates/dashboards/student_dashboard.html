@@ -135,7 +135,10 @@
 {% if similarity_recommendations %}
 <div class="row mb-4">
     <div class="col-12">
-        <h4 class="fw-bold text-secondary mb-3"><i class="fas fa-link me-2"></i>Because you read recently, you might
+        <h4 class="fw-bold text-primary mb-3"><i class="fas fa-link me-2"></i>Because you borrowed <a
+                href="{% url 'book_detail' similarity_basis.book_id %}"
+                class="text-decoration-underline">{{similarity_basis.title }}</a>,
+            you might
             like</h4>
         <div class="row row-cols-1 row-cols-md-5 g-4">
             {% for rec in similarity_recommendations %}
@@ -147,8 +150,6 @@
                         <h6 class="card-title text-truncate" title="{{ rec.title }}">{{ rec.title }}</h6>
                         <p class="card-text small text-muted text-truncate" title="{{ rec.author }}">{{ rec.author }}
                         </p>
-                        <p class="card-text small text-secondary"><i class="fas fa-info-circle me-1"></i>{{ rec.reason
-                            }}</p>
                         <a href="{% url 'book_detail' rec.book_id %}"
                             class="btn btn-sm btn-outline-secondary w-100 mt-2">View Book</a>
                     </div>
