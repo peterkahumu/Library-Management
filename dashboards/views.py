@@ -397,6 +397,9 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         rec_url = getattr(
             settings, "RECOMMENDATION_SERVICE_URL", "http://localhost:8002/"
         )
+        if not rec_url.endswith("/"):
+            rec_url += "/"
+        
         personality_recs = []
         similarity_recs = []
         recent_txn = None
