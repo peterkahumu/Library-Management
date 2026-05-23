@@ -14,6 +14,7 @@ django-crispy-forms==2.4
 django-redis==6.0.0
 django-storages==1.14.6
 django_csp==3.8
+faker==36.1.1
 filelock==3.20.0
 flake8==7.3.0
 gunicorn==23.0.0
@@ -40,3 +41,5 @@ sqlparse==0.5.3
 urllib3==2.6.3
 virtualenv==20.35.4
 whitenoise==6.11.0
+pgvector==0.3.6
+httpx==0.27.2

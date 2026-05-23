@@ -82,8 +82,11 @@ python manage.py migrate
 # Create superuser (admin account)
 python manage.py createsuperuser
 
-# (Optional) Load sample data
-python manage.py seed_library_data
+# (Optional) Load reference data
+python manage.py seed_genres
+
+# (Optional) Seed admin account from env vars
+python manage.py seed_superuser
 ```
 
 ### 5. Run Development Server
@@ -144,8 +147,11 @@ docker pull ghcr.io/peterkahumu/library-management:latest
    # Collect static files
    docker compose exec app python manage.py collectstatic --noinput
 
-   # Load sample data
-   docker compose exec app python manage.py seed_library_data
+   # Load reference data
+   docker compose exec app python manage.py seed_genres
+
+   # Seed admin account from env vars
+   docker compose exec app python manage.py seed_superuser
    ```
 
 4. **View Logs**
@@ -205,11 +211,11 @@ SECURE_HSTS_PRELOAD = True
 
 ```python
 CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com")
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com")
+CSP_SCRIPT_SRC = ("'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com")
+CSP_STYLE_SRC = ("'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com")
 CSP_FONT_SRC = ("'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com")
-CSP_IMG_SRC = ("'self'", "data:")
-CSP_CONNECT_SRC = ("'self'", "https://cdn.jsdelivr.net")
+CSP_IMG_SRC = ("'self'", "data:", "https://books.google.com", "https://res.cloudinary.com")
+CSP_CONNECT_SRC = ("'self'", "https://cdn.jsdelivr.net", "https://www.googleapis.com", "http://localhost:8001")
 ```
 
 **Note**: CSP is configured to allow Bootstrap and Font Awesome from CDNs. Adjust as needed for your deployment.
@@ -243,7 +249,7 @@ python manage.py test
 
 ### Test Coverage
 
-The project has **214 tests** covering:
+The project has **200+ tests** covering:
 - User authentication and permissions
 - Book circulation workflows
 - Dashboard analytics
@@ -310,9 +316,11 @@ For detailed information about application models, see:
 
 ### Sample Data
 
-Load sample books, users, and transactions:
+Useful commands for reference/maintenance data:
 ```bash
-docker compose exec app python manage.py seed_library_data
+docker compose exec app python manage.py seed_genres
+docker compose exec app python manage.py seed_superuser
+docker compose exec app python manage.py clear_cache
 ```
 
 ---

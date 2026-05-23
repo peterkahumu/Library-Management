@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import F
+from pgvector.django import VectorField
 
 from .constants import LANGUAGE_CHOICES, GENRE_CHOICES, FORMAT_CHOICES
 from .utils import invalidate_cache
@@ -43,7 +44,9 @@ class Book(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="books_added"
     )
     cover_image = models.ImageField(
-        upload_to="books/", default="books/default_book.png"
+        max_length=500,
+        upload_to="books/",
+        default="books/default_book.png",
     )
     featured = models.BooleanField(default=False)
 
@@ -57,6 +60,7 @@ class Book(models.Model):
     )  # l x w x h in inches
     weight = models.FloatField(blank=True, null=True)
     dewey_decimal = models.CharField(max_length=50, null=True, blank=True)
+    embedding = VectorField(dimensions=768, blank=True, null=True)
 
     def __str__(self):
         return self.title

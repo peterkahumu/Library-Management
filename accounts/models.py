@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
+from django.conf import settings
 
 from .utils import generate_user_code
 
@@ -131,3 +132,99 @@ class LibraryUser(AbstractUser):
         super().save(*args, **kwargs)
 
     objects = LibraryUserManager()
+
+
+# user personalitity profile.
+class PersonalityProfile(models.Model):
+    """
+    Stores Big Five (Five Factor Model) personality scores for a library user.
+
+    Scores are normalised floats in the range [0.0, 1.0].
+    Sourced from: McCrae & Costa (2003), Furnham (2013), Adnan (2020).
+
+    Field semantics:
+        openness        – curiosity, creativity, preference for novelty
+        conscientiousness – self-discipline, organisation, goal-orientation
+        extraversion    – sociability, energy, external stimulation-seeking
+        agreeableness   – empathy, cooperativeness, social harmony
+        neuroticism     – emotional instability, anxiety, stress sensitivity
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="personality_profile",
+    )
+
+    # Big Five trait scores — all normalised to [0.0, 1.0]
+    openness = models.FloatField(
+        default=0.5,
+        help_text="Openness to Experience (0=closed, 1=very open)",
+    )
+    conscientiousness = models.FloatField(
+        default=0.5,
+        help_text="Conscientiousness (0=disorganised, 1=very organised)",
+    )
+    extraversion = models.FloatField(
+        default=0.5,
+        help_text="Extraversion (0=introverted, 1=extraverted)",
+    )
+    agreeableness = models.FloatField(
+        default=0.5,
+        help_text="Agreeableness (0=competitive, 1=very cooperative)",
+    )
+    neuroticism = models.FloatField(
+        default=0.5,
+        help_text="Neuroticism (0=emotionally stable, 1=highly neurotic)",
+    )
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Source of the profile data
+    SOURCE_CHOICES = [
+        ("assessment", "Psychometric Assessment"),
+        ("seeded", "System Seeded (Synthetic)"),
+        ("imported", "Imported"),
+    ]
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        default="assessment",
+    )
+
+    class Meta:
+        verbose_name = "Personality Profile"
+        verbose_name_plural = "Personality Profiles"
+
+    def __str__(self):
+        return (
+            f"{self.user.username} — O:{self.openness:.2f} C:{self.conscientiousness:.2f} "  # noqa:E501
+            f"E:{self.extraversion:.2f} A:{self.agreeableness:.2f} N:{self.neuroticism:.2f}"  # noqa:E501
+        )
+
+    def to_vector(self):
+        """Return trait scores as an ordered list
+        (used by the recommendation service)."""
+        return [
+            self.openness,
+            self.conscientiousness,
+            self.extraversion,
+            self.agreeableness,
+            self.neuroticism,
+        ]
+
+    def dominant_traits(self, threshold: float = 0.6):
+        """
+        Return trait names that score above `threshold`.
+        Used by the recommendation service to map traits → preferred genres.
+        """
+        traits = {
+            "openness": self.openness,
+            "conscientiousness": self.conscientiousness,
+            "extraversion": self.extraversion,
+            "agreeableness": self.agreeableness,
+            "neuroticism": self.neuroticism,
+        }
+        return [name for name, score in traits.items() if score >= threshold]

@@ -22,10 +22,8 @@ RUN useradd -m appuser && chown -R appuser /app
 USER appuser
 
 COPY --chown=appuser:appuser . .
-RUN python manage.py collectstatic --noinput
-
 RUN chmod +x ./wait-for-it.sh
 
 EXPOSE 8000
 
-CMD sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py clear_cache && gunicorn --bind 0.0.0.0:8000 LibraryManagement.wsgi:application"
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py clear_cache && gunicorn --bind 0.0.0.0:8000 LibraryManagement.wsgi:application"]

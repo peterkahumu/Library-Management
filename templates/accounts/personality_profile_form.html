@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Update Personality Profile{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-brain me-2"></i>Update Personality Profile</h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">
+                        We use the Big Five personality traits to recommend books tailored to your unique psychological
+                        profile. Adjust the sliders below to fine-tune your recommendations.
+                    </p>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label for="{{ form.openness.id_for_label }}" class="form-label fw-bold">Openness to
+                                Experience</label>
+                            {{ form.openness }}
+                            <div class="d-flex justify-content-between align-items-center small text-muted mt-1">
+                                <span>Closed / Traditional</span>
+                                <span class="badge bg-primary-subtle text-primary border"
+                                    data-percent-display="openness">0%</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.conscientiousness.id_for_label }}"
+                                class="form-label fw-bold">Conscientiousness</label>
+                            {{ form.conscientiousness }}
+                            <div class="d-flex justify-content-between align-items-center small text-muted mt-1">
+                                <span>Disorganized / Flexible</span>
+                                <span class="badge bg-primary-subtle text-primary border"
+                                    data-percent-display="conscientiousness">0%</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.extraversion.id_for_label }}"
+                                class="form-label fw-bold">Extraversion</label>
+                            {{ form.extraversion }}
+                            <div class="d-flex justify-content-between align-items-center small text-muted mt-1">
+                                <span>Introverted / Reserved</span>
+                                <span class="badge bg-primary-subtle text-primary border"
+                                    data-percent-display="extraversion">0%</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.agreeableness.id_for_label }}"
+                                class="form-label fw-bold">Agreeableness</label>
+                            {{ form.agreeableness }}
+                            <div class="d-flex justify-content-between align-items-center small text-muted mt-1">
+                                <span>Competitive / Critical</span>
+                                <span class="badge bg-primary-subtle text-primary border"
+                                    data-percent-display="agreeableness">0%</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.neuroticism.id_for_label }}"
+                                class="form-label fw-bold">Neuroticism</label>
+                            {{ form.neuroticism }}
+                            <div class="d-flex justify-content-between align-items-center small text-muted mt-1">
+                                <span>Emotionally Stable / Calm</span>
+                                <span class="badge bg-primary-subtle text-primary border"
+                                    data-percent-display="neuroticism">0%</span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>Save
+                                Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/personality_profile_slider.js' %}"></script>
+{% endblock content %}

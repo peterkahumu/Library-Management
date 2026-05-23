@@ -1,12 +1,12 @@
 services:
   app:
     build: .
-    image: app
+    image: library-management-app
     command: bash -c "./wait-for-it.sh db:5432 -t 60 -- python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./:/app
     env_file:
-      - .env_d
+      - .env
     depends_on:
       - db
       - redis
@@ -14,15 +14,15 @@ services:
       - "8000:8000"
 
   db:
-    image: postgres:latest
+    image: pgvector:pgvector:pg16
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
     env_file:
-      - .env_d
+      - .env
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME:-library_management}
+      - POSTGRES_USER=${DB_USER:-library_management}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-library_management}
 
   redis:
     image: redis:7-alpine

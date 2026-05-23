@@ -47,6 +47,8 @@ This project implements comprehensive security measures to protect against commo
 | **X-Content-Type-Options** | ✅ Implemented | Prevent MIME sniffing |
 | **security.txt** | ✅ Implemented | RFC 9116 compliant disclosure |
 
+Current CSP allows required CDNs plus Google APIs, local AI service connectivity (`http://localhost:8001` in development), and approved image hosts.
+
 ### Security Scan Results
 
 Recent security scan showed **zero critical or high-risk vulnerabilities**:
@@ -114,4 +116,4 @@ When deploying this application:
 
 ---
 
-*Last Updated: January 2026*
+*Last Updated: March 2026*
