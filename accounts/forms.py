@@ -27,16 +27,63 @@ class CustomUserChangeForm(UserChangeForm):
             "profile_image",
         ]
 
+
 class PersonalityProfileForm(forms.ModelForm):
     """Form to update Big Five personality traits."""
-    
+
     class Meta:
         model = PersonalityProfile
-        fields = ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"]
+        fields = [
+            "openness",
+            "conscientiousness",
+            "extraversion",
+            "agreeableness",
+            "neuroticism",
+        ]
         widgets = {
-            "openness": forms.NumberInput(attrs={"type": "range", "min": "0", "max": "1", "step": "0.01", "class": "form-range"}),
-            "conscientiousness": forms.NumberInput(attrs={"type": "range", "min": "0", "max": "1", "step": "0.01", "class": "form-range"}),
-            "extraversion": forms.NumberInput(attrs={"type": "range", "min": "0", "max": "1", "step": "0.01", "class": "form-range"}),
-            "agreeableness": forms.NumberInput(attrs={"type": "range", "min": "0", "max": "1", "step": "0.01", "class": "form-range"}),
-            "neuroticism": forms.NumberInput(attrs={"type": "range", "min": "0", "max": "1", "step": "0.01", "class": "form-range"}),
+            "openness": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": "0",
+                    "max": "1",
+                    "step": "0.01",
+                    "class": "form-range",
+                }
+            ),
+            "conscientiousness": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": "0",
+                    "max": "1",
+                    "step": "0.01",
+                    "class": "form-range",
+                }
+            ),
+            "extraversion": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": "0",
+                    "max": "1",
+                    "step": "0.01",
+                    "class": "form-range",
+                }
+            ),
+            "agreeableness": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": "0",
+                    "max": "1",
+                    "step": "0.01",
+                    "class": "form-range",
+                }
+            ),
+            "neuroticism": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": "0",
+                    "max": "1",
+                    "step": "0.01",
+                    "class": "form-range",
+                }
+            ),
         }

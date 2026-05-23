@@ -1,6 +1,11 @@
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
+from django.views.generic import UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 
+from .models import PersonalityProfile
+from .forms import PersonalityProfileForm
 from .forms import CustomUserCreationForm
 
 
@@ -9,11 +14,6 @@ class RegisterUserView(CreateView):
     template_name = "registration/register.html"
     success_url = reverse_lazy("login")
 
-from django.views.generic import UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
-from .models import PersonalityProfile
-from .forms import PersonalityProfileForm
 
 class PersonalityProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = PersonalityProfile
@@ -22,7 +22,9 @@ class PersonalityProfileUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("home")  # Redirect to home or dashboard after update
 
     def get_object(self, queryset=None):
-        profile, created = PersonalityProfile.objects.get_or_create(user=self.request.user)
+        profile, created = PersonalityProfile.objects.get_or_create(
+            user=self.request.user
+        )
         return profile
 
     def form_valid(self, form):

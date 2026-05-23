@@ -172,7 +172,9 @@ GOOGLE_BOOKS_API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY", "")
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
 AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://localhost:8001/")
-RECOMMENDATION_SERVICE_URL = os.getenv("RECOMMENDATION_SERVICE_URL", "http://localhost:8002/")
+RECOMMENDATION_SERVICE_URL = os.getenv(
+    "RECOMMENDATION_SERVICE_URL", "http://localhost:8002/"
+)
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 

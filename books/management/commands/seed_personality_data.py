@@ -339,7 +339,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--clear",
             action="store_true",
-            help="Delete all synthetic users and their transactions first.",  
+            help="Delete all synthetic users and their transactions first.",
         )
 
     # ------------------------------------------------------------------
@@ -396,8 +396,8 @@ class Command(BaseCommand):
 
         for i, (first, last) in enumerate(names):
             # Guarantee a unique username (sanitize to remove apostrophes, etc.)
-            safe_first = re.sub(r'[^a-z0-9]', '', first.lower())
-            safe_last = re.sub(r'[^a-z0-9]', '', last.lower())
+            safe_first = re.sub(r"[^a-z0-9]", "", first.lower())
+            safe_last = re.sub(r"[^a-z0-9]", "", last.lower())
             base_username = f"{safe_first}.{safe_last}"
             username = base_username
             suffix = 1
@@ -411,7 +411,7 @@ class Command(BaseCommand):
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password=None, # No login needed for synthetic users
+                password=None,  # No login needed for synthetic users
                 first_name=first,
                 last_name=last,
                 role=UserRoles.STUDENT,

@@ -24,6 +24,7 @@ class CustomerUserAdmin(admin.ModelAdmin):
         (None, {"fields": ("role", "date_of_birth")}),
     )
 
+
 @admin.register(PersonalityProfile)
 class PersonalityProfileAdmin(admin.ModelAdmin):
     list_display = [
