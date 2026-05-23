@@ -41,3 +41,5 @@ sqlparse==0.5.3
 urllib3==2.6.3
 virtualenv==20.35.4
 whitenoise==6.11.0
+pgvector==0.3.6
+httpx==0.27.2

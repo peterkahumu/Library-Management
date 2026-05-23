@@ -14,14 +14,3 @@ This folder contains project-level documentation that complements the top-level 
 3. Use `APPS.md` when working on app-specific behavior.
 4. Use `SECURITY.md` for security policy and deployment hardening checks.
 
-## Notes
-
-- This project also includes an AI microservice. See `ai_service/README.md`.
-- App-level READMEs are available in:
-  - `accounts/README.md`
-  - `books/README.md`
-  - `book_circulation/README.md`
-  - `dashboards/README.md`
-  - `caching/README.md`
-  - `pages/README.md`
-  - `communications/README.md`

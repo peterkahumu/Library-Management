@@ -14,10 +14,16 @@ from django.shortcuts import redirect
 from django.views import View
 from django.urls import reverse
 from django.contrib import messages
+from django.conf import settings
+import httpx
 from caching.services import LibraryCacheService
 
 from accounts.models import LibraryUser, UserRoles
 from book_circulation.models import Transaction
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_filtered_queryset(request):
@@ -386,6 +392,39 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         )
         total_fines = sum(txn.days_overdue for txn in overdue_txns)
         context["fines"] = total_fines
+
+        # Fetch Recommendations
+        rec_url = getattr(settings, "RECOMMENDATION_SERVICE_URL", "http://localhost:8002/")
+        personality_recs = []
+        similarity_recs = []
+        recent_txn = None
+        
+        try:
+            with httpx.Client(timeout=5.0) as client:
+                # Personality-based recommendations
+                p_resp = client.post(
+                    f"{rec_url}recommend/personality", 
+                    json={"user_id": str(student.user_id)}
+                )
+                if p_resp.status_code == 200:
+                    personality_recs = p_resp.json().get("recommendations", [])
+                
+                # Similarity-based recommendations
+                # Get the most recent borrowed book
+                recent_txn = Transaction.objects.filter(user=student).order_by('-checkout_date').first()
+                if recent_txn:
+                    s_resp = client.post(
+                        f"{rec_url}recommend/similar", 
+                        json={"book_id": str(recent_txn.book_id), "limit": 5}
+                    )
+                    if s_resp.status_code == 200:
+                        similarity_recs = s_resp.json().get("recommendations", [])
+        except Exception as e:
+            logger.info(f"Recommendation service is unavailable: {e}")
+
+        context["personality_recommendations"] = personality_recs
+        context["similarity_recommendations"] = similarity_recs
+        context["similarity_basis"] = recent_txn.book if recent_txn else ""
 
         return context
 

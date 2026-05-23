@@ -1,122 +1,61 @@
 # Application Documentation
 
-This document summarizes the responsibilities of each module in the project.
+This file documents the Django apps that make up the `library-management` project and notes other services in the repository.
 
-## Django Apps
+**Django Apps**
 
-### Accounts
-Path: `accounts/`
+- **Accounts**: Path: [library-management/accounts](library-management/accounts)
+  - **Responsibilities:** Custom user model (`LibraryUser`) with UUID primary key, role-based access (`admin`, `librarian`, `student`), profile image and `PersonalityProfile`, custom user manager, admin forms and signals.
+  - **Key files:** [library-management/accounts/models.py](library-management/accounts/models.py), [library-management/accounts/admin.py](library-management/accounts/admin.py), [library-management/accounts/apps.py](library-management/accounts/apps.py)
 
-Responsibilities:
-- Custom user model (`LibraryUser`) with UUID primary key.
-- Role support (`admin`, `librarian`, `student`).
-- User registration flow.
+- **Books**: Path: [library-management/books](library-management/books)
+  - **Responsibilities:** Book and genre models, inventory (stock) operations and validation, embeddings (`pgvector`), Google Books integration for search/import, cache invalidation helpers.
+  - **Key files:** [library-management/books/models.py](library-management/books/models.py), [library-management/books/google_books.py](library-management/books/google_books.py)
 
-URLs:
-- `accounts/register/` -> `RegisterUserView` (`register`)
-- Auth routes from Django are also mounted under `accounts/` (`login`, `logout`, password flows).
+- **Book Circulation**: Path: [library-management/book_circulation](library-management/book_circulation)
+  - **Responsibilities:** Borrow/return lifecycle, transaction/state management, atomic stock updates for hard copies, separate handling for e-books.
+  - **Key files:** [library-management/book_circulation/models.py](library-management/book_circulation/models.py), [library-management/book_circulation/admin.py](library-management/book_circulation/admin.py)
 
-Management commands:
-- `python manage.py seed_superuser`
+- **Dashboards**: Path: [library-management/dashboards](library-management/dashboards)
+  - **Responsibilities:** Role-specific dashboards (admin, librarian, student), KPIs and transaction log views.
+  - **Key files:** [library-management/dashboards/views.py](library-management/dashboards/views.py)
 
-### Books
-Path: `books/`
+- **Pages**: Path: [library-management/pages](library-management/pages)
+  - **Responsibilities:** Public site pages and the project home view; lightweight content app used for anonymous/home pages and redirects.
+  - **Key files:** [library-management/pages/views.py](library-management/pages/views.py)
 
-Responsibilities:
-- Book and genre catalog management.
-- Inventory validation and stock operations.
-- Google Books search/detail/import integration.
+**Supporting Modules**
 
-Key models:
-- `Genre`
-- `Book`
+- **Caching**: Path: [library-management/caching](library-management/caching)
+  - **Responsibilities:** Cache key definitions, TTLs, helpers and services used to cache homepage stats, genre lists, related books and to invalidate caches when models change.
+  - **Key files:** [library-management/caching/services.py](library-management/caching/services.py), [library-management/caching/keys.py](library-management/caching/keys.py)
 
-URLs:
-- `books/` -> `BookListView` (`book_list`)
-- `books/<uuid:pk>/` -> `BookDetailView` (`book_detail`)
-- `books/new/` -> `BookCreateView` (`book_create`)
-- `books/<uuid:pk>/edit/` -> `BookEditView` (`book_edit`)
-- `books/google-books/search/` -> `GoogleBooksSearchView` (`google_books_search`)
-- `books/google-books/detail/<str:volume_id>/` -> `GoogleBooksDetailView` (`google_books_detail`)
-- `books/google-books/add/<str:volume_id>/` -> `GoogleBooksAddView` (`google_books_add`)
+- **Communications**: Path: [library-management/communications](library-management/communications)
+  - **Responsibilities:** Centralized email utilities used for notifications (borrowing, returns, admin alerts).
+  - **Key files:** [library-management/communications/email.py](library-management/communications/email.py)
 
-Management commands:
-- `python manage.py seed_genres`
-- `python manage.py clear_cache`
+**Project core & static assets**
 
-### Book Circulation
-Path: `book_circulation/`
+- **Project settings**: Path: [library-management/LibraryManagement](library-management/LibraryManagement)
+  - Contains `settings.py`, `urls.py`, `wsgi.py` and `asgi.py`. The `AUTH_USER_MODEL` points to the custom `accounts.LibraryUser` model.
 
-Responsibilities:
-- Borrowing and return lifecycle management.
-- Transaction state validation and transitions.
-- Physical and digital checkout flows.
+- **Static / templates / media**: Paths: [library-management/static](library-management/static), [library-management/templates](library-management/templates), [library-management/media](library-management/media)
+  - Static assets, shared templates (including chatbot partials), and uploaded media (book covers, profile images).
 
-Key model:
-- `Transaction` with statuses:
-  - `PENDING`
-  - `ISSUED`
-  - `DOWNLOADED`
-  - `RETURN_REQUESTED`
-  - `RETURNED`
+**Other services in this repository (not part of the Django project)**
 
-URLs:
-- `circulation/borrow/<uuid:book_id>/` -> `BorrowBookView` (`borrow_book`)
-- `circulation/my-books/` -> `MyBooksListView` (`my_books`)
-- `circulation/return-request/<uuid:pk>/` -> `RequestReturnView` (`request_return`)
-- `circulation/librarian/borrow-requests/` -> `LibrarianBorrowRequestsView` (`librarian_borrow_requests`)
-- `circulation/librarian/return-requests/` -> `LibrarianReturnRequestsView` (`librarian_return_requests`)
-- `circulation/approve-borrow/<uuid:pk>/` -> `ApproveBorrowView` (`approve_borrow`)
-- `circulation/reject-borrow/<uuid:pk>/` -> `RejectBorrowView` (`reject_borrow`)
-- `circulation/approve-return/<uuid:pk>/` -> `ApproveReturnView` (`approve_return`)
-- `circulation/reject-return/<uuid:pk>/` -> `RejectReturnView` (`reject_return`)
+- **recommendation_service/**
+  - A separate process responsible for building and serving book embeddings and recommendation data (embedding generation, DB access).
+  - Get the [service here](https://github.com/peterkahumu/library-recommendation-service)
 
-### Dashboards
-Path: `dashboards/`
+- **library-chatbot-service/**
+  - A standalone FastAPI service that provides the chatbot backend used by the frontend UI. 
+  - Get the [service here](https://github.com/peterkahumu/library-chatbot-service)
 
-Responsibilities:
-- Role-specific dashboards.
-- KPI/analytics views and transaction log filtering.
-- Admin user role updates.
+**Notes & maintenance**
 
-URLs:
-- `dashboard/admin/` -> `AdminDashboardView` (`admin_dashboard`)
-- `dashboard/librarian/` -> `LibrarianDashboardView` (`librarian_dashboard`)
-- `dashboard/student/` -> `StudentDashboardView` (`student_dashboard`)
-- `dashboard/logs/` -> `TransactionLogsView` (`transaction_logs`)
-- `dashboard/role-update/` -> `UserRoleUpdateView` (`user_role_update`)
+- Management commands live under individual apps (e.g., `books.management.commands`). Use `python manage.py help` to list available commands.
+- Migrations are stored per-app in `migrations/` directories. Run `python manage.py migrate` after pulling schema changes.
+- The frontend includes chatbot UI under `templates/components` and JS under `static/js` that call the separate chatbot service; the service runs independently from the Django app.
 
-### Pages
-Path: `pages/`
 
-Responsibilities:
-- Public home page for anonymous users.
-- Role-based redirect for authenticated users.
-
-URL:
-- `/` -> `HomeView` (`home`)
-
-## Supporting Modules
-
-### Caching
-Path: `caching/`
-
-Responsibilities:
-- Cache key constants and TTL values.
-- Cache-backed retrieval for homepage stats, genres, related books, and dashboard KPIs.
-- Invalidation helpers used by signals and utilities.
-
-### Communications
-Path: `communications/`
-
-Responsibilities:
-- Centralized email sending for borrowing/return events via `LibraryEmailService`.
-
-### AI Service
-Path: `ai_service/`
-
-Responsibilities:
-- FastAPI chat service for LibraBot.
-- SSE endpoint `POST /chat/stream` and health endpoint `GET /health`.
-
-The Django frontend includes chatbot UI in `templates/components/chatbot.html` and uses `static/js/chatbot.js` to call the AI service.

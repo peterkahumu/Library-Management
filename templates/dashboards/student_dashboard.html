@@ -92,6 +92,10 @@
                     <i class="fas fa-search me-2"></i>Browse Catalogue
                 </a>
 
+                <a href="{% url 'update_profile' %}" class="btn btn-outline-info rounded-pill px-4">
+                    <i class="fas fa-brain me-2"></i>Update Personality
+                </a>
+
                 <a href="{% url 'password_change' %}" class="btn btn-outline-dark rounded-pill px-4">
                     <i class="fas fa-user-cog me-2"></i>My Profile
                 </a>
@@ -99,4 +103,62 @@
         </div>
     </div>
 </div>
+
+<!-- Recommendations Section -->
+{% if personality_recommendations %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="fw-bold text-primary mb-3"><i class="fas fa-magic me-2"></i>We think you might like</h4>
+        <div class="row row-cols-1 row-cols-md-5 g-4">
+            {% for rec in personality_recommendations %}
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ MEDIA_URL }}{{ rec.cover_image }}" class="card-img-top" alt="{{ rec.title }}"
+                        style="object-fit: cover; height: 200px;">
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate" title="{{ rec.title }}">{{ rec.title }}</h6>
+                        <p class="card-text small text-muted text-truncate" title="{{ rec.author }}">{{ rec.author }}
+                        </p>
+                        <p class="card-text small text-primary"><i class="fas fa-info-circle me-1"></i>{{ rec.reason }}
+                        </p>
+                        <a href="{% url 'book_detail' rec.book_id %}"
+                            class="btn btn-sm btn-outline-primary w-100 mt-2">View Book</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if similarity_recommendations %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="fw-bold text-primary mb-3"><i class="fas fa-link me-2"></i>Because you borrowed <a
+                href="{% url 'book_detail' similarity_basis.book_id %}"
+                class="text-decoration-underline">{{similarity_basis.title }}</a>,
+            you might
+            like</h4>
+        <div class="row row-cols-1 row-cols-md-5 g-4">
+            {% for rec in similarity_recommendations %}
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ MEDIA_URL }}{{ rec.cover_image }}" class="card-img-top" alt="{{ rec.title }}"
+                        style="object-fit: cover; height: 200px;">
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate" title="{{ rec.title }}">{{ rec.title }}</h6>
+                        <p class="card-text small text-muted text-truncate" title="{{ rec.author }}">{{ rec.author }}
+                        </p>
+                        <a href="{% url 'book_detail' rec.book_id %}"
+                            class="btn btn-sm btn-outline-secondary w-100 mt-2">View Book</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock content %}
