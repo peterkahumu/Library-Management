@@ -13,4 +13,3 @@ This folder contains project-level documentation that complements the top-level 
 2. Read `DEVELOPER.md` for development workflows and troubleshooting.
 3. Use `APPS.md` when working on app-specific behavior.
 4. Use `SECURITY.md` for security policy and deployment hardening checks.
-

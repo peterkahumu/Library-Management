@@ -15,10 +15,10 @@
                     <p class="text-muted mb-4">
                         We use the Big Five personality traits to recommend books tailored to your unique psychological profile. Adjust the sliders below to fine-tune your recommendations.
                     </p>
-                    
+
                     <form method="post" novalidate>
                         {% csrf_token %}
-                        
+
                         <div class="mb-4">
                             <label for="{{ form.openness.id_for_label }}" class="form-label fw-bold">Openness to Experience</label>
                             {{ form.openness }}

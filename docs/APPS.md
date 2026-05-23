@@ -49,7 +49,7 @@ This file documents the Django apps that make up the `library-management` projec
   - Get the [service here](https://github.com/peterkahumu/library-recommendation-service)
 
 - **library-chatbot-service/**
-  - A standalone FastAPI service that provides the chatbot backend used by the frontend UI. 
+  - A standalone FastAPI service that provides the chatbot backend used by the frontend UI.
   - Get the [service here](https://github.com/peterkahumu/library-chatbot-service)
 
 **Notes & maintenance**
@@ -57,5 +57,3 @@ This file documents the Django apps that make up the `library-management` projec
 - Management commands live under individual apps (e.g., `books.management.commands`). Use `python manage.py help` to list available commands.
 - Migrations are stored per-app in `migrations/` directories. Run `python manage.py migrate` after pulling schema changes.
 - The frontend includes chatbot UI under `templates/components` and JS under `static/js` that call the separate chatbot service; the service runs independently from the Django app.
-
-
