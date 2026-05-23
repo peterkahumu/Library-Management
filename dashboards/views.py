@@ -397,6 +397,7 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         rec_url = getattr(settings, "RECOMMENDATION_SERVICE_URL", "http://localhost:8002/")
         personality_recs = []
         similarity_recs = []
+        recent_txn = None
         
         try:
             with httpx.Client(timeout=5.0) as client:
