@@ -2,7 +2,7 @@
 
 Library Management System is a Django 5.2 application for running a library with role-based workflows for admins, librarians, and students.
 
-The project includes a multi-app Django backend, Redis-backed caching with signal-driven invalidation, Google Books search/import support, book recommendation hooks, and an embedded LibraBot UI that connects to a separate FastAPI AI service.
+The project includes a multi-app Django backend, Redis-backed caching with signal-driven invalidation, Google Books search/import support, book recommendation hooks, and an embedded LibraBot UI that connects to a separate FastAPI Chatbot Service.
 
 ## Live Site
 
@@ -17,12 +17,12 @@ The project includes a multi-app Django backend, Redis-backed caching with signa
   - Digital loans: `DOWNLOADED`
 - Librarian workflows for approving or rejecting borrow and return requests
 - Admin, librarian, and student dashboards with KPIs, logs, and borrowing analytics
-- Google Books search, detail lookup, and import workflows
+- Google Books search, detail lookup, and import workflows (import limited to admins and librarians only)
 - Email notifications for borrow and return events
 - Redis-backed caching with automatic invalidation when books or genres change
 - Security hardening with CSP, HSTS, secure cookie flags, and clickjacking/mime protections
-- Personality profile support and recommendation-service hooks for personalized book suggestions
-- Embedded LibraBot UI powered by the external AI microservice
+- Personality profile support and recommendation-service hooks for personalized book suggestions. Powered by the external [recommendation-microservice](https://github.com/peterkahumu/library-recommendation-service)
+- Embedded LibraBot UI powered by the external AI microservice. Powered by the external [chatbot microservice](https://github.com/peterkahumu/library-chatbot-service)
 
 ## Dashboards App Highlights
 
@@ -33,17 +33,6 @@ The `dashboards` app exposes role-aware dashboards under `/dashboard/`:
 - `student/` - Personal borrowing summary, overdue/fine estimates, quick actions, and recommendations
 - `logs/` - Paginated transaction logs with filters (date, status, user code, day of week, hour)
 
-### Recommendation Rendering (Student Dashboard)
-
-Recommendation cards are rendered directly in the student dashboard template from context values set in `StudentDashboardView`.
-
-- Personality recommendations call `POST {RECOMMENDATION_SERVICE_URL}recommend/personality` with `{ "user_id": "<uuid>" }`
-- Similarity recommendations call `POST {RECOMMENDATION_SERVICE_URL}recommend/similar` with `{ "book_id": "<uuid>", "limit": 5 }`
-- The template renders `personality_recommendations` and `similarity_recommendations` if present
-- Personality cards display title, author, cover image, and a recommendation reason
-- Similarity cards display title, author, and cover image, with a heading tied to the user's most recent borrowed book
-
-If the recommendation service is unavailable or returns no results, the dashboard still loads and recommendation sections are omitted.
 
 ## Tech Stack
 
@@ -76,7 +65,7 @@ Open `http://localhost:8000`.
 - `db` (PostgreSQL)
 - `redis`
 
-If you want the LibraBot widget or recommendation endpoints to respond locally, run the external AI and recommendation services separately and point `AI_SERVICE_URL` and `RECOMMENDATION_SERVICE_URL` at them.
+If you want the LibraBot widget or recommendation endpoints to respond locally, run the external [chatbot](https://github.com/peterkahumu/library-chatbot-service) and [recommendation services](https://github.com/peterkahumu/library-recommendation-service) separately and point `AI_SERVICE_URL` and `RECOMMENDATION_SERVICE_URL` at them in the .env file (check the .env_example for required enviroment variables)
 
 ### Local Development
 
@@ -128,8 +117,8 @@ Create `.env` from `.env_example` and set the values that match your deployment.
 - `CLOUDINARY_CLOUD_NAME` - Production media storage
 - `CLOUDINARY_API_KEY` - Production media storage
 - `CLOUDINARY_API_SECRET` - Production media storage
-- `AI_SERVICE_URL` - LibraBot AI service endpoint, default `http://localhost:8001/`
-- `RECOMMENDATION_SERVICE_URL` - Recommendation service endpoint, default `http://localhost:8002/`
+- `AI_SERVICE_URL` - [LibraBot Chatbot Service](https://github.com/peterkahumu/library-chatbot-service) endpoint, default `http://localhost:8001/`
+- `RECOMMENDATION_SERVICE_URL` - [Recommendation service](https://github.com/peterkahumu/library-recommendation-service) endpoint, default `http://localhost:8002/`
 - `DEFAULT_FROM_EMAIL` - Sender address used by the email service
 
 See `.env_example` for the exact variable names and defaults.
@@ -151,6 +140,8 @@ Custom commands currently available in this module:
 - `python manage.py seed_genres` - Populate the genre table from `books.constants`
 - `python manage.py seed_personality_data` - Create synthetic users and personality-biased borrowing transactions
 - `python manage.py clear_cache` - Clear the application cache and invalidate known cache keys
+
+> NB: The seed_personality_data requires that you have some books stored in your database.
 
 For admin user creation, use Django's built-in `python manage.py createsuperuser`.
 
@@ -198,5 +189,5 @@ library-management/
 
 This project is designed to work with two external services:
 
-- The AI service that powers LibraBot, documented in the separate AI service repository
-- The recommendation service, which the student dashboard calls for personality-based and similarity-based suggestions
+- The [Chatbot service](https://github.com/peterkahumu/library-chatbot-service) that powers LibraBot, documented in the separate Chatbot Service repository
+- The [recommendation service](https://github.com/peterkahumu/library-recommendation-service), which the student dashboard calls for personality-based and similarity-based suggestions
